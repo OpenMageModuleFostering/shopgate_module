@@ -110,6 +110,23 @@ class Shopgate_Framework_Model_Payment_Cc_Authn
     }
 
     /**
+     * @param Mage_Sales_Model_Order $magentoOrder
+     *
+     * @return Mage_Sales_Model_Order
+     */
+    public function setOrderStatus($magentoOrder)
+    {
+        $status = Mage::getModel('paygate/authorizenet')->getConfigData('order_status');
+        if ($status) {
+            $state = $this->_getHelper()->getStateForStatus($status);
+            $magentoOrder->setShopgateStatusSet(true);
+            return $magentoOrder->setState($state, $status);
+        } else {
+            return parent::setOrderStatus($magentoOrder);
+        }
+    }
+
+    /**
      * @param $type
      * @param $additionalInformation
      */

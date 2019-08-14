@@ -229,8 +229,8 @@ class Shopgate_Framework_Model_Export_Product_Xml
             foreach ($childIds as $childOption) {
                 foreach ($childOption as $childId) {
                     $product = Mage::getModel('catalog/product')
-                                   ->setStoreId($this->_getConfig()->getStoreViewId())
-                                   ->load($childId);
+                        ->setStoreId($this->_getConfig()->getStoreViewId())
+                        ->load($childId);
 
                     $taxRates[] = $this->_getTaxRate($product);
                 }
@@ -262,8 +262,8 @@ class Shopgate_Framework_Model_Export_Product_Xml
             foreach ($childIds as $childOption) {
                 foreach ($childOption as $childId) {
                     $product = Mage::getModel('catalog/product')
-                                   ->setStoreId($this->_getConfig()->getStoreViewId())
-                                   ->load($childId);
+                        ->setStoreId($this->_getConfig()->getStoreViewId())
+                        ->load($childId);
 
                     $taxClassId            = $product->getTaxClassId();
                     $taxRates[$taxClassId] = $this->_getTaxRate($product);
@@ -554,8 +554,13 @@ class Shopgate_Framework_Model_Export_Product_Xml
                 $tierPrice = new Shopgate_Model_Catalog_TierPrice();
 
                 $tierPrice->setFromQuantity($tier['price_qty']);
-                $tierPrice->setReduction($price->getSalePrice() - $tier['website_price']);
-                $tierPrice->setReductionType(Shopgate_Model_Catalog_TierPrice::DEFAULT_TIER_PRICE_TYPE_FIXED);
+                if ($this->item->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_BUNDLE) {
+                    $tierPrice->setReduction($tier['website_price']);
+                    $tierPrice->setReductionType(Shopgate_Model_Catalog_TierPrice::DEFAULT_TIER_PRICE_TYPE_PERCENT);
+                } else {
+                    $tierPrice->setReduction($price->getSalePrice() - $tier['website_price']);
+                    $tierPrice->setReductionType(Shopgate_Model_Catalog_TierPrice::DEFAULT_TIER_PRICE_TYPE_FIXED);
+                }
                 if ($this->item->isSuper()
                     && Mage::getStoreConfig(
                         Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_EXPORT_USE_ROOT_PRICES
@@ -585,8 +590,13 @@ class Shopgate_Framework_Model_Export_Product_Xml
                 $tierPrice = new Shopgate_Model_Catalog_TierPrice();
 
                 $tierPrice->setFromQuantity(1);
-                $tierPrice->setReduction($price->getSalePrice() - $group['website_price']);
-                $tierPrice->setReductionType(Shopgate_Model_Catalog_TierPrice::DEFAULT_TIER_PRICE_TYPE_FIXED);
+                if ($this->item->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_BUNDLE) {
+                    $tierPrice->setReduction($group['website_price']);
+                    $tierPrice->setReductionType(Shopgate_Model_Catalog_TierPrice::DEFAULT_TIER_PRICE_TYPE_PERCENT);
+                } else {
+                    $tierPrice->setReduction($price->getSalePrice() - $group['website_price']);
+                    $tierPrice->setReductionType(Shopgate_Model_Catalog_TierPrice::DEFAULT_TIER_PRICE_TYPE_FIXED);
+                }
                 $tierPrice->setCustomerGroupUid($group['cust_group']);
                 if ($this->item->isSuper()
                     && Mage::getStoreConfig(
@@ -957,16 +967,16 @@ class Shopgate_Framework_Model_Export_Product_Xml
 
     /**
      * Empty rewrite to include 0 string & int into export
-     * 
+     *
      * @param $var - var to check for empty
-     *             
+     *
      * @return bool
      */
     private function nonEmpty($var)
     {
         return (isset($var) && $var == '0') || !empty($var);
     }
-    
+
     /**
      * set identifiers
      */
@@ -1242,8 +1252,8 @@ class Shopgate_Framework_Model_Export_Product_Xml
             $childProductIds = $this->item->getTypeInstance()->getUsedProductIds();
             foreach ($childProductIds as $child) {
                 $configChild = Mage::getModel('catalog/product')
-                                   ->setStoreId($this->_getConfig()->getStoreViewId())
-                                   ->load($child);
+                    ->setStoreId($this->_getConfig()->getStoreViewId())
+                    ->load($child);
                 if ($configChild->getStatus() != Mage_Catalog_Model_Product_Status::STATUS_DISABLED) {
                     $childProducts[] = $configChild;
                 }
@@ -1254,8 +1264,8 @@ class Shopgate_Framework_Model_Export_Product_Xml
             $childProductIds = $this->item->getTypeInstance()->getAssociatedProductIds();
             foreach ($childProductIds as $child) {
                 $configChild = Mage::getModel('catalog/product')
-                                   ->setStoreId($this->_getConfig()->getStoreViewId())
-                                   ->load($child);
+                    ->setStoreId($this->_getConfig()->getStoreViewId())
+                    ->load($child);
                 if ($configChild->getStatus() != Mage_Catalog_Model_Product_Status::STATUS_DISABLED) {
                     $childProducts[] = $configChild;
                 }

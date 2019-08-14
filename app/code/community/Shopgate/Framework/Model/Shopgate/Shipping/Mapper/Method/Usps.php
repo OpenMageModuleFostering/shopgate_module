@@ -110,6 +110,10 @@ class Shopgate_Framework_Model_Shopgate_Shipping_Mapper_Method_Usps
 
         /** @var Mage_Usa_Model_Shipping_Carrier_Usps_Source_Method $usps */
         $usps = Mage::getModel('usa/shipping_carrier_usps_source_method');
+        
+        if (!$usps) {
+            return Shopgate_Framework_Model_Shopgate_Shipping_Mapper_Method_Shopgate::DEFAULT_SHIPPING_METHOD;
+        }
 
         foreach ($usps->toOptionArray() as $methodArr) {
 

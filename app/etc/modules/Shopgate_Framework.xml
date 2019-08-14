@@ -8,7 +8,6 @@
 			<depends>
                 <Mage_Payment />
                 <Mage_Cms />
-                <Mage_Usa />
             </depends>
 		</Shopgate_Framework>
 	</modules>
