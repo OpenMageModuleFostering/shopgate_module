@@ -352,9 +352,9 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             $this->log("# Add shopgate order to Session", ShopgateLogger::LOGTYPE_DEBUG);
             Mage::getSingleton("core/session")->setData("shopgate_order", $order);
             $this->log("# Create quote for order", ShopgateLogger::LOGTYPE_DEBUG);
-
+            
+            $this->_getFactory()->getPayment()->setUp();
             $quote = Mage::getModel('sales/quote')->setStoreId($this->_getConfig()->getStoreViewId());
-
             $quote->getBillingAddress()->setCartFixedRules(array());
             $quote->getShippingAddress()->setCartFixedRules(array());
             $quote = $this->executeLoaders($this->_getCreateOrderQuoteLoaders(), $quote, $order);
@@ -453,9 +453,11 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             $totalMagento  = $magentoOrder->getTotalDue();
             $this->log(
                 "
-					Total Shopgate: {$totalShopgate} {$order->getCurrency()}
-					Total Magento: {$totalMagento} {$order->getCurrency()}
-					",
+                    Shopgate order ID: {$order->getOrderNumber()}
+                    Magento order ID: {$magentoOrder->getId()}
+                    Total Shopgate: {$totalShopgate} {$order->getCurrency()}
+                    Total Magento: {$totalMagento} {$order->getCurrency()}
+                    ",
                 ShopgateLogger::LOGTYPE_DEBUG
             );
 
@@ -466,6 +468,10 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
 
             $msg = "";
             if (!$this->_getHelper()->isOrderTotalCorrect($order, $magentoOrder, $msg)) {
+                if ($this->_getConfigHelper()->getIsMagentoVersionLower16()) {
+                    $magentoOrder->addStatusHistoryComment(nl2br($msg), false);
+                    $magentoOrder->save();
+                }
                 $this->log($msg);
                 $warnings[] = array(
                     "message" => $msg
@@ -1422,7 +1428,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
 
     /**
      * Sets the state & status of Magento order
-     * 
+     *
      * @param Mage_Sales_Model_Order $magentoOrder
      * @param ShopgateOrder          $shopgateOrder
      *
@@ -1437,16 +1443,14 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             /**
              * Should stop support for this as this happens when Order is imported as Prepay and defaults to Mobile
              */
-            if (!Mage::getStoreConfig(
-                Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ORDER_MARK_UNBLOCKED_AS_PAID
-            )
+            if (!Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ORDER_MARK_UNBLOCKED_AS_PAID)
+                && !$this->_getFactory()->getPayment()->getPaymentClass()
             ) {
                 if ($magentoOrder->canHold()) {
                     $magentoOrder->hold();
-                } else {
-                    $this->_forceIsPaidStatus($magentoOrder, $shopgateOrder);
                 }
             }
+            $this->_forceIsPaidStatus($magentoOrder, $shopgateOrder);
         } else {
             $stateObject    = new Varien_Object();
             $methodInstance = $magentoOrder->getPayment()->getMethodInstance();

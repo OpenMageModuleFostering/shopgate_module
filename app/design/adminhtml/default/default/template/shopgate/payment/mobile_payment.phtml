@@ -23,24 +23,7 @@
  */
 
 /** @var Shopgate_Framework_Block_Payment_MobilePayment $this */
-$shopgateOrder  = $this->getShopgateOrder();
-$shopgateObject = $shopgateOrder->getShopgateOrderObject();
-
-if (!$shopgateOrder->getId() || empty($shopgateObject)):
-    echo $this->printHtmlError($this->__('Error importing order information: please contact Shopgate'));
-endif;
-
-if (!empty($shopgateObject) && $shopgateObject->getIsTest()):
-    echo $this->printHtmlError($this->__('## This order is a TEST by Shopgate - DO NOT SHIP!'));
-endif;
-
-if ($this->hasDifferentPrices()):
-    echo $this->printHtmlError(
-        $this->__(
-            '!! The total amount in Magento differs from the total amount at Shopgate. Please check your tax settings.'
-        )
-    );
-endif;
+$shopgateOrder = $this->getShopgateOrder();
 
 if ($shopgateOrder->getIsShippingBlocked()):
     echo $this->printHtmlError($this->__('## Note: Shipping of this order is blocked by Shopgate!'));
@@ -49,8 +32,7 @@ endif;
 if ($shopgateOrder->getIsCustomerInvoiceBlocked()):
     echo $this->__('## Note: For this order you must not create an invoice!');
 endif;
-
-echo $this->__('Shopgate order number: %s', $shopgateOrder->getShopgateOrderNumber()); ?>
+?>
 <p style="margin-top: 1em;">
     <?php echo $this->printPaymentInfo($this->getPaymentInfos()); ?>
 </p>

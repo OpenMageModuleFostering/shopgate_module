@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Shopgate_Framework>
-            <version>2.9.38</version>
+            <version>2.9.39</version>
         </Shopgate_Framework>
     </modules>
     <phpunit>
@@ -282,6 +282,15 @@
                     </website_store_removed>
                 </observers>
             </store_delete>
+            
+            <core_block_abstract_to_html_after>
+                <observers>
+                    <shopgate_order_view_notice>
+                        <class>shopgate/observer</class>
+                        <method>getSalesOrderViewShopgateNotice</method>
+                    </shopgate_order_view_notice>
+                </observers>
+            </core_block_abstract_to_html_after>
         </events>
     </adminhtml>
     <frontend>

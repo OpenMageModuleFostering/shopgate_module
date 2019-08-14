@@ -281,6 +281,15 @@ class Shopgate_Framework_Model_Payment_Abstract
      */
 
     /**
+     * Set up function to be rewritten by payment
+     * methods if anything needs to be set up before
+     * general logic runs
+     */
+    public function setUp()
+    {
+    }
+
+    /**
      * Default order creation if no payment matches
      *
      * @param Mage_Sales_Model_Quote $quote
@@ -331,7 +340,7 @@ class Shopgate_Framework_Model_Payment_Abstract
      * Default quote prepare handler
      *
      * @param Mage_Sales_Model_Quote $quote
-     * @param                        $info
+     * @param array                  $info
      *
      * @return Mage_Sales_Model_Quote
      */

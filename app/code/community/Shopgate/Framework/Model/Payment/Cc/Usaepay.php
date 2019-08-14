@@ -60,7 +60,6 @@ class Shopgate_Framework_Model_Payment_Cc_Usaepay extends Shopgate_Framework_Mod
             str_pad($paymentInfos['credit_card']['expiry_month'], 2, '0', STR_PAD_LEFT)
         );
         $order->getPayment()->setCcExpYear($paymentInfos['credit_card']['expiry_year']);
-        $order->getPayment()->setLastTransId($paymentInfos['reference_number']);
 
         try {
             if (isset($paymentInfos['transaction_type']) && $paymentInfos['transaction_type'] === 'sale') {
@@ -68,6 +67,7 @@ class Shopgate_Framework_Model_Payment_Cc_Usaepay extends Shopgate_Framework_Mod
                 $order->getPayment()->setAmountAuthorized($invoice->getGrandTotal());
                 $order->getPayment()->setBaseAmountAuthorized($invoice->getBaseGrandTotal());
                 $order->getPayment()->setBaseAmountPaidOnline($invoice->getBaseGrandTotal());
+                $order->getPayment()->setLastTransId($paymentInfos['reference_number']);
                 $invoice->setIsPaid(true);
                 $invoice->setTransactionId($paymentInfos['reference_number']);
                 $invoice->pay();

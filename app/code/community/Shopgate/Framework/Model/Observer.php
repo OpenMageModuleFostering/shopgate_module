@@ -22,6 +22,7 @@
  */
 
 include_once(Mage::getBaseDir('lib') . '/Shopgate/shopgate.php');
+
 /**
  * observer for events
  *
@@ -625,8 +626,8 @@ class Shopgate_Framework_Model_Observer
                 Mage::app()->setCurrentStore($storeViewId);
 
                 $collection = Mage::getModel('catalog/product')
-                    ->getResourceCollection()
-                    ->addFieldToFilter('type_id', 'virtual');
+                                  ->getResourceCollection()
+                                  ->addFieldToFilter('type_id', 'virtual');
 
                 $helper = Mage::helper('shopgate/coupon');
 
@@ -689,9 +690,9 @@ class Shopgate_Framework_Model_Observer
             );
 
             $collection = Mage::getModel('core/config_data')
-                ->getCollection()
-                ->addFieldToFilter('path', Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_SHOP_NUMBER)
-                ->addFieldToFilter('value', $shopnumber);
+                              ->getCollection()
+                              ->addFieldToFilter('path', Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_SHOP_NUMBER)
+                              ->addFieldToFilter('value', $shopnumber);
 
             if ($collection->getSize() && $collection->getFirstItem()->getScope() == 'websites') {
                 Mage::getConfig()->saveConfig(
@@ -858,7 +859,7 @@ class Shopgate_Framework_Model_Observer
      */
     public function removeDefaultStore(Varien_Event_Observer $event)
     {
-        $websiteId = $event->getStore()->getWebsiteId();
+        $websiteId = $event->getData('store')->getWebsiteId();
         if ($websiteId) {
             Mage::getModel('core/config')->deleteConfig(
                 Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_SHOP_DEFAULT_STORE,
@@ -868,5 +869,25 @@ class Shopgate_Framework_Model_Observer
         }
 
         return $this;
+    }
+
+    /**
+     * Produces an info block in the Order View panel
+     *
+     * @param Varien_Event_Observer $observer
+     */
+    public function getSalesOrderViewShopgateNotice(Varien_Event_Observer $observer)
+    {
+        /** @var Mage_Adminhtml_Block_Sales_Order_View_Info $block */
+        $block = $observer->getData('block');
+        if ($block->getNameInLayout() === 'order_info') {
+            $child     = $block->getChild('shopgate_payment_notice');
+            $transport = $observer->getData('transport');
+            if ($child && $transport) {
+                $html = $transport->getData('html');
+                $html .= $child->toHtml();
+                $transport->setHtml($html);
+            }
+        }
     }
 }

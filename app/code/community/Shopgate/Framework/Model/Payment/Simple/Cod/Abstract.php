@@ -22,11 +22,23 @@
  */
 
 /**
- * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
+ * General fallback for all COD methods
  */
-class Shopgate_Framework_Model_Payment_Simple_Cod_Abstract extends Shopgate_Framework_Model_Payment_Abstract
+class Shopgate_Framework_Model_Payment_Simple_Cod_Abstract 
+    extends Shopgate_Framework_Model_Payment_Abstract
+    implements Shopgate_Framework_Model_Payment_Interface
 {
-    const PAYMENT_IDENTIFIER = ShopgateOrder::COD;
+    const PAYMENT_IDENTIFIER     = ShopgateOrder::COD;
+    const XML_CONFIG_FEE_LOCAL   = '';
+    const XML_CONFIG_FEE_FOREIGN = '';
+
+    /**
+     * Run fee processing before everything
+     */
+    public function setUp()
+    {
+        $this->processPaymentFee();
+    }
 
     /**
      * No need to pull status, it is assigned automatically,
@@ -37,6 +49,21 @@ class Shopgate_Framework_Model_Payment_Simple_Cod_Abstract extends Shopgate_Fram
      */
     public function setOrderStatus($magentoOrder)
     {
-        return $magentoOrder->setShopgateStatusSet(true);
+        return $magentoOrder->setData('shopgate_status_set', true);
+    }
+
+    /**
+     * If the COD config has a payment fee set, overwrite the fee
+     * that is coming form Merchant API server
+     */
+    protected function processPaymentFee()
+    {
+        $local   = $this->getConstant('XML_CONFIG_FEE_LOCAL');
+        $foreign = $this->getConstant('XML_CONFIG_FEE_FOREIGN');
+        $sgOrder = $this->getShopgateOrder();
+
+        if (Mage::getStoreConfig($local) || Mage::getStoreConfig($foreign)) {
+            $sgOrder->setAmountShopPayment(0);
+        }
     }
 }

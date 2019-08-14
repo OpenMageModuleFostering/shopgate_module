@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Shopgate GmbH
  *
@@ -18,26 +19,12 @@
  * transfer to third parties is only permitted where we previously consented thereto in writing. The provisions
  * of paragraph 69 d, sub-paragraphs 2, 3 and paragraph 69, sub-paragraph e of the German Copyright Act shall remain unaffected.
  *
- *  @author Shopgate GmbH <interfaces@shopgate.com>
- */
-
-/**
- * User: Peter Liebig
- * Date: 28.01.14
- * Time: 12:55
- * E-Mail: p.liebig@me.com
- */
-
-/**
- * shopgate payment block
- *
- * @author      Shopgate GmbH, 35510 Butzbach, DE
- * @package     Shopgate_Framework
+ * @author Shopgate GmbH <interfaces@shopgate.com>
  */
 class Shopgate_Framework_Block_Payment_Shopgate extends Shopgate_Framework_Block_Payment_MobilePayment
 {
     /**
-     * construct
+     * Sets template directly
      */
     protected function _construct()
     {

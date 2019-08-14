@@ -1,3 +1,11 @@
+'''Version 2.9.39'''
+* Updated to library version 2.9.44
+* Orders are no longer on hold if a Prepay order is mapped to an enabled plugin
+* Added an info block to View Order page to output Shopgate related warnings and general info
+* Added Shopgate extra payment fee to order totals calculation inside Order_View/Invoice/Credit_Memo sections
+* Made an adjustment for USAePay by providing the LastTransactionId on auth_capture only
+* Optimized category image export by removing empty image url tags
+
 '''Version 2.9.38'''
 * Fixed placing of configurable products in order import
 * Prevent unnecessary error logging in stock validation

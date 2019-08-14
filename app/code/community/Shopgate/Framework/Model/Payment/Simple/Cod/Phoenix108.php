@@ -23,14 +23,14 @@
 
 /**
  * Support for Phoenix_CashOnDelivery v1.0.8 and older
- * 
- * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
 class Shopgate_Framework_Model_Payment_Simple_Cod_Phoenix108
     extends Shopgate_Framework_Model_Payment_Simple_Cod_Abstract
     implements Shopgate_Framework_Model_Payment_Interface
 {
-    const MODULE_CONFIG      = 'Phoenix_CashOnDelivery';
-    const PAYMENT_MODEL      = 'phoenix_cashondelivery/cashOnDelivery';
-    const XML_CONFIG_ENABLED = 'payment/phoenix_cashondelivery/active';
+    const MODULE_CONFIG          = 'Phoenix_CashOnDelivery';
+    const PAYMENT_MODEL          = 'phoenix_cashondelivery/cashOnDelivery';
+    const XML_CONFIG_ENABLED     = 'payment/phoenix_cashondelivery/active';
+    const XML_CONFIG_FEE_LOCAL   = 'payment/phoenix_cashondelivery/inlandcosts';
+    const XML_CONFIG_FEE_FOREIGN = 'payment/phoenix_cashondelivery/foreigncountrycosts';
 }

@@ -22,13 +22,15 @@
  */
 
 /**
- * Interface Shopgate_Framework_Model_Payment_Interface
- * 
- * @author awesselburg <wesselburg@me.com>
- * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
+ * General payment interface functions required to exist
  */
 interface Shopgate_Framework_Model_Payment_Interface
 {
+    /**
+     * Used for setup of any kind
+     */
+    public function setUp();
+    
     /**
      * @param Mage_Sales_Model_Order $order
      *

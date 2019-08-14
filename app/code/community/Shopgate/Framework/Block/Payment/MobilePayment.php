@@ -21,13 +21,11 @@
  * @author Shopgate GmbH <interfaces@shopgate.com>
  */
 
+/** @noinspection PhpIncludeInspection */
 include_once Mage::getBaseDir("lib") . '/Shopgate/shopgate.php';
 
 /**
- * mobile payment block
- *
- * @author      Shopgate GmbH, 35510 Butzbach, DE
- * @package     Shopgate_Framework
+ * Handles mobile payment block printing in Mangeto Order view page
  */
 class Shopgate_Framework_Block_Payment_MobilePayment extends Mage_Payment_Block_Info
 {
@@ -77,23 +75,6 @@ class Shopgate_Framework_Block_Payment_MobilePayment extends Mage_Payment_Block_
         }
 
         return $data;
-    }
-
-    /**
-     * @return bool
-     */
-    public function hasDifferentPrices()
-    {
-        $order         = $this->getOrder();
-        $shopgateOrder = $this->getShopgateOrder()->getShopgateOrderObject();
-
-        if (!$shopgateOrder instanceof ShopgateOrder) {
-            return false;
-        }
-
-        $isDifferent = !Mage::helper('shopgate')->isOrderTotalCorrect($shopgateOrder, $order, $msg);
-
-        return $isDifferent;
     }
 
     /**

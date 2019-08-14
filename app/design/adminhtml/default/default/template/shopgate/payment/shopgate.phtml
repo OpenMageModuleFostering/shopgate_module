@@ -1,43 +1,37 @@
 <?php
-/**
- * User: Peter Liebig
- * Date: 27.01.14
- * Time: 15:58
- * E-Mail: p.liebig@me.com
- */
 
 /**
- * shopgate payment template
+ * Shopgate GmbH
  *
- * @author      Shopgate GmbH, 35510 Butzbach, DE
- * @package     Shopgate_Framework
- * @author      Shopgate GmbH Butzbach
+ * URHEBERRECHTSHINWEIS
+ *
+ * Dieses Plugin ist urheberrechtlich geschützt. Es darf ausschließlich von Kunden der Shopgate GmbH
+ * zum Zwecke der eigenen Kommunikation zwischen dem IT-System des Kunden mit dem IT-System der
+ * Shopgate GmbH über www.shopgate.com verwendet werden. Eine darüber hinausgehende Vervielfältigung, Verbreitung,
+ * öffentliche Zugänglichmachung, Bearbeitung oder Weitergabe an Dritte ist nur mit unserer vorherigen
+ * schriftlichen Zustimmung zulässig. Die Regelungen der §§ 69 d Abs. 2, 3 und 69 e UrhG bleiben hiervon unberührt.
+ *
+ * COPYRIGHT NOTICE
+ *
+ * This plugin is the subject of copyright protection. It is only for the use of Shopgate GmbH customers,
+ * for the purpose of facilitating communication between the IT system of the customer and the IT system
+ * of Shopgate GmbH via www.shopgate.com. Any reproduction, dissemination, public propagation, processing or
+ * transfer to third parties is only permitted where we previously consented thereto in writing. The provisions
+ * of paragraph 69 d, sub-paragraphs 2, 3 and paragraph 69, sub-paragraph e of the German Copyright Act shall remain unaffected.
+ *
+ * @author Shopgate GmbH <interfaces@shopgate.com>
+ * @var Shopgate_Framework_Block_Payment_MobilePayment $this
  */
-/**
- * @var $this Shopgate_Framework_Block_Payment_Shopgate
- */
+$shopgateOrder  = $this->getShopgateOrder();
 
-if ($this->getShopgateOrder()->getShopgateOrderObject()->getIsTest()):?>
-    <strong style="color: red; font-size: 1.2em;">
-        <?php echo $this->__("## This order is a TEST by Shopgate - DO NOT SHIP!") ?></strong><br />
+if ($shopgateOrder->getIsShippingBlocked()): ?>
+        <?php echo $this->printHtmlError('## Note: Shipping of this order is blocked by Shopgate!') ?>
 <?php endif; ?>
 
-<?php if ($this->hasDifferentPrices()): ?>
-    <strong style="color: red; font-size: 1.2em;">
-        <?php echo $this->__("!! The total amount in Magento differs from the total amount at Shopgate. Please check your tax settings.") ?>
-    </strong><br /><br />
+<?php if($shopgateOrder->getIsCustomerInvoiceBlocked()):?>
+    <?php echo $this->printHtmlError('## Note: For this order you must not create an invoice!')?>
 <?php endif; ?>
 
-<?php if ($this->getShopgateOrder()->getIsShippingBlocked()): ?>
-    <strong style="color: red; font-size: 1.2em;">
-        <?php echo $this->__("## Note: Shipping of this order is blocked by Shopgate!") ?></strong><br />
-<?php endif; ?>
-
-<?php if($this->getShopgateOrder()->getIsCustomerInvoiceBlocked()):?>
-    <strong style="color: red; font-size: 1.2em;"><?php echo $this->__("## Note: For this order you must not create an invoice!")?></strong><br />
-<?php endif; ?>
-
-<?php echo $this->__('Shopgate order number: %s', $this->getShopgateOrderNumber()); ?>
 <p style="margin-top: 1em;">
-    <?php echo $this->__("Payment is settled by Shopgate.") ?><br />
+    <?php echo $this->__('Payment is settled by Shopgate.') ?><br />
 </p>

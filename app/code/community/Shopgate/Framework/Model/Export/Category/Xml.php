@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Shopgate GmbH
  *
@@ -20,29 +21,15 @@
  *
  * @author Shopgate GmbH <interfaces@shopgate.com>
  */
-
-/**
- *
- * @Developer: srecknagel
- * @Date     : 21.05.14
- * @Time     : 14:46
- * @Email    : mail@recknagel.io
- *
- */
-
-/**
- * @package     Xml.php
- * @author      Stephan Recknagel <mail@recknagel.io>
- */
 class Shopgate_Framework_Model_Export_Category_Xml extends Shopgate_Framework_Model_Export_Category
 {
-    /**
-     * @var null
-     */
+    /** @var  Mage_Catalog_Model_Category */
+    protected $item;
+    /** @var int | null */
     protected $_maxPosition = null;
 
     /**
-     * @param $position
+     * @param int $position
      *
      * @return $this
      */
@@ -53,7 +40,7 @@ class Shopgate_Framework_Model_Export_Category_Xml extends Shopgate_Framework_Mo
     }
 
     /**
-     * @return null
+     * @return null | int
      */
     public function getMaximumPosition()
     {
@@ -61,7 +48,7 @@ class Shopgate_Framework_Model_Export_Category_Xml extends Shopgate_Framework_Mo
     }
 
     /**
-     * generate data dom object
+     * Generate data dom object
      *
      * @return $this
      */
@@ -75,7 +62,7 @@ class Shopgate_Framework_Model_Export_Category_Xml extends Shopgate_Framework_Mo
     }
 
     /**
-     * set category id
+     * Set category id
      */
     public function setUid()
     {
@@ -83,15 +70,15 @@ class Shopgate_Framework_Model_Export_Category_Xml extends Shopgate_Framework_Mo
     }
 
     /**
-     * set category sort order
+     * Set category sort order
      */
     public function setSortOrder()
     {
-        parent::setSortOrder($this->getMaximumPosition() - $this->item->getPosition());
+        parent::setSortOrder($this->getMaximumPosition() - $this->item->getData('position'));
     }
 
     /**
-     * set category name
+     * Set category name
      */
     public function setName()
     {
@@ -99,7 +86,7 @@ class Shopgate_Framework_Model_Export_Category_Xml extends Shopgate_Framework_Mo
     }
 
     /**
-     * set parent category id
+     * Set parent category id
      */
     public function setParentUid()
     {
@@ -107,7 +94,7 @@ class Shopgate_Framework_Model_Export_Category_Xml extends Shopgate_Framework_Mo
     }
 
     /**
-     * category link in shop
+     * Category link in shop
      */
     public function setDeeplink()
     {
@@ -115,35 +102,37 @@ class Shopgate_Framework_Model_Export_Category_Xml extends Shopgate_Framework_Mo
     }
 
     /**
-     * check if category is anchor
+     * Check if category is anchor
      */
     public function setIsAnchor()
     {
-        parent::setIsAnchor($this->item->getIsAnchor());
+        parent::setIsAnchor($this->item->getData('is_anchor'));
     }
 
     /**
-     * set category image
+     * Set category image
      */
     public function setImage()
     {
-        $imageItem = new Shopgate_Model_Media_Image();
+        if ($this->item->getImageUrl()) {
+            $imageItem = new Shopgate_Model_Media_Image();
 
-        $imageItem->setUid(1);
-        $imageItem->setSortOrder(1);
-        $imageItem->setUrl($this->getImageUrl($this->item));
-        $imageItem->setTitle($this->item->getName());
+            $imageItem->setUid(1);
+            $imageItem->setSortOrder(1);
+            $imageItem->setUrl($this->getImageUrl($this->item));
+            $imageItem->setTitle($this->item->getName());
 
-        parent::setImage($imageItem);
+            parent::setImage($imageItem);
+        }
     }
 
     /**
-     * set active state
+     * Set active state
      */
     public function setIsActive()
     {
         $catIds      = Mage::getStoreConfig(
-                           Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_EXPORT_HIDDEN_CATEGORIES
+            Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_EXPORT_HIDDEN_CATEGORIES
         );
         $catIdsArray = array();
 
@@ -154,20 +143,22 @@ class Shopgate_Framework_Model_Export_Category_Xml extends Shopgate_Framework_Mo
             }
         }
 
-        $isActive = $this->item->getIsActive();
+        $isActive = $this->item->getData('is_active');
         if (in_array($this->item->getId(), $catIdsArray)
             || array_intersect(
-                $catIdsArray, $this->item->getParentIds()
+                $catIdsArray,
+                $this->item->getParentIds()
             )
         ) {
             $isActive = 1;
         }
-        
+
         if (Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_EXPORT_NAVIGATION_CATEGORIES_ONLY)
-            && !$this->item->getIncludeInMenu()) {
+            && !$this->item->getData('include_in_menu')
+        ) {
             $isActive = 0;
         }
-        
+
         parent::setIsActive($isActive);
     }
 }

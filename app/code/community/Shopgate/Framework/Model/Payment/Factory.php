@@ -30,6 +30,9 @@
  */
 class Shopgate_Framework_Model_Payment_Factory extends Shopgate_Framework_Model_Payment_Abstract
 {
+    /**
+     * @var null | false | Shopgate_Framework_Model_Payment_Interface
+     */
     protected $_payment_class = null;
 
     /**
@@ -40,6 +43,7 @@ class Shopgate_Framework_Model_Payment_Factory extends Shopgate_Framework_Model_
         if (!$this->_payment_class) {
             $this->_payment_class = $this->calculatePaymentClass();
         }
+
         return $this->_payment_class;
     }
 
@@ -70,9 +74,22 @@ class Shopgate_Framework_Model_Payment_Factory extends Shopgate_Framework_Model_
     }
 
     /**
+     * Runs initial setup functions
+     */
+    public function setUp()
+    {
+        if ($this->validatePaymentClass()) {
+            $this->getPaymentClass()->setUp();
+        }
+
+        parent::setUp();
+    }
+
+    /**
      * Create order router
      *
      * @param Mage_Sales_Model_Quote $quote
+     *
      * @return Mage_Sales_Model_Order
      */
     public function createNewOrder($quote)
@@ -80,6 +97,7 @@ class Shopgate_Framework_Model_Payment_Factory extends Shopgate_Framework_Model_
         if ($this->validatePaymentClass()) {
             return $this->getPaymentClass()->createNewOrder($quote);
         }
+
         return parent::createNewOrder($quote);
     }
 
@@ -87,6 +105,7 @@ class Shopgate_Framework_Model_Payment_Factory extends Shopgate_Framework_Model_
      * Manipulate order router
      *
      * @param Mage_Sales_Model_Order $magentoOrder
+     *
      * @return Mage_Sales_Model_Order
      */
     public function manipulateOrderWithPaymentData($magentoOrder)
@@ -106,7 +125,8 @@ class Shopgate_Framework_Model_Payment_Factory extends Shopgate_Framework_Model_
      * Router for quoute preparation
      *
      * @param Mage_Sales_Model_Quote $quote
-     * @param                        $info
+     * @param array                  $info
+     *
      * @return Mage_Sales_Model_Quote
      */
     public function prepareQuote($quote, $info)
@@ -114,6 +134,7 @@ class Shopgate_Framework_Model_Payment_Factory extends Shopgate_Framework_Model_
         if ($this->validatePaymentClass()) {
             return $this->getPaymentClass()->prepareQuote($quote, $info);
         }
+
         return parent::prepareQuote($quote, $info);
     }
 
@@ -121,6 +142,7 @@ class Shopgate_Framework_Model_Payment_Factory extends Shopgate_Framework_Model_
      * Router for order status setting
      *
      * @param Mage_Sales_Model_Order $magentoOrder
+     *
      * @return mixed
      */
     public function setOrderStatus($magentoOrder)
@@ -128,19 +150,21 @@ class Shopgate_Framework_Model_Payment_Factory extends Shopgate_Framework_Model_
         if ($this->validatePaymentClass()) {
             return $this->getPaymentClass()->setOrderStatus($magentoOrder);
         }
+
         return parent::setOrderStatus($magentoOrder);
     }
 
     /**
      * Router for grabbing the correct payment model
-     * 
-     * @return bool|mixed
+     *
+     * @return bool | mixed
      */
     public function getPaymentModel()
     {
         if ($this->validatePaymentClass()) {
             return $this->getPaymentClass()->getPaymentModel();
         }
+
         return parent::getPaymentModel();
     }
 
@@ -159,6 +183,7 @@ class Shopgate_Framework_Model_Payment_Factory extends Shopgate_Framework_Model_
                 return true;
             }
         }
+
         return false;
     }
 
@@ -172,8 +197,10 @@ class Shopgate_Framework_Model_Payment_Factory extends Shopgate_Framework_Model_
     {
         if ($this->getPaymentMethod()) {
             $parts = explode('_', $this->getPaymentMethod());
+
             return count($parts) === 1;
         }
+
         return false;
     }
 
@@ -187,8 +214,10 @@ class Shopgate_Framework_Model_Payment_Factory extends Shopgate_Framework_Model_
     {
         if ($this->getPaymentMethod()) {
             $parts = explode('_', $this->getPaymentMethod());
+
             return count($parts) > 1;
         }
+
         return false;
     }
 }

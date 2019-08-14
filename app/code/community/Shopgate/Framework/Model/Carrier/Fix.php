@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Shopgate GmbH
  *
@@ -43,44 +44,37 @@ class Shopgate_Framework_Model_Carrier_Fix
 
     /**
      * @param Mage_Shipping_Model_Rate_Request $request
-     * @return bool|Mage_Shipping_Model_Rate_Result|null
+     * @return bool | Mage_Shipping_Model_Rate_Result | null
      */
     public function collectRates(Mage_Shipping_Model_Rate_Request $request)
     {
-        $result = Mage::getModel('shipping/rate_result');
-        $amount = array(
-            'shipping' => 0,
-            'payment'  => 0
-        );
-
         /* @var $sgOrder ShopgateOrder */
         $sgOrder = Mage::getSingleton('core/session')->getData('shopgate_order');
         if (!$sgOrder) {
             return false;
         }
 
-        $shippingInfo = $sgOrder->getShippingInfos();
-        $carrierTitle = Mage::getStoreConfig('shopgate/orders/shipping_title');
-        $methodTitle  = $shippingInfo->getName();
-        $displayName  = $shippingInfo->getDisplayName();
+        $shippingInfo   = $sgOrder->getShippingInfos();
+        $carrierTitle   = Mage::getStoreConfig('shopgate/orders/shipping_title');
+        $methodTitle    = $shippingInfo->getName();
+        $displayName    = $shippingInfo->getDisplayName();
         if (!empty($displayName)) {
-            $splittedTitle = explode('-', $displayName);
-            if ($splittedTitle && is_array($splittedTitle) && count($splittedTitle) >= 2) {
-                $carrierTitle = $splittedTitle[0];
+            $splitTitle = explode('-', $displayName);
+            if ($splitTitle && is_array($splitTitle) && count($splitTitle) >= 2) {
+                $carrierTitle = $splitTitle[0];
                 $carrierTitle = trim($carrierTitle);
-                $methodTitle  = $splittedTitle[1];
+                $methodTitle  = $splitTitle[1];
                 $methodTitle  = trim($methodTitle);
             }
         }
 
         $method = Mage::getModel('shipping/rate_result_method');
-        $method->setCarrier($this->_code);
-        $method->setCarrierTitle($carrierTitle);
-        $method->setMethod($this->_method);
-        $method->setMethodTitle($methodTitle);
+        $method->setData('carrier', $this->_code);
+        $method->setData('carrier_title', $carrierTitle);
+        $method->setData('method', $this->_method);
+        $method->setData('method_title', $methodTitle);
 
-        $scopeId = Mage::helper('shopgate/config')->getConfig()->getStoreViewId();
-
+        $scopeId             = Mage::helper('shopgate/config')->getConfig()->getStoreViewId();
         $shippingIncludesTax = Mage::helper('tax')->shippingPriceIncludesTax($scopeId);
         $shippingTaxClass    = Mage::helper('tax')->getShippingTaxClass($scopeId);
 
@@ -94,61 +88,22 @@ class Shopgate_Framework_Model_Carrier_Fix
                 $calc        = Mage::getSingleton('tax/calculation');
                 $store       = Mage::app()->getStore($scopeId);
                 $taxRequest  = $calc->getRateOriginRequest($store)
-                                    ->setProductClassId($shippingTaxClass);
+                                    ->setData('product_class_id', $shippingTaxClass);
                 $rate        = $calc->getRate($taxRequest) / 100;
                 $amountGross = $amountNet * (1 + $rate);
             }
-            $amount['shipping'] = $amountGross;
+            $shippingAmount = $amountGross;
         } else {
-            $amount['shipping'] = $amountNet;
-        }
-
-        $amountShopPayment = $sgOrder->getAmountShopPayment();
-        if ($amountShopPayment >= 0) {
-            // set payment fee only if payment fee is positive or 0
-            // and its not cod with phoenix_cod active
-            if ($sgOrder->getPaymentMethod() != ShopgateOrder::COD
-                || (!Mage::getConfig()->getModuleConfig('Phoenix_CashOnDelivery')->is('active', 'true')
-                    && !Mage::getConfig()->getModuleConfig('MSP_CashOnDelivery')->is('active', 'true'))
-            ) {
-                $amount['payment'] = $this->_getNetForGrossShipping($amountShopPayment);
-            }
+            $shippingAmount = $amountNet;
         }
 
         $exchangeRate = Mage::app()->getStore()->getCurrentCurrencyRate();
-        $method->setPrice(array_sum($amount) / $exchangeRate);
+        $method->setPrice($shippingAmount / $exchangeRate);
+
+        $result = Mage::getModel('shipping/rate_result');
         $result->append($method);
 
         return $result;
-    }
-
-    /**
-     * @param  float $amount
-     * @param  bool  $amountContainsTax
-     * @return float
-     */
-    protected function _getNetForGrossShipping($amount, $amountContainsTax = true)
-    {
-        $storeViewId = Mage::helper('shopgate/config')->getConfig()->getStoreViewId();
-        $taxClassId  = Mage::helper('tax')->getShippingTaxClass($storeViewId);
-
-        $pseudoProduct = new Varien_Object();
-        $pseudoProduct->setTaxClassId($taxClassId);
-
-        $returnIncludesTax = Mage::helper('tax')->shippingPriceIncludesTax($storeViewId);
-        $customerTaxClass  = null;
-
-        $amount = Mage::helper('tax')->getPrice(
-            $pseudoProduct,
-            $amount,
-            $returnIncludesTax,
-            null,
-            null,
-            null,
-            $storeViewId,
-            $amountContainsTax
-        );
-        return $amount;
     }
 
     /**

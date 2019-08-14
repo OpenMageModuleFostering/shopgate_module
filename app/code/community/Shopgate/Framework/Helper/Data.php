@@ -499,16 +499,16 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
         $totalShopgate = $order->getAmountComplete();
         $totalMagento  = $oMageOrder->getTotalDue() + $oMageOrder->getTotalPaid();
 
-        ShopgateLogger::getInstance()->log(
-            "Total Shopgate: {$totalShopgate} {$order->getCurrency()} 
-            Total Magento: {$totalMagento} {$order->getCurrency()}",
-            ShopgateLogger::LOGTYPE_DEBUG
-        );
+        $msg = "\tShopgate:\t{$totalShopgate} {$order->getCurrency()} \n";
+        $msg .= "\tMagento:\t{$totalMagento} {$oMageOrder->getOrderCurrencyCode()}\n";
+        
+        ShopgateLogger::getInstance()->log($msg, ShopgateLogger::LOGTYPE_DEBUG);
 
         if (abs($totalShopgate - $totalMagento) > 0.02) {
-            $msg = "differing total order amounts:\n";
-            $msg .= "\tShopgate:\t{$totalShopgate} {$order->getCurrency()} \n";
-            $msg .= "\tMagento:\t{$totalMagento} {$oMageOrder->getOrderCurrencyCode()}\n";
+            $msg = "differing total order amounts:\n" . $msg;
+            $msg .= "\tMagento Order #\t{$oMageOrder->getIncrementId()} \n";
+            $msg .= "\tShopgate Order #\t{$order->getOrderNumber()} \n";
+            
             $message = $msg;
             return false;
         }

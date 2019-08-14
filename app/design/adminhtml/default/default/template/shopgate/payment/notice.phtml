@@ -1,0 +1,57 @@
+<?php
+/**
+ * Shopgate GmbH
+ *
+ * URHEBERRECHTSHINWEIS
+ *
+ * Dieses Plugin ist urheberrechtlich geschützt. Es darf ausschließlich von Kunden der Shopgate GmbH
+ * zum Zwecke der eigenen Kommunikation zwischen dem IT-System des Kunden mit dem IT-System der
+ * Shopgate GmbH über www.shopgate.com verwendet werden. Eine darüber hinausgehende Vervielfältigung, Verbreitung,
+ * öffentliche Zugänglichmachung, Bearbeitung oder Weitergabe an Dritte ist nur mit unserer vorherigen
+ * schriftlichen Zustimmung zulässig. Die Regelungen der §§ 69 d Abs. 2, 3 und 69 e UrhG bleiben hiervon unberührt.
+ *
+ * COPYRIGHT NOTICE
+ *
+ * This plugin is the subject of copyright protection. It is only for the use of Shopgate GmbH customers,
+ * for the purpose of facilitating communication between the IT system of the customer and the IT system
+ * of Shopgate GmbH via www.shopgate.com. Any reproduction, dissemination, public propagation, processing or
+ * transfer to third parties is only permitted where we previously consented thereto in writing. The provisions
+ * of paragraph 69 d, sub-paragraphs 2, 3 and paragraph 69, sub-paragraph e of the German Copyright Act shall remain unaffected.
+ *
+ * @author Shopgate GmbH <interfaces@shopgate.com>
+ *
+ * @var Shopgate_Framework_Block_Payment_Notice $this
+ */
+$shopgateOrder  = $this->getShopgateOrder();
+
+if ($shopgateOrder->getId()): ?>
+    <?php $shopgateObject = $shopgateOrder->getShopgateOrderObject(); ?>
+    <div class="entry-edit box-left">
+        <div class="entry-edit-head">
+            <h4 class="icon-head"><?php echo $this->__('Shopgate Info') ?></h4>
+        </div>
+        <fieldset>
+            <div id="shopgate_payment_notice">
+                <?php
+                if (!$shopgateOrder->getId() || empty($shopgateObject)):
+                    echo $this->printHtmlError($this->__('Error importing order information: please contact Shopgate'));
+                endif;
+
+                if ($shopgateObject && $shopgateObject->getIsTest()):
+                    echo $this->printHtmlError("## This order is a TEST by Shopgate - DO NOT SHIP!");
+                endif;
+
+                if ($this->hasDifferentPrices()):
+                    echo $this->printHtmlError(
+                        "!! The total amount in Magento differs from the total amount at Shopgate. Please check your tax settings."
+                    );
+                endif;
+
+                echo $this->__('Shopgate order number: %s', $shopgateOrder->getShopgateOrderNumber());
+                ?>
+            </div>
+        </fieldset>
+    </div>
+    <div class="clear"></div>
+
+<?php endif; ?>

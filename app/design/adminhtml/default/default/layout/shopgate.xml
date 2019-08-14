@@ -65,6 +65,10 @@
     </adminhtml_shopgate_disconnect>
 
     <adminhtml_sales_order_view>
+        <reference name="order_info">
+            <block name="shopgate_payment_notice" type="shopgate/payment_notice" before="order_history"
+                   template="shopgate/payment/notice.phtml"/>
+        </reference>
         <reference name="order_totals">
             <block name="shopgate_payment_fee" type="shopgate/totals_orderPaymentFee" before="tax"/>
         </reference>

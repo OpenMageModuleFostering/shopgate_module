@@ -63,17 +63,20 @@ class Shopgate_Framework_Model_Shopgate_Order extends Mage_Core_Model_Abstract
     }
 
     /**
-     * @return ShopgateOrder
+     * Retrieves the Shopgate order object from
+     * the database column
+     *
+     * @return string | ShopgateOrder
      */
     public function getShopgateOrderObject()
     {
         $data = $this->getReceivedData();
-        
+
         if ($data) {
             $data = unserialize($data);
         }
 
-        if (!$data instanceof ShopgateOrder) {
+        if ($this->getId() && !$data instanceof ShopgateOrder) {
             $orderNumber = $this->getShopgateOrderNumber();
             ShopgateLogger::getInstance()->log("Could not unserialize order $orderNumber. Requesting Merchant API.");
             $config      = Mage::helper('shopgate/config')->getConfig($this->getStoreId());

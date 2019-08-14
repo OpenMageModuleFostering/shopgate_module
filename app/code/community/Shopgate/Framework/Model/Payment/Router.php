@@ -41,22 +41,13 @@ class Shopgate_Framework_Model_Payment_Router extends Shopgate_Framework_Model_P
      * based on method identifier. This is recursive (sorta)!
      *
      * @return false|Shopgate_Framework_Model_Payment_Abstract
-     * @throws Exception
      */
     public function getModelByPaymentMethod()
     {
         $class = $this->getClassFromMethod();
-        $model = Mage::getModel($class, array($this->getShopgateOrder()));
+        $model = $this->loadClass($class);
 
-        if ($model) {
-            if ($model instanceof Shopgate_Framework_Model_Payment_Interface) {
-                return $model;
-            } elseif ($model instanceof Shopgate_Framework_Model_Payment_Router) {
-                return $model->getModelByPaymentMethod();
-            }
-        }
-
-        return false;
+        return $model ? $model : false;
     }
 
     /**
@@ -88,7 +79,7 @@ class Shopgate_Framework_Model_Payment_Router extends Shopgate_Framework_Model_P
     {
         $endPart = strtolower($this->_getMethodPart());
         $current = $this->getCurrentClassShortName();
-        
+
         return $current . '_' . $endPart;
     }
 
@@ -122,14 +113,10 @@ class Shopgate_Framework_Model_Payment_Router extends Shopgate_Framework_Model_P
         $class        = $this->getCurrentClassShortName();
         foreach ($combinations as $combination) {
             $className = $class . $combination;
-            $model     = Mage::getModel($className, array($this->getShopgateOrder()));
-            if ($model instanceof Shopgate_Framework_Model_Payment_Interface) {
+            $model     = $this->loadClass($className);
+
+            if ($model) {
                 return $model;
-            } elseif ($model instanceof Shopgate_Framework_Model_Payment_Router) {
-                $model = $model->getModelByPaymentMethod();
-                if ($model) {
-                    return $model;
-                }
             }
         }
         return false;
@@ -178,7 +165,7 @@ class Shopgate_Framework_Model_Payment_Router extends Shopgate_Framework_Model_P
     /**
      * Resolves current class name to magento's
      * short class. Truncates Router as well.
-     * 
+     *
      * @return string
      */
     private function getCurrentClassShortName()
@@ -186,5 +173,35 @@ class Shopgate_Framework_Model_Payment_Router extends Shopgate_Framework_Model_P
         $class = str_replace('Shopgate_Framework_Model_', 'shopgate/', get_class($this));
         $class = preg_replace('/_Router$/', '', $class);
         return strtolower($class);
+    }
+
+    /**
+     * Takes short class name and attempts to load it
+     *
+     * @param string $class - short class name
+     * @return bool|Shopgate_Framework_Model_Payment_Abstract
+     */
+    private function loadClass($class)
+    {
+        $model = false;
+
+        try {
+            $model = Mage::getModel($class, array($this->getShopgateOrder()));
+        } catch (Exception $e) {
+            ShopgateLogger::getInstance()->log(
+                'No payment mapping file exists. ' . $e->getMessage(),
+                ShopgateLogger::LOGTYPE_DEBUG
+            );
+        }
+
+        if ($model) {
+            if ($model instanceof Shopgate_Framework_Model_Payment_Interface) {
+                return $model;
+            } elseif ($model instanceof Shopgate_Framework_Model_Payment_Router) {
+                return $model->getModelByPaymentMethod();
+            }
+        }
+        
+        return false;
     }
 }

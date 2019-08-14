@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Shopgate GmbH
  *
@@ -18,9 +19,8 @@
  * transfer to third parties is only permitted where we previously consented thereto in writing. The provisions
  * of paragraph 69 d, sub-paragraphs 2, 3 and paragraph 69, sub-paragraph e of the German Copyright Act shall remain unaffected.
  *
- *  @author Shopgate GmbH <interfaces@shopgate.com>
+ * @author Shopgate GmbH <interfaces@shopgate.com>
  */
-
 class Shopgate_Framework_Model_Sales_Quote_Address_Total_ShopgatePaymentFee extends Mage_Sales_Model_Quote_Address_Total_Abstract
 {
 
@@ -36,7 +36,6 @@ class Shopgate_Framework_Model_Sales_Quote_Address_Total_ShopgatePaymentFee exte
         return Mage::helper('shopgate')->__('Payment Fee');
     }
 
-
     /**
      * @param Mage_Sales_Model_Quote_Address $address
      *
@@ -45,34 +44,25 @@ class Shopgate_Framework_Model_Sales_Quote_Address_Total_ShopgatePaymentFee exte
     public function collect(Mage_Sales_Model_Quote_Address $address)
     {
         parent::collect($address);
+        $shopgateOrder = Mage::getSingleton('core/session')->getData('shopgate_order');
+        $quote         = $address->getQuote();
+        $paymentFee    = $shopgateOrder->getAmountShopPayment();
 
-        if (Mage::helper("shopgate/config")->getIsMagentoVersionLower1410()) {
-            $items         = $address->getAllItems();
-        } else {
-            $items         = $this->_getAddressItems($address);
-        }
-        $shopgateOrder = Mage::getSingleton("core/session")->getData("shopgate_order");
-        if (!count($items)
+        if ($address->getAddressType() === Mage_Sales_Model_Quote_Address::TYPE_BILLING
             || is_null($shopgateOrder)
+            || $paymentFee == 0
         ) {
-            return $this; //this makes only address type shipping to come through
-        }
-
-        $quote             = $address->getQuote();
-        $amountShopPayment = $shopgateOrder->getAmountShopPayment();
-
-        if ($amountShopPayment >= 0) {
             return $this;
         }
 
-        $address->setShopgatePaymentFee($amountShopPayment);
-        $address->setBaseShopgatePaymentFee($amountShopPayment);
+        $address->setData('shopgate_payment_fee', $paymentFee);
+        $address->setData('base_shopgate_payment_fee', $paymentFee);
 
-        $quote->setShopgatePaymentFee($amountShopPayment);
-        $quote->setBaseShopgatePaymentFee($amountShopPayment);
+        $quote->setData('shopgate_payment_fee', $paymentFee);
+        $quote->setData('base_shopgate_payment_fee', $paymentFee);
 
-        $address->setGrandTotal($address->getGrandTotal() + $address->getShopgatePaymentFee());
-        $address->setBaseGrandTotal($address->getBaseGrandTotal() + $address->getBaseShopgatePaymentFee());
+        $address->setGrandTotal($address->getGrandTotal() + $address->getData('shopgate_payment_fee'));
+        $address->setBaseGrandTotal($address->getBaseGrandTotal() + $address->getData('base_shopgate_payment_fee'));
 
         return $this;
     }
@@ -84,7 +74,7 @@ class Shopgate_Framework_Model_Sales_Quote_Address_Total_ShopgatePaymentFee exte
      */
     public function fetch(Mage_Sales_Model_Quote_Address $address)
     {
-        $amt = $address->getShopgatePaymentFee();
+        $amt = $address->getData('shopgate_payment_fee');
         if ($amt != 0) {
             $address->addTotal(
                 array('code' => $this->getCode(), 'title' => $this->getLabel(), 'value' => $amt)
