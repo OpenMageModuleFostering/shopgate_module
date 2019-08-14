@@ -533,9 +533,9 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                 continue;
             }
 
-            $orderInfo     = $item->getInternalOrderInfo();
-            $orderInfo     = $this->jsonDecode($orderInfo, true);
-            $amountWithTax = $item->getUnitAmountWithTax();
+            $orderInfo      = $item->getInternalOrderInfo();
+            $orderInfo      = $this->jsonDecode($orderInfo, true);
+            $amountWithTax  = $item->getUnitAmountWithTax();
 
             $stackQuantity = 1;
             if (!empty($orderInfo['stack_quantity']) && $orderInfo['stack_quantity'] > 1) {
@@ -548,8 +548,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
 
             $pId = $orderInfo["product_id"];
             /** @var Mage_Catalog_Model_Product $product */
-            $product = Mage::getModel('catalog/product')
-                           ->setStoreId($this->_getConfig()->getStoreViewId())
+            $product = Mage::getModel('catalog/product')->setStoreId($this->_getConfig()->getStoreViewId())
                            ->load($pId);
 
             if (!$product->getId()) {
@@ -564,27 +563,30 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             if (strpos($itemNumber, '-') !== false) {
                 $productWeight = $product->getTypeInstance()->getWeight();
                 $productIds    = explode('-', $itemNumber);
-
-                /** @var Mage_Catalog_Model_Product $child */
-                $child = Mage::getModel('catalog/product')
-                             ->setStoreId($this->_getConfig()->getStoreViewId())
-                             ->load($productIds[1]);
-
-                if ($product->isConfigurable() && !$this->_getConfig()->addOnlySimplesToCart()) {
-                    $productWeight   = $child->getTypeInstance()->getWeight();
-                    $buyObject       = $this->_createQuoteItemBuyInfo($item, $product, $stackQuantity);
-                    $superAttributes = $product->getTypeInstance(true)->getConfigurableAttributesAsArray($product);
+                $parentId      = $productIds[0];
+                $childId       = $productIds[1];
+                /** @var Mage_Catalog_Model_Product $parent */
+                $parent = Mage::getModel('catalog/product')->setStoreId($this->_getConfig()->getStoreViewId())
+                              ->load($parentId);
+                if ($parent->isConfigurable()
+                    && !$this->_getConfig()->addOnlySimplesToCart()
+                ) {
+                    $buyObject       = $this->_createQuoteItemBuyInfo($item, $parent, $stackQuantity);
+                    $superAttributes = $parent->getTypeInstance(true)->getConfigurableAttributesAsArray($parent);
                     $superAttConfig  = array();
 
                     foreach ($superAttributes as $productAttribute) {
-                        $superAttConfig[$productAttribute['attribute_id']] = $child->getData(
+                        $superAttConfig[$productAttribute['attribute_id']] = $product->getData(
                             $productAttribute['attribute_code']
                         );
                     }
                     $buyObject->setSuperAttribute($superAttConfig);
-                } elseif ($product->isGrouped()) {
-                    $buyObject          = $this->_createQuoteItemBuyInfo($item, $child, $stackQuantity);
-                    $associatedProducts = $product->getTypeInstance(true)->getAssociatedProducts($product);
+                    $product = $parent;
+                } elseif ($parent->isGrouped()) {
+                    /** @var Mage_Catalog_Model_Product_Type_Grouped  $product */
+                    $product            = Mage::getModel('catalog/product')->setStoreId($this->_getConfig()->getStoreViewId())->load($childId);
+                    $buyObject          = $this->_createQuoteItemBuyInfo($item, $product, $stackQuantity);
+                    $associatedProducts = $parent->getTypeInstance(true)->getAssociatedProducts($parent);
                     $superGroup         = array();
                     foreach ($associatedProducts as $associatedProduct) {
                         /** @var Mage_Catalog_Model_Product $associatedProduct */
@@ -592,10 +594,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                     }
                     $buyObject->setSuperGroup($superGroup);
                     $buyObject->setSuperProductConfig(
-                        array(
-                            'product_type' => Mage_Catalog_Model_Product_Type_Grouped::TYPE_CODE,
-                            'product_id'   => $product->getId()
-                        )
+                        array('product_type' => Mage_Catalog_Model_Product_Type_Grouped::TYPE_CODE, 'product_id' => $parent->getId())
                     );
                 } else {
                     $buyObject = $this->_createQuoteItemBuyInfo($item, $product, $stackQuantity);
@@ -620,6 +619,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                 if (!($quoteItem instanceof Varien_Object)) {
                     switch ($quoteItem) {
                         case Mage::helper('catalog')->__('Please specify the product required option(s).'):
+                        case Mage::helper('catalog')->__('Please specify the product\'s option(s).'):
                         case Mage::helper('catalog')->__('The text is too long'):
                             Mage::throwException(Mage::helper('catalog')->__($quoteItem));
                         default:
@@ -639,7 +639,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                 $quoteItem->setTaxPercent($item->getTaxPercent());
 
                 if (!is_null($productWeight)) {
-                    $quoteItem->setWeight((float)$productWeight);
+                    $quoteItem->setWeight($productWeight);
                 }
                 $quoteItem->setRowWeight($quoteItem->getWeight() * $quoteItem->getQty());
                 $quoteItem->setWeeeTaxApplied(serialize(array()));

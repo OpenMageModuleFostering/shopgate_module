@@ -1,3 +1,7 @@
+'''Version 2.9.38'''
+* Fixed placing of configurable products in order import
+* Prevent unnecessary error logging in stock validation
+
 '''Version 2.9.37'''
 * Magestore Affiliate Pro discount parameter support added
 * Fixed get_categories by UID retriever
