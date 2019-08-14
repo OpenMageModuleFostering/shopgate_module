@@ -1,3 +1,7 @@
+'''Version 2.9.28'''
+* Fixed error in get_settings, when setting values from the shopgate plugin config
+* Fixed value in default payment configuration
+
 '''Version 2.9.27'''
 * Cleaned up tax export/coupon logic
 * Fixed a bug with custom option percent type calculations

@@ -173,6 +173,8 @@ class Shopgate_Framework_Model_Config extends ShopgateConfig
                         new Exception('The evaluated setter method "' . $setter . '" is not available in class ' . __CLASS__)
                     );
                 }
+            } else if (array_key_exists($name, $this->additionalSettings)) {
+                $this->additionalSettings[$name] = $value;
             } else {
                 Mage::logException(
                     new Exception('The given setting property "' . $name . '" is not available in class ' . __CLASS__)
@@ -714,12 +716,24 @@ class Shopgate_Framework_Model_Config extends ShopgateConfig
             Mage::getConfig()->saveConfig($path, $value, $scope, $scopeId);
         } else {
             if (in_array($property, $possibleProperties)) {
-                ShopgateLogger::getInstance()->log(
-                              '    Saving config field \'' . $property . '\' with value \'' . $this->{$getter}() . '\' to scope {\'' . $scope . '\':\'' . $scopeId . '\'}',
-                              ShopgateLogger::LOGTYPE_DEBUG
-                );
-                $value = $this->_prepareForDatabase($property, $this->{$getter}());
-                Mage::getConfig()->saveConfig($path, $value, $scope, $scopeId);
+                if (!method_exists($this, $getter)
+                    && isset($this->additionalSettings[$property])
+                ) {
+                    $value = $this->additionalSettings[$property];
+                } else if (method_exists($this, $getter)) {
+                    $value = $this->{$getter}();
+                } else {
+                    $value = '';
+                }
+
+                if (!empty($value)) {
+                    ShopgateLogger::getInstance()->log(
+                                  '    Saving config field \'' . $property . '\' with value \'' . $value . '\' to scope {\'' . $scope . '\':\'' . $scopeId . '\'}',
+                                      ShopgateLogger::LOGTYPE_DEBUG
+                    );
+                    $value = $this->_prepareForDatabase($property, $value);
+                    Mage::getConfig()->saveConfig($path, $value, $scope, $scopeId);
+                }
             } else {
                 Mage::logException(
                     new Exception('The evaluated getter method "' . $getter . '" is not available in class ' . __CLASS__)

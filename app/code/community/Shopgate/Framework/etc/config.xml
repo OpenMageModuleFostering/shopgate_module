@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Shopgate_Framework>
-            <version>2.9.27</version>
+            <version>2.9.28</version>
         </Shopgate_Framework>
     </modules>
     <phpunit>
@@ -399,7 +399,7 @@
                 <title>Shopgate</title>
                 <active>1</active>
                 <model>shopgate/payment_shopgate</model>
-                <order_status>processing</order_status>
+                <order_status>pending</order_status>
 
                 <payment_action>authorize</payment_action>
                 <allowspecific>0</allowspecific>
@@ -440,11 +440,6 @@
                 <handling_type>F</handling_type>
             </shopgate>
         </carriers>
-        <payment>
-            <shopgate_payment>
-                <order_status>pending</order_status>
-            </shopgate_payment>
-        </payment>
     </default>
     <crontab>
         <jobs>
