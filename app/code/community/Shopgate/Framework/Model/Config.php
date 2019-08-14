@@ -723,10 +723,10 @@ class Shopgate_Framework_Model_Config extends ShopgateConfig
                 } else if (method_exists($this, $getter)) {
                     $value = $this->{$getter}();
                 } else {
-                    $value = '';
+                    $value = null;
                 }
 
-                if (!empty($value)) {
+                if ($value !== null) {
                     ShopgateLogger::getInstance()->log(
                                   '    Saving config field \'' . $property . '\' with value \'' . $value . '\' to scope {\'' . $scope . '\':\'' . $scopeId . '\'}',
                                       ShopgateLogger::LOGTYPE_DEBUG

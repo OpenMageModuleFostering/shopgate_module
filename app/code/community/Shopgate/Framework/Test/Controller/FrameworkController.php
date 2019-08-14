@@ -39,6 +39,10 @@ class Shopgate_Framework_Test_Controller_FrameworkController
      */
     public function testPluginNotActive()
     {
+        $this->markTestSkipped(
+             'Controller Test not yet available.'
+        );
+
         $this->setCurrentStore('default');
         $this->dispatch('shopgate/framework/index');
         $this->assertResponseHttpCode('200');

@@ -1,3 +1,11 @@
+'''Version 2.9.31'''
+* improve discount detection
+* update to library version 2.9.41
+* set amount for external coupons depending on net countries
+* fixed check_stock for products with custom options
+* allow set_settings with value 0, false and empty string
+* attributes with 0 string and integers allowed into export
+
 '''Version 2.9.30'''
 * Added PHP 7 support
 * Update to Shopgate library version 2.9.40

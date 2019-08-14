@@ -834,6 +834,10 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
     public function checkQtyIncrements($stockItem, $qty)
     {
         $result = new Varien_Object();
+        
+        if ($this->getSuppressCheckQtyIncrements()) {
+            return $result;
+        }
 
         $qtyIncrements = $stockItem->getQtyIncrements();
         if ($qtyIncrements && (Mage::helper('core')->getExactDivision($qty, $qtyIncrements) != 0)) {

@@ -943,7 +943,7 @@ class Shopgate_Framework_Model_Export_Product_Xml
 
         foreach ($attributes as $code => $data) {
             $value = $this->item->getResource()->getAttribute($code)->getFrontend()->getValue($this->item);
-            if (!empty($value) && !is_array($value)) {
+            if ($this->nonEmpty($value) && !is_array($value)) {
                 $propertyItemObject = new Shopgate_Model_Catalog_Property();
                 $propertyItemObject->setUid($data['id']);
                 $propertyItemObject->setLabel($data['label']);
@@ -955,6 +955,18 @@ class Shopgate_Framework_Model_Export_Product_Xml
         parent::setProperties($result);
     }
 
+    /**
+     * Empty rewrite to include 0 string & int into export
+     * 
+     * @param $var - var to check for empty
+     *             
+     * @return bool
+     */
+    private function nonEmpty($var)
+    {
+        return (isset($var) && $var == '0') || !empty($var);
+    }
+    
     /**
      * set identifiers
      */

@@ -606,18 +606,26 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             $product->setData('shopgate_options', $item->getOptions());
             $product->setData('shopgate_inputs', $item->getInputs());
             $product->setData('shopgate_attributes', $item->getAttributes());
+
+            if (Mage::app()->getRequest()->getParam('action') == 'check_stock') {
+                $product->setSkipCheckRequiredOption(true);
+                $product->getStockItem()->setSuppressCheckQtyIncrements(true);
+            }
+
             try {
                 /** @var $quotItem Mage_Sales_Model_Quote_Item */
                 $quoteItem = $quote->addProduct($product, $buyObject);
                 if (!($quoteItem instanceof Varien_Object)) {
-                    if (Mage::helper('catalog')->__('The text is too long') == $quoteItem) {
-                        Mage::throwException(Mage::helper('catalog')->__('The text is too long'));
-                    } else {
-                        throw new ShopgateLibraryException(
-                            ShopgateLibraryException::UNKNOWN_ERROR_CODE,
-                            "Error on adding product to quote! Details: " . var_export($quoteItem, true),
-                            true
-                        );
+                    switch ($quoteItem) {
+                        case Mage::helper('catalog')->__('Please specify the product required option(s).'):
+                        case Mage::helper('catalog')->__('The text is too long'):
+                            Mage::throwException(Mage::helper('catalog')->__($quoteItem));
+                        default:
+                            throw new ShopgateLibraryException(
+                                ShopgateLibraryException::UNKNOWN_ERROR_CODE,
+                                "Error on adding product to quote! Details: " . var_export($quoteItem, true),
+                                true
+                            );
                     }
                 }
                 $quoteItem = $quote->getItemByProduct($product);
@@ -1636,7 +1644,11 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                 $externalCoupon->setDescription($mageRule->getDescription());
                 $externalCoupon->setIsFreeShipping((bool)$mageQuote->getShippingAddress()->getFreeShipping());
                 $externalCoupon->setInternalInfo($this->jsonEncode($couponInfo));
-                $externalCoupon->setAmountGross($amountCoupon);
+                if ($this->useTaxClasses) {
+                    $externalCoupon->setAmountGross($amountCoupon);
+                } else {
+                    $externalCoupon->setAmountNet($amountCoupon);
+                }
                 if (!$amountCoupon && !$externalCoupon->getIsFreeShipping()) {
                     $externalCoupon->setIsValid(false);
                     $externalCoupon->setNotValidMessage(
@@ -1647,7 +1659,6 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                     );
                 }
 
-                $externalCoupon->setTaxType('not_taxable');
             } else {
                 $externalCoupon->setIsValid(false);
                 $externalCoupon->setNotValidMessage(

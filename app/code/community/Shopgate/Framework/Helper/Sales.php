@@ -215,7 +215,9 @@ class Shopgate_Framework_Helper_Sales extends Mage_Core_Helper_Abstract
             if ($catchedErrors) {
                 if (array_key_exists($item->getItemNumber(), $catchedErrors)) {
                     foreach ($catchedErrors[$item->getItemNumber()] as $error) {
-                        if ($error == Mage::helper('catalog')->__('The text is too long')) {
+                        if ($error == Mage::helper('catalog')->__('The text is too long')
+                            || $error == Mage::helper('catalog')->__('Please specify the product required option(s).')
+                        ) {
                             $sgError = ShopgateLibraryException::CART_ITEM_INPUT_VALIDATION_FAILED;
                         }
                     }
