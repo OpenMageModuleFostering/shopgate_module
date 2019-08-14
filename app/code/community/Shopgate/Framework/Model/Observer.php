@@ -860,4 +860,25 @@ class Shopgate_Framework_Model_Observer
 
         return $this;
     }
+
+    /**
+     * Deletes this website's default store set
+     *
+     * @param Varien_Event_Observer $event
+     *
+     * @return $this
+     */
+    public function removeDefaultStore(Varien_Event_Observer $event)
+    {
+        $websiteId = $event->getStore()->getWebsiteId();
+        if ($websiteId) {
+            Mage::getModel('core/config')->deleteConfig(
+                Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_SHOP_DEFAULT_STORE,
+                'websites',
+                $websiteId
+            );
+        }
+
+        return $this;
+    }
 }

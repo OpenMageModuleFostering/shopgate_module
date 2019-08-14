@@ -83,6 +83,7 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
         $this->_magentoVersion1922 = ($this->getEdition() == 'Enterprise') ? '1.14.2.2' : '1.9.2.2';
         $this->_magentoVersion1701 = ($this->getEdition() == 'Enterprise') ? '1.12.0.2' : '1.7.0.1';
         $this->_magentoVersion1700 = ($this->getEdition() == 'Enterprise') ? '1.12.0.0' : '1.7.0.0';
+        $this->_magentoVersion16   = ($this->getEdition() == 'Enterprise') ? '1.11.0.0' : '1.6.0.0';
         $this->_magentoVersion15   = ($this->getEdition() == 'Enterprise') ? '1.9.1.0' : '1.5';
         $this->_magentoVersion1410 = ($this->getEdition() == 'Enterprise') ? '1.9.0.0' : '1.4.1.0';
     }
@@ -135,6 +136,16 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
         return $this->getIsMagentoVersionLower($this->_magentoVersion1701);
     }
 
+    /**
+     * Compare version if it is lower than 1.6
+     *
+     * @return mixed
+     */
+    public function getIsMagentoVersionLower16()
+    {
+        return $this->getIsMagentoVersionLower($this->_magentoVersion16);
+    }
+    
     /**
      * Compare version if it is lower than 1.5
      *
@@ -323,6 +334,8 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
     }
 
     /**
+     * Retrieves store id based on store code
+     * 
      * @param $storeCode
      * @return int
      */
@@ -340,6 +353,8 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
     }
 
     /**
+     * Retrieves the oauth token of the store
+     * 
      * @param null $storeId
      * @return mixed - oauth if it exists
      */

@@ -23,7 +23,7 @@
 
 /**
  * Handles SHOPGATE payment method orders
- * 
+ *
  * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
 class Shopgate_Framework_Model_Payment_Simple_Shopgate
@@ -34,6 +34,29 @@ class Shopgate_Framework_Model_Payment_Simple_Shopgate
     const MODULE_CONFIG          = 'Shopgate_Framework';
     const PAYMENT_MODEL          = 'shopgate/payment_shopgate';
     const XML_CONFIG_STATUS_PAID = 'payment/shopgate/order_status';
+
+    /**
+     * If shipping is blocked, use Shopgate Payment config status.
+     * If not blocked, set to Processing.
+     *
+     * @param Mage_Sales_Model_Order $magentoOrder
+     *
+     * @return Mage_Sales_Model_Order
+     */
+    public function setOrderStatus($magentoOrder)
+    {
+        if ($this->getShopgateOrder()->getIsShippingBlocked()) {
+            return parent::setOrderStatus($magentoOrder);
+        }
+
+        $message = $this->_getHelper()->__('[SHOPGATE] Using default order status');
+        $state   = Mage_Sales_Model_Order::STATE_PROCESSING;
+
+        $magentoOrder->setState($state, true, $message);
+        $magentoOrder->setShopgateStatusSet(true);
+
+        return $magentoOrder;
+    }
 
     /**
      * No need to check activation, just import!

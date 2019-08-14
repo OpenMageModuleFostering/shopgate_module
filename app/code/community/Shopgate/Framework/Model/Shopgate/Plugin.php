@@ -1380,6 +1380,8 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
     }
 
     /**
+     * Sets the state & status of Magento order
+     * 
      * @param Mage_Sales_Model_Order $magentoOrder
      * @param ShopgateOrder          $shopgateOrder
      *
@@ -1391,56 +1393,23 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
         if ($magentoOrder->getShopgateStatusSet()) {
             //do nothing, but we will need to pull this whole thing inside factory
         } elseif ($shopgateOrder->getPaymentMethod() == ShopgateOrder::PREPAY && !$shopgateOrder->getIsPaid()) {
-            $classExists = mageFindClassFile("Mage_Payment_Model_Method_Banktransfer");
-
-            if ($classExists !== false && Mage::getStoreConfigFlag("payment/banktransfer/active")) {
-                return $magentoOrder;
-            } else {
-                if ((Mage::getConfig()->getModuleConfig("Phoenix_BankPayment")->is('active', 'true')
-                     || Mage::getConfig()->getModuleConfig('Mage_BankPayment')->is('active', 'true'))
-                    && Mage::getStoreConfig('payment/bankpayment/order_status')
-                ) {
-                    $status = Mage::getStoreConfig('payment/bankpayment/order_status');
-                    $state  = $this->_getHelper()->getStateForStatus($status);
-                    $magentoOrder->setState($state, $status);
+            /**
+             * Should stop support for this as this happens when Order is imported as Prepay and defaults to Mobile
+             */
+            if (!Mage::getStoreConfig(
+                Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ORDER_MARK_UNBLOCKED_AS_PAID
+            )
+            ) {
+                if ($magentoOrder->canHold()) {
+                    $magentoOrder->hold();
                 } else {
-                    if (!Mage::getStoreConfig(
-                        Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ORDER_MARK_UNBLOCKED_AS_PAID
-                    )
-                    ) {
-                        if ($magentoOrder->getState() != Mage_Sales_Model_Order::STATE_HOLDED) {
-                            $magentoOrder->setHoldBeforeState($magentoOrder->getState());
-                            $magentoOrder->setHoldBeforeStatus($magentoOrder->getStatus());
-                        }
-                        $magentoOrder->setState(
-                            Mage_Sales_Model_Order::STATE_HOLDED,
-                            Mage_Sales_Model_Order::STATE_HOLDED
-                        );
-                    } else {
-                        $oldStatus = $shopgateOrder->getIsPaid();
-                        $shopgateOrder->setIsPaid(true);
-
-                        $magentoOrder->addStatusHistoryComment(
-                            $this->_getHelper()->__(
-                                "[SHOPGATE] Set order as paid because shipping is not blocked and config is set to 'mark unblocked orders as paid'!"
-                            ),
-                            false
-                        )->setIsCustomerNotified(false);
-
-                        $magentoOrder = $this->_setOrderPayment($magentoOrder, $shopgateOrder);
-                        $shopgateOrder->setIsPaid($oldStatus);
-                    }
+                    $this->_forceIsPaidStatus($magentoOrder, $shopgateOrder);
                 }
             }
         } else {
             $stateObject    = new Varien_Object();
             $methodInstance = $magentoOrder->getPayment()->getMethodInstance();
-            if ($shopgateOrder->getPaymentMethod() != ShopgateOrder::AMAZON_PAYMENT
-                && strpos($shopgateOrder->getPaymentMethod(), 'PAYONE') === false
-            ) {
-                // avoid calling order on amazon payment again 
-                $methodInstance->initialize($methodInstance->getConfigData('payment_action'), $stateObject);
-            }
+            $methodInstance->initialize($methodInstance->getConfigData('payment_action'), $stateObject);
 
             if (!$stateObject->getState()) {
                 $status = $methodInstance->getConfigData("order_status");
@@ -1457,27 +1426,44 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             }
 
             $magentoOrder->setState($stateObject->getState(), $stateObject->getStatus());
-
-            if (Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ORDER_MARK_UNBLOCKED_AS_PAID)
-                && !$shopgateOrder->getIsPaid() && $shopgateOrder->getPaymentMethod() != ShopgateOrder::BILLSAFE
-            ) {
-                $oldStatus = $shopgateOrder->getIsPaid();
-                $shopgateOrder->setIsPaid(true);
-
-                $magentoOrder->addStatusHistoryComment(
-                    $this->_getHelper()->__(
-                        "[SHOPGATE] Set order as paid because shipping is not blocked and config is set to 'mark unblocked orders as paid'!"
-                    ),
-                    false
-                )->setIsCustomerNotified(false);
-
-                $magentoOrder = $this->_setOrderPayment($magentoOrder, $shopgateOrder);
-
-                $shopgateOrder->setIsPaid($oldStatus);
-            }
+            $this->_forceIsPaidStatus($magentoOrder, $shopgateOrder);
         }
 
         $magentoOrder->save();
+
+        return $magentoOrder;
+    }
+
+    /**
+     * Run order manipulation with isPaid flag true.
+     * Set to Private as this will be refactored.
+     * 
+     * @param Mage_Sales_Model_Order $magentoOrder
+     * @param ShopgateOrder          $shopgateOrder
+     *
+     * @return Mage_Sales_Model_Order
+     */
+    private function _forceIsPaidStatus($magentoOrder, $shopgateOrder)
+    {
+        if (Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ORDER_MARK_UNBLOCKED_AS_PAID)
+            && !$shopgateOrder->getIsPaid()
+            && $shopgateOrder->getPaymentMethod() != ShopgateOrder::BILLSAFE
+        ) {
+            $oldStatus = $shopgateOrder->getIsPaid();
+            $shopgateOrder->setIsPaid(true);
+
+            $magentoOrder->addStatusHistoryComment(
+                $this->_getHelper()->__(
+                    "[SHOPGATE] Set order as paid because shipping is not blocked and config is set to 'mark unblocked orders as paid'!"
+                ),
+                false
+            )->setIsCustomerNotified(false);
+
+            $magentoOrder = $this->_setOrderPayment($magentoOrder, $shopgateOrder);
+
+            $shopgateOrder->setIsPaid($oldStatus);
+        }
+
         return $magentoOrder;
     }
 
@@ -1976,9 +1962,9 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             $this->log("#{$i}", ShopgateLogger::LOGTYPE_DEBUG);
             $i++;
             /** @var Mage_Catalog_Model_Product $product */
-            if ($this->_getExportHelper()->productHasRequiredFileOption($product)) {
+            if ($this->_getExportHelper()->productHasRequiredUnsupportedOptions($product)) {
                 $this->log(
-                    "Exclude Product with ID: {$product->getId()} from CSV: custom option type file",
+                    "Exclude Product with ID: {$product->getId()} from CSV: not supported custom option",
                     ShopgateLogger::LOGTYPE_DEBUG
                 );
                 continue;
@@ -2162,9 +2148,9 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             $i++;
 
             /** @var Mage_Catalog_Model_Product $product */
-            if ($this->_getExportHelper()->productHasRequiredFileOption($product)) {
+            if ($this->_getExportHelper()->productHasRequiredUnsupportedOptions($product)) {
                 $this->log(
-                    "Exclude Product with ID: {$product->getId()} from CSV: custom option type file",
+                    "Exclude Product with ID: {$product->getId()} from XML: not supported custom option",
                     ShopgateLogger::LOGTYPE_DEBUG
                 );
                 continue;

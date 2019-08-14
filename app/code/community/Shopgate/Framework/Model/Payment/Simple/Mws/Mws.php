@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Shopgate GmbH
  *
@@ -22,21 +23,8 @@
  */
 
 /**
- * Payment redirect for Creativestyle_AmazonPayments
+ * Main MWS handler class
  */
-class Shopgate_Framework_Model_Payment_Simple_Mws extends Shopgate_Framework_Model_Payment_Simple
-{
-    /**
-     * Redirect for Amazon based on Magento version
-     *
-     * @return false|Shopgate_Framework_Model_Payment_Abstract
-     */
-    public function getModelByPaymentMethod()
-    {
-        if ($this->_getConfigHelper()->getIsMagentoVersionLower16()) {
-            $this->setPaymentMethod('MWS15');
-        }
-
-        return parent::getModelByPaymentMethod();
-    }
-}
+class Shopgate_Framework_Model_Payment_Simple_Mws_Mws 
+    extends Shopgate_Framework_Model_Payment_Simple_Mws_Abstract 
+    implements Shopgate_Framework_Model_Payment_Interface {}

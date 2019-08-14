@@ -20,23 +20,30 @@
  *
  * @author Shopgate GmbH <interfaces@shopgate.com>
  */
+include_once Mage::getBaseDir("lib") . '/Shopgate/shopgate.php';
 
-/**
- * Payment redirect for Creativestyle_AmazonPayments
- */
-class Shopgate_Framework_Model_Payment_Simple_Mws extends Shopgate_Framework_Model_Payment_Simple
+class Shopgate_Framework_Test_Controller_FrameworkController
+    extends EcomDev_PHPUnit_Test_Case_Controller
 {
-    /**
-     * Redirect for Amazon based on Magento version
-     *
-     * @return false|Shopgate_Framework_Model_Payment_Abstract
-     */
-    public function getModelByPaymentMethod()
+    protected function setUp()
     {
-        if ($this->_getConfigHelper()->getIsMagentoVersionLower16()) {
-            $this->setPaymentMethod('MWS15');
-        }
+        Mage::register('isSecureArea', true);
+        parent::setUp();
+    }
 
-        return parent::getModelByPaymentMethod();
+    /**
+     * @registry isSecureArea
+     * @test
+     * @doNotIndexAll
+     * @loadFixture
+     */
+    public function testPluginNotActive()
+    {
+        $this->setCurrentStore('default');
+        $this->dispatch('shopgate/framework/index');
+        $this->assertResponseHttpCode('200');
+        $this->assertResponseBodyContains(
+            '{"error":12,"error_text":"plugin not activated: plugin not active"'
+        );
     }
 }

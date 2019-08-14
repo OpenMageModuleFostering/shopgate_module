@@ -21,22 +21,19 @@
  * @author Shopgate GmbH <interfaces@shopgate.com>
  */
 
-/**
- * Payment redirect for Creativestyle_AmazonPayments
- */
-class Shopgate_Framework_Model_Payment_Simple_Mws extends Shopgate_Framework_Model_Payment_Simple
+class Shopgate_Framework_Test_Helper_Data extends EcomDev_PHPUnit_Test_Case
 {
     /**
-     * Redirect for Amazon based on Magento version
+     * @param float $amount
+     * @param float $taxAmount
+     * @param float $expectedTaxRate
      *
-     * @return false|Shopgate_Framework_Model_Payment_Abstract
+     * @test
+     * @dataProvider dataProvider
      */
-    public function getModelByPaymentMethod()
+    public function testCalculateTaxRate($amount, $taxAmount, $expectedTaxRate)
     {
-        if ($this->_getConfigHelper()->getIsMagentoVersionLower16()) {
-            $this->setPaymentMethod('MWS15');
-        }
-
-        return parent::getModelByPaymentMethod();
+        $calculatedTaxRate = Mage::helper('shopgate')->calculateTaxRate($amount, $taxAmount);
+        $this->assertEquals($calculatedTaxRate, $expectedTaxRate);
     }
 }

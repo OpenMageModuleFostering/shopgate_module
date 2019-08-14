@@ -1038,7 +1038,10 @@ class Shopgate_Framework_Model_Export_Product_Xml
         $result = array();
         foreach ($this->item->getOptions() as $option) {
             /** @var Mage_Catalog_Model_Product_Option $option */
-            $inputType = $this->_mapInputType($option->getType());
+            $inputType = $this->_getExportHelper()->mapInputType($option->getType());
+            if ($inputType === false) {
+                continue;
+            }
 
             $inputItem = new Shopgate_Model_Catalog_Input();
             $inputItem->setUid($option->getId());
@@ -1165,57 +1168,6 @@ class Shopgate_Framework_Model_Export_Product_Xml
     protected function _getInputValuePrice($value)
     {
         return $this->_getOptionValuePrice($value);
-    }
-
-    /**
-     * @param $mageType
-     *
-     * @return string
-     */
-    protected function _mapInputType($mageType)
-    {
-        switch ($mageType) {
-            case "field":
-                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_TEXT;
-                break;
-            case "area":
-                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_AREA;
-                break;
-            case "file":
-                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_FILE;
-                break;
-            case "select":
-                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_SELECT;
-                break;
-            case "drop_down":
-                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_SELECT;
-                break;
-            case "radio":
-                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_SELECT;
-                break;
-            case "checkbox":
-                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_SELECT;
-                break;
-            case "multiple":
-                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_SELECT;
-                break;
-            case "multi":
-                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_SELECT;
-                break;
-            case "date":
-                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_DATE;
-                break;
-            case "date_time":
-                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_DATETIME;
-                break;
-            case "time":
-                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_TIME;
-                break;
-            default:
-                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_TEXT;
-        }
-
-        return $inputType;
     }
 
     /**
@@ -1377,7 +1329,12 @@ class Shopgate_Framework_Model_Export_Product_Xml
 
         foreach ($bundleOptions as $bundleOption) {
 
-	        $optionValues = array();
+            $inputType = $this->_getExportHelper()->mapInputType($bundleOption->getType());
+            if ($inputType === false) {
+                continue;
+            }
+
+            $optionValues = array();
 
             /* @var $bundleOption Mage_Bundle_Model_Option */
             if (!is_array($bundleOption->getSelections())) {
@@ -1463,7 +1420,7 @@ class Shopgate_Framework_Model_Export_Product_Xml
             }
             $inputItem = new Shopgate_Model_Catalog_Input();
             $inputItem->setUid($bundleOption->getId());
-            $inputItem->setType($this->_mapInputType($bundleOption->getType()));
+            $inputItem->setType($inputType);
             $title = ($bundleOption->getTitle()) ? $bundleOption->getTitle() : $bundleOption->getDefaultTitle();
             $inputItem->setLabel($title);
             $inputItem->setValidation($this->_buildInputValidation($inputItem->getType(), null));

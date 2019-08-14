@@ -1,4 +1,12 @@
 '''English'''
+'''Version 2.9.26'''
+* Store deletion will not cause shopgate plugin to redirect to 404 page
+* Exclude unsupported input types from item export
+* Added basic support to 1400-1500 versions
+* 1600+ versions are fully supported
+* Fix custom description attribute codes
+* Shopgate payment orders import with status Processing when shipping is not blocked
+* Shopgate payment orders import with Shopgate configuration status when shipping is blocked
 
 '''Version 2.9.25'''
 * map payment method Paypal Plus

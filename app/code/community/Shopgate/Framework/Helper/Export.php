@@ -147,24 +147,72 @@ class Shopgate_Framework_Helper_Export extends Mage_Core_Helper_Abstract
     }
 
     /**
-     * Returns whether product has custom option of type file or not.
+     * Returns whether product has custom option of unsupported type or not.
      * (only if option is required)
      *
      * @param Mage_Catalog_Model_Product $product
      *
      * @return bool
      */
-    public function productHasRequiredFileOption($product)
+    public function productHasRequiredUnsupportedOptions($product)
     {
         $options = $product->getOptions();
         foreach ($options as $option) {
             /** @var $option Mage_Catalog_Model_Product_Option */
-            if ($option->getType() === Mage_Catalog_Model_Product_Option::OPTION_TYPE_FILE && $option->getIsRequire()) {
-                return true;
+            if ($option->getIsRequire() && $this->mapInputType($option->getType()) === false) {
+                    return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * @param $mageType
+     *
+     * @return string|bool
+     */
+    public function mapInputType($mageType)
+    {
+        switch ($mageType) {
+            case "field":
+                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_TEXT;
+                break;
+            case "area":
+                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_AREA;
+                break;
+            case "select":
+                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_SELECT;
+                break;
+            case "drop_down":
+                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_SELECT;
+                break;
+            case "radio":
+                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_SELECT;
+                break;
+            case "checkbox":
+                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_SELECT;
+                break;
+            case "multiple":
+                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_SELECT;
+                break;
+            case "multi":
+                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_SELECT;
+                break;
+            case "date":
+                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_DATE;
+                break;
+            case "date_time":
+                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_DATETIME;
+                break;
+            case "time":
+                $inputType = Shopgate_Model_Catalog_Input::DEFAULT_INPUT_TYPE_TIME;
+                break;
+            default:
+                $inputType = false;
+        }
+
+        return $inputType;
     }
 
     /**
@@ -438,14 +486,16 @@ class Shopgate_Framework_Helper_Export extends Mage_Core_Helper_Abstract
 
                 $counter = 0;
                 foreach ($attributeCodes as $attributeCode) {
-
-                    $attributeCode = trim($attributeCode);
-
                     if (!empty($attributeCode)) {
                         /** @var Mage_Catalog_Model_Resource_Eav_Attribute  $attribute */
-                        $attribute = $product->getResource()->getAttribute($attributeCode);
-                        $values = explode(',', $attribute->getFrontend()->getValue($product));
-                        $description1 = implode('<br />', $values);
+                        $attribute    = $product->getResource()->getAttribute($attributeCode);
+                        $description1 = $product->getData($attributeCode);
+                        if ($attribute->getFrontend()->getConfigField('input') == 'multiselect') {
+                            $description1 = $attribute->getFrontend()->getOption($description1);
+                            if (is_array($description1)) {
+                                $description1 = implode('<br />', $description1);
+                            }
+                        }
                         if (in_array("2", $convertDescription)) {
                             $description1 = nl2br($description1);
                         }

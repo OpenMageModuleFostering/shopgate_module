@@ -976,10 +976,9 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
             return round(
                 (100 * $taxAmount) / ($amount - $taxAmount), $precision
             );
-        } else {
-            return $amount;
         }
 
+        return 0.00;
     }
 
     /**

@@ -22,21 +22,33 @@
  */
 
 /**
- * Payment redirect for Creativestyle_AmazonPayments
+ * This class supports magento < 1.6.0 import for Amazon Payments
  */
-class Shopgate_Framework_Model_Payment_Simple_Mws extends Shopgate_Framework_Model_Payment_Simple
+class Shopgate_Framework_Model_Payment_Simple_Mws_Mws15
+    extends Shopgate_Framework_Model_Payment_Simple_Mws_Abstract
+    implements Shopgate_Framework_Model_Payment_Interface
 {
     /**
-     * Redirect for Amazon based on Magento version
+     * Supported payment type
      *
-     * @return false|Shopgate_Framework_Model_Payment_Abstract
+     * @return string
      */
-    public function getModelByPaymentMethod()
+    protected function _getTransactionType()
     {
-        if ($this->_getConfigHelper()->getIsMagentoVersionLower16()) {
-            $this->setPaymentMethod('MWS15');
-        }
+        return Mage_Sales_Model_Order_Payment_Transaction::TYPE_PAYMENT;
+    }
 
-        return parent::getModelByPaymentMethod();
+    /**
+     * Rewrite to be empty, mage 1400 does not have this function
+     * Mage 1501 throws an exception as AmazonPayment plugin does not
+     * support it
+     *
+     * @param Mage_Sales_Model_Order_Payment_Transaction $transaction
+     *
+     * @return $this
+     */
+    protected function _importTransactionInfo($transaction)
+    {
+        return $this;
     }
 }

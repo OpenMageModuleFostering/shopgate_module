@@ -2,9 +2,20 @@
 <config>
     <modules>
         <Shopgate_Framework>
-            <version>2.9.25</version>
+            <version>2.9.26</version>
         </Shopgate_Framework>
     </modules>
+    <phpunit>
+        <suite>
+            <modules>
+                <Shopgate_Framework />
+            </modules>
+            <groups>
+                <helpers>Helper</helpers>
+                <controllers>Controller</controllers>
+            </groups>
+        </suite>
+    </phpunit>
     <global>
         <models>
             <shopgate>
@@ -134,7 +145,7 @@
                 <observers>
                     <before_salesrules_loaded>
                         <type>model</type>
-                        <class>Shopgate_Framework_Model_Observer</class>
+                        <class>shopgate/observer</class>
                         <method>beforeSalesrulesLoaded</method>
                     </before_salesrules_loaded>
                 </observers>
@@ -144,7 +155,7 @@
                 <observers>
                     <sales_order_shipment>
                         <type>singleton</type>
-                        <class>Shopgate_Framework_Model_Observer</class>
+                        <class>shopgate/observer</class>
                         <method>setShippingStatus</method>
                     </sales_order_shipment>
                 </observers>
@@ -154,7 +165,7 @@
                 <observers>
                     <cancel_order_items>
                         <type>singleton</type>
-                        <class>Shopgate_Framework_Model_Observer</class>
+                        <class>shopgate/observer</class>
                         <method>submitCancellations</method>
                     </cancel_order_items>
                 </observers>
@@ -164,7 +175,7 @@
                 <observers>
                     <sales_order_cancled>
                         <type>singleton</type>
-                        <class>Shopgate_Framework_Model_Observer</class>
+                        <class>shopgate/observer</class>
                         <method>cancelOrder</method>
                     </sales_order_cancled>
                 </observers>
@@ -174,7 +185,7 @@
                 <observers>
                     <capture_oauth_registration_configuration_manipulation>
                         <type>singleton</type>
-                        <class>Shopgate_Framework_Model_Observer</class>
+                        <class>shopgate/observer</class>
                         <method>catchOAuthRegistration</method>
                     </capture_oauth_registration_configuration_manipulation>
                 </observers>
@@ -184,7 +195,7 @@
                 <observers>
                     <set_default_store_on_oauth_registration>
                         <type>singleton</type>
-                        <class>Shopgate_Framework_Model_Observer</class>
+                        <class>shopgate/observer</class>
                         <method>setDefaultStoreOnOAuthRegistration</method>
                     </set_default_store_on_oauth_registration>
                 </observers>
@@ -194,7 +205,7 @@
                 <observers>
                     <remove_virtual_products_of_shopgate_coupons>
                         <type>singleton</type>
-                        <class>Shopgate_Framework_Model_Observer</class>
+                        <class>shopgate/observer</class>
                         <method>deleteShopgateCouponProducts</method>
                     </remove_virtual_products_of_shopgate_coupons>
                 </observers>
@@ -204,7 +215,7 @@
                 <observers>
                     <shopgate>
                         <type>singleton</type>
-                        <class>Shopgate_Framework_Model_Observer</class>
+                        <class>shopgate/observer</class>
                         <method>manipulateShipmentForBillsafe</method>
                     </shopgate>
                 </observers>
@@ -255,7 +266,7 @@
                 <observers>
                     <shopgate>
                         <type>singleton</type>
-                        <class>Shopgate_Framework_Model_Observer</class>
+                        <class>shopgate/observer</class>
                         <method>checkForUpdates</method>
                     </shopgate>
                 </observers>
@@ -265,11 +276,21 @@
                 <observers>
                     <adjust_sequence_number>
                         <type>singleton</type>
-                        <class>Shopgate_Framework_Model_Observer</class>
+                        <class>shopgate/observer</class>
                         <method>preparePayoneOrderForRefund</method>
                     </adjust_sequence_number>
                 </observers>
             </sales_order_invoice_pay>
+
+            <store_delete>
+                <observers>
+                    <website_store_removed>
+                        <type>singleton</type>
+                        <class>shopgate/observer</class>
+                        <method>removeDefaultStore</method>
+                    </website_store_removed>
+                </observers>
+            </store_delete>
         </events>
     </adminhtml>
     <frontend>
@@ -419,6 +440,11 @@
                 <handling_type>F</handling_type>
             </shopgate>
         </carriers>
+        <payment>
+            <shopgate_payment>
+                <order_status>pending</order_status>
+            </shopgate_payment>
+        </payment>
     </default>
     <crontab>
         <jobs>
