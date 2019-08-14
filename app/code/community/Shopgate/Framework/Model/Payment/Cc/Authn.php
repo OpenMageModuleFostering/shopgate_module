@@ -193,8 +193,8 @@ class Shopgate_Framework_Model_Payment_Cc_Authn
                 if ($this->_isOrderPendingReview()) {
                     if ($this->_transactionType == self::SHOPGATE_PAYMENT_STATUS_AUTH_CAPTURE) {
                         $card->setCapturedAmount($card->getProcessedAmount());
-                        $cardStorage->updateCard($card);
                     }
+                    $cardStorage->updateCard($card);
                 }
                 break;
         }

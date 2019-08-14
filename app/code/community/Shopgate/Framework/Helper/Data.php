@@ -501,14 +501,14 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
 
         $msg = "\tShopgate:\t{$totalShopgate} {$order->getCurrency()} \n";
         $msg .= "\tMagento:\t{$totalMagento} {$oMageOrder->getOrderCurrencyCode()}\n";
-        
+
         ShopgateLogger::getInstance()->log($msg, ShopgateLogger::LOGTYPE_DEBUG);
 
         if (abs($totalShopgate - $totalMagento) > 0.02) {
             $msg = "differing total order amounts:\n" . $msg;
             $msg .= "\tMagento Order #\t{$oMageOrder->getIncrementId()} \n";
             $msg .= "\tShopgate Order #\t{$order->getOrderNumber()} \n";
-            
+
             $message = $msg;
             return false;
         }
@@ -546,7 +546,7 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
         ) {
             $shippingMethod = $infos->getName();
         } else {
-            $mapper = Mage::getModel('shopgate/shopgate_shipping_mapper')->init($shippingAddress, $order);
+            $mapper         = Mage::getModel('shopgate/shopgate_shipping_mapper')->init($shippingAddress, $order);
             $shippingMethod = $mapper->getCarrier() . '_' . $mapper->getMethod();
         }
         $shippingAddress->setShippingMethod($shippingMethod);
@@ -675,43 +675,6 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
         return max(array($this->_getMaxBundleOptionCount(), $this->_getMaxCustomOptionCount()));
     }
 
-    /**
-     * Validates missing Quote_Items which got removed because of insufficient qty available
-     *
-     * @param ShopgateCart           $cart
-     * @param Mage_Sales_Model_Quote $quote
-     *
-     * @return array $result
-     */
-    public function fetchMissingQuoteItems($cart, $quote)
-    {
-        $result = array();
-
-        foreach ($cart->getItems() as $_item) {
-            $itemNumbers = explode("-", $_item->getItemNumber());
-            $item        = $quote->getItemsCollection()->getItemsByColumnValue('product_id', $itemNumbers[0]);
-            if (empty($item) && !empty($itemNumbers[1])) {
-                // grouped child
-                $item = $quote->getItemsCollection()->getItemsByColumnValue('product_id', $itemNumbers[1]);
-            }
-
-            if (!count($item)) {
-                $product = Mage::getModel('catalog/product')
-                               ->setStoreId(Mage::helper('shopgate')->getConfig()->getStoreViewId())
-                               ->load($_item->getItemNumber())
-                               ->setShopgateItemNumber($_item->getItemNumber())
-                               ->setShopgateOptions($_item->getOptions())
-                               ->setShopgateInputs($_item->getInputs())
-                               ->setShopgateAttributes($_item->getAttributes());
-
-                $model = Mage::getModel('sales/quote_item');
-                $model->setProduct($product);
-                $result[] = $model;
-            }
-        }
-
-        return $result;
-    }
 
     /**
      * Generates a ShopgateCartItem for the checkCart Response
@@ -755,6 +718,36 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
         return $item;
     }
 
+    /**
+     * Translates one shopgate item into the other
+     * 
+     * @param ShopgateOrderItem $orderItem
+     * @param int               $errorCode - Shopgate library error code
+     * @param bool              $isPurchasable
+     * @param int               $qtyPurchasable
+     * @param bool              $stockQuantity
+     *
+     * @return ShopgateCartItem
+     */
+    public function getCartItemFromOrderItem(
+        ShopgateOrderItem $orderItem,
+        $errorCode = 0,
+        $isPurchasable = false,
+        $qtyPurchasable = 0,
+        $stockQuantity = false
+    ) {
+        $cartItem = new ShopgateCartItem($orderItem->toArray());
+        $cartItem->setIsBuyable((int)$isPurchasable);
+        $cartItem->setQtyBuyable($qtyPurchasable);
+        $cartItem->setStockQuantity($stockQuantity);
+        if (!empty($errorCode)) {
+            $cartItem->setError($errorCode);
+            $cartItem->setErrorText(ShopgateLibraryException::getMessageFor($errorCode));
+        }
+
+        return $cartItem;
+    }
+    
     /**
      * Fetches the count of all entities
      *
@@ -890,7 +883,7 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
                    );
         Mage::app()->setCurrentStore($oldStoreViewId);
         $url = $this->includeHtpassToUrl($url);
-        
+
         return $url;
     }
 
@@ -903,7 +896,8 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
      */
     public function includeHtpassToUrl($url)
     {
-        if (isset($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
+        $parsedUrl = parse_url($url);
+        if (isset($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']) && !isset($parsedUrl['user']) && !isset($parsedUrl['password'])) {
             $http  = 'http://';
             $https = 'https://';
             $htpsw = $_SERVER['PHP_AUTH_USER'] . ':' . $_SERVER['PHP_AUTH_PW'] . '@';

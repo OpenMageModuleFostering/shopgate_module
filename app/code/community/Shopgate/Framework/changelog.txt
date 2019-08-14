@@ -1,3 +1,9 @@
+'''Version 2.9.43'''
+* Fix for AuthNet pending review orders being stuck in 'processing' after ship
+* mapped Merchant API PayPal WSPP to PayFlow Pro mage module
+* Fixed bug with custom option validation errors in check_cart requests
+* added free shipping capability for shopgate coupons
+
 '''Version 2.9.42'''
 * fixed redirect of cms pages
 * Removed bot indexing of mobile shop for stores using mobile app only
@@ -264,12 +270,12 @@
 * fixed problem when magento adminnotification module is disabled
 
 '''Version 2.9.9'''
-* additional configuration field for export of UPC 
+* additional configuration field for export of UPC
 * fixed caching problem with header files
-* additional checks for oauth connection 
+* additional checks for oauth connection
 * improved price export for bundle products without required elements
 * native paypal mapping if webiste payments pro is active to paypal express
-* adjusted xml image export of child products according to config settings 
+* adjusted xml image export of child products according to config settings
 
 '''Version 2.9.8'''
 * missing js for oauth and redirects

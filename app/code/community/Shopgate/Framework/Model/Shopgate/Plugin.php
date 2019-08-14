@@ -320,23 +320,23 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
         /* @var Mage_Sales_Model_Quote $quote */
         /* @var Mage_Sales_Model_Service_Quote $service */
         try {
-            $this->log("## Start to add new Order", ShopgateLogger::LOGTYPE_DEBUG);
+            $this->log('## Start to add new Order', ShopgateLogger::LOGTYPE_DEBUG);
             $this->log("## Order-Number: {$order->getOrderNumber()}", ShopgateLogger::LOGTYPE_DEBUG);
-            $this->log("# Begin database Transaction", ShopgateLogger::LOGTYPE_DEBUG);
-            Mage::getModel("sales/order")->getResource()->beginTransaction();
-            $this->log("#> Succesfull created database Transaction", ShopgateLogger::LOGTYPE_DEBUG);
+            $this->log('# Begin database Transaction', ShopgateLogger::LOGTYPE_DEBUG);
+            Mage::getModel('sales/order')->getResource()->beginTransaction();
+            $this->log('#> Succesfull created database Transaction', ShopgateLogger::LOGTYPE_DEBUG);
 
             $this->_errorOnInvalidCoupon = true;
 
-            $this->log("# Try to load old shopgate order to check for duplicate", ShopgateLogger::LOGTYPE_DEBUG);
+            $this->log('# Try to load old shopgate order to check for duplicate', ShopgateLogger::LOGTYPE_DEBUG);
             /** @var Shopgate_Framework_Model_Shopgate_Order $magentoShopgateOrder */
-            $magentoShopgateOrder = Mage::getModel("shopgate/shopgate_order")->load(
+            $magentoShopgateOrder = Mage::getModel('shopgate/shopgate_order')->load(
                 $order->getOrderNumber(),
-                "shopgate_order_number"
+                'shopgate_order_number'
             );
 
             if ($magentoShopgateOrder->getId() !== null) {
-                $this->log("# Duplicate Order", ShopgateLogger::LOGTYPE_DEBUG);
+                $this->log('# Duplicate Order', ShopgateLogger::LOGTYPE_DEBUG);
 
                 $orderId = 'unset';
                 if ($magentoShopgateOrder->getOrderId()) {
@@ -349,21 +349,17 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                 );
             }
             Mage::dispatchEvent('shopgate_add_order_before', array('shopgate_order' => $order));
-            $this->log("# Add shopgate order to Session", ShopgateLogger::LOGTYPE_DEBUG);
-            Mage::getSingleton("core/session")->setData("shopgate_order", $order);
-            $this->log("# Create quote for order", ShopgateLogger::LOGTYPE_DEBUG);
-            
+            $this->log('# Add shopgate order to Session', ShopgateLogger::LOGTYPE_DEBUG);
+            Mage::getSingleton('core/session')->setData('shopgate_order', $order);
+            $this->log('# Create quote for order', ShopgateLogger::LOGTYPE_DEBUG);
+
             $this->_getFactory()->getPayment()->setUp();
             $quote = Mage::getModel('sales/quote')->setStoreId($this->_getConfig()->getStoreViewId());
             $quote->getBillingAddress()->setCartFixedRules(array());
             $quote->getShippingAddress()->setCartFixedRules(array());
             $quote = $this->executeLoaders($this->_getCreateOrderQuoteLoaders(), $quote, $order);
-            $quote->setInventoryProcessed(false);
-            $quote->setTotalsCollectedFlag(false);
             $this->_getFactory()->getAffiliate($order)->setUp($quote);
 
-            // Shipping rate is set at Shopgate_Framework_Model_Carrier_Fix
-            $quote->getShippingAddress()->setCollectShippingRates(true);
             ShopgateLogger::getInstance()->log('setCollectShippingRates ok', ShopgateLogger::LOGTYPE_DEBUG);
 
             if (Mage::getConfig()->getModuleConfig('FireGento_MageSetup')->is('active', 'true')
@@ -373,37 +369,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                 $session->replaceQuote($quote);
             }
 
-            $quote->collectTotals();
-            $rates              = $quote->getShippingAddress()->collectShippingRates()->getGroupedAllShippingRates();
-            $title              = null;
-            $method             = 'shopgate_fix';
-            $foundMappedMethod  = false;
-            if (array_key_exists('shopgate', $rates)) {
-                /** @var Mage_Sales_Model_Quote_Address_Rate $addressRate */
-                $addressRate = $rates['shopgate'][0];
-
-                foreach ($rates as $_key) {
-                    foreach ($_key as $rate) {
-                        /** @var Mage_Sales_Model_Quote_Address_Rate $rate */
-                        if ($rate->getCode() == $addressRate->getMethodTitle()) {
-                            $method = $addressRate->getMethodTitle();
-                            $addressRate->setCarrierTitle($rate->getCarrierTitle());
-                            $addressRate->setMethodTitle($rate->getMethodTitle());
-                            $addressRate->save();
-                            $title = $addressRate->getCarrierTitle() . " - " . $addressRate->getMethodTitle();
-                            $foundMappedMethod = true;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (!$foundMappedMethod) {
-                $quote->getShippingAddress()->setShippingMethod($method);
-            }
-            $title = $title ? $title : $order->getShippingInfos()->getDisplayName();
-            $quote->getShippingAddress()->setShippingDescription($title);
-            $quote->save();
+            $shipping = Mage::helper('shopgate/shipping')->processQuote($quote, $order);
 
             // due to compatibility with 3rd party modules which fetches the quote from the session (like phoenix_cod, SUE)
             // needed before $service->submitAll() is called
@@ -411,16 +377,16 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
 
             $magentoOrder = $this->_getFactory()->getPayment()->createNewOrder($quote);
 
-            $this->log("# Create order from quote", ShopgateLogger::LOGTYPE_DEBUG);
-            $this->log("# Modify order", ShopgateLogger::LOGTYPE_DEBUG);
+            $this->log('# Create order from quote', ShopgateLogger::LOGTYPE_DEBUG);
+            $this->log('# Modify order', ShopgateLogger::LOGTYPE_DEBUG);
             $magentoOrder->setCanEdit(false);
             $magentoOrder->setCanShipPartially(true);
             $magentoOrder->setCanShipPartiallyItem(true);
             $magentoOrder = $this->executeLoaders($this->_getCreateOrderLoaders(), $magentoOrder, $order);
-            $magentoOrder->setShippingDescription($title);
+            $magentoOrder->setShippingDescription($shipping->getData('title'));
             $orderShippingMethod = $magentoOrder->getShippingMethod();
-            if (empty($orderShippingMethod) || $method !== 'shopgate_fix') {
-                $magentoOrder->setShippingMethod($method);
+            if (empty($orderShippingMethod) || $shipping->getData('method') !== 'shopgate_fix') {
+                $magentoOrder->setShippingMethod($shipping->getData('method'));
             }
 
             //todo: move this out, intentionally here after executeLoaders?
@@ -437,9 +403,9 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             $this->_getFactory()->getAffiliate($order)->promptCommission($magentoOrder);
             $magentoOrder->save();
 
-            $this->log("# Commit Transaction", ShopgateLogger::LOGTYPE_DEBUG);
-            Mage::getModel("sales/order")->getResource()->commit();
-            $this->log("## Order saved successful", ShopgateLogger::LOGTYPE_DEBUG);
+            $this->log('# Commit Transaction', ShopgateLogger::LOGTYPE_DEBUG);
+            Mage::getModel('sales/order')->getResource()->commit();
+            $this->log('## Order saved successful', ShopgateLogger::LOGTYPE_DEBUG);
             Mage::dispatchEvent(
                 'shopgate_add_order_after',
                 array(
@@ -462,11 +428,11 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             );
 
             $result = array(
-                "external_order_id"     => $magentoOrder->getId(),
-                "external_order_number" => $magentoOrder->getIncrementId()
+                'external_order_id'     => $magentoOrder->getId(),
+                'external_order_number' => $magentoOrder->getIncrementId()
             );
 
-            $msg = "";
+            $msg = '';
             if (!$this->_getHelper()->isOrderTotalCorrect($order, $magentoOrder, $msg)) {
                 if ($this->_getConfigHelper()->getIsMagentoVersionLower16()) {
                     $magentoOrder->addStatusHistoryComment(nl2br($msg), false);
@@ -474,18 +440,18 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                 }
                 $this->log($msg);
                 $warnings[] = array(
-                    "message" => $msg
+                    'message' => $msg
                 );
 
-                $result["warnings"] = $warnings;
+                $result['warnings'] = $warnings;
             }
             $this->_setShopgateOrder($magentoOrder, $order);
             $this->_getFactory()->getAffiliate($order)->destroyCookies();
         } catch (ShopgateLibraryException $e) {
-            Mage::getModel("sales/order")->getResource()->rollback();
+            Mage::getModel('sales/order')->getResource()->rollback();
             throw $e;
         } catch (Exception $e) {
-            Mage::getModel("sales/order")->getResource()->rollback();
+            Mage::getModel('sales/order')->getResource()->rollback();
             throw new ShopgateLibraryException(
                 ShopgateLibraryException::UNKNOWN_ERROR_CODE,
                 "{$e->getMessage()}\n{$e->getTraceAsString()}",
@@ -650,7 +616,13 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                 $quoteItem->setRowWeight($quoteItem->getWeight() * $quoteItem->getQty());
                 $quoteItem->setWeeeTaxApplied(serialize(array()));
             } catch (Exception $e) {
-                $quote->setShopgateError(array($itemNumber => array($e->getCode() => $e->getMessage())));
+                $this->log(
+                    "Error importing product to quote by id: {$product->getId()}, error: {$e->getMessage()}",
+                    ShopgateLogger::LOGTYPE_DEBUG
+                );
+                $this->log($item->toArray(), ShopgateLogger::LOGTYPE_DEBUG);
+                $orderInfo['error_message'] = $e->getMessage();
+                $item->setInternalOrderInfo($this->jsonEncode($orderInfo));
             }
         }
 

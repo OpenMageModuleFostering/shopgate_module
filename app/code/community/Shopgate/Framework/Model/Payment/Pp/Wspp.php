@@ -23,6 +23,16 @@ class Shopgate_Framework_Model_Payment_Pp_Wspp
     const XML_CONFIG_ENABLED = 'payment/paypal_wps_express/active';
 
     /**
+     * Possible configs to check against
+     * @var array
+     */
+    private $allKnownConfigs = array(
+        'website payments pro'         => 'payment/paypal_direct/active',
+        'website payments pro payflow' => 'payment/paypaluk_direct/active',
+        'payflow pro hack'             => 'payment/paypaluk_express/active'
+    );
+
+    /**
      * Create new order for amazon payment
      *
      * @param $quote Mage_Sales_Model_Quote
@@ -109,6 +119,7 @@ class Shopgate_Framework_Model_Payment_Pp_Wspp
     /**
      * @param $order            Mage_Sales_Model_Order
      *                          // TODO Refund
+     *
      * @return Mage_Sales_Model_Order
      */
     public function manipulateOrderWithPaymentData($order)
@@ -223,27 +234,31 @@ class Shopgate_Framework_Model_Payment_Pp_Wspp
      */
     public function isEnabled()
     {
-        return parent::isEnabled() || $this->_isOldWsppEnabled();
+        return parent::isEnabled() || $this->_checkOtherEnableConfigs();
     }
 
     /**
      * Checks if Website Payments Pro OR
-     * Website Payment Pro Payflow are enabled
+     * Website Payment Pro Payflow OR
+     * Payflow Pro are enabled
      *
      * @return bool
      */
-    private function _isOldWsppEnabled()
+    private function _checkOtherEnableConfigs()
     {
-        $wpp    = Mage::getStoreConfig('payment/paypal_direct/active');
-        $wppp   = Mage::getStoreConfig('payment/paypaluk_direct/active');
-        $result = !empty($wpp) || !empty($wppp);
-
-        if (!$result) {
-            $debug = $this->_getHelper()->__('Neither WSPP or WSPP Payflow are enabled');
-            ShopgateLogger::getInstance()->log($debug, ShopgateLogger::LOGTYPE_DEBUG);
+        $result = false;
+        foreach ($this->allKnownConfigs as $config) {
+            $result = Mage::getStoreConfigFlag($config);
+            if ($result) {
+                return $result;
+            }
         }
+
+        $debug = $this->_getHelper()->__('Neither WSPP, WSPP Payflow or Payflow Pro are enabled');
+        ShopgateLogger::getInstance()->log($debug, ShopgateLogger::LOGTYPE_DEBUG);
 
         return $result;
     }
+
 
 }
