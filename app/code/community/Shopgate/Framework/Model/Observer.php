@@ -61,8 +61,8 @@ class Shopgate_Framework_Model_Observer
     public function setShippingStatus(Varien_Event_Observer $observer)
     {
         ShopgateLogger::getInstance()->log(
-                      "Try to set Shipping state for current Order",
-                      ShopgateLogger::LOGTYPE_DEBUG
+            'Try to set Shipping state for current Order',
+            ShopgateLogger::LOGTYPE_DEBUG
         );
 
         $order = $observer->getEvent()->getShipment()->getOrder();
@@ -78,13 +78,13 @@ class Shopgate_Framework_Model_Observer
         $errors = 0;
 
         if (!Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ACTIVE, $order->getStore())) {
-            ShopgateLogger::getInstance()->log("> Plugin is not active, return!", ShopgateLogger::LOGTYPE_DEBUG);
+            ShopgateLogger::getInstance()->log('> Plugin is not active, return!', ShopgateLogger::LOGTYPE_DEBUG);
             return;
         }
 
         $this->_initMerchantApi($order->getStoreId());
         if (!$this->_config->isValidConfig()) {
-            ShopgateLogger::getInstance()->log("> Plugin has no valid config data!", ShopgateLogger::LOGTYPE_DEBUG);
+            ShopgateLogger::getInstance()->log('> Plugin has no valid config data!', ShopgateLogger::LOGTYPE_DEBUG);
             return;
         }
 
@@ -93,8 +93,8 @@ class Shopgate_Framework_Model_Observer
         /** @var $shipments Mage_Sales_Model_Resource_Order_Shipment_Collection */
         $shipments = $order->getShipmentsCollection();
         ShopgateLogger::getInstance()->log(
-                      "> getTrackCollections from MagentoOrder (count: '" . count($shipments->count()) . "')",
-                      ShopgateLogger::LOGTYPE_DEBUG
+            "> getTrackCollections from MagentoOrder (count: '" . $shipments->count() . "')",
+            ShopgateLogger::LOGTYPE_DEBUG
         );
 
         $reportedShipments = $shopgateOrder->getReportedShippingCollections();
@@ -107,29 +107,29 @@ class Shopgate_Framework_Model_Observer
             /** @var Mage_Sales_Model_Resource_Order_Shipment_Track_Collection $tracks */
             $tracks = $shipment->getTracksCollection();
             ShopgateLogger::getInstance()->log(
-                          "> getTrackCollections from MagentoOrderShippment (count: '" . count($tracks->count()) . "')",
-                          ShopgateLogger::LOGTYPE_DEBUG
+                "> getTrackCollections from MagentoOrderShippment (count: '" . $tracks->count() . "')",
+                ShopgateLogger::LOGTYPE_DEBUG
             );
 
             $notes = array();
             if ($tracks->count() == 0) {
-                $notes[] = array("service" => ShopgateDeliveryNote::OTHER, "tracking_number" => "");
+                $notes[] = array('service' => ShopgateDeliveryNote::OTHER, 'tracking_number' => '');
             }
 
             foreach ($tracks as $track) {
                 /* @var $track Mage_Sales_Model_Order_Shipment_Track */
                 switch ($track->getCarrierCode()) {
-                    case "fedex":
+                    case 'fedex':
                         $carrier = ShopgateDeliveryNote::FEDEX;
                         break;
-                    case "usps":
+                    case 'usps':
                         $carrier = ShopgateDeliveryNote::USPS;
                         break;
-                    case "ups":
+                    case 'ups':
                         $carrier = ShopgateDeliveryNote::UPS;
                         break;
-                    case "dhlint":
-                    case "dhl":
+                    case 'dhlint':
+                    case 'dhl':
                         $carrier = ShopgateDeliveryNote::DHL;
                         break;
                     default:
@@ -137,23 +137,23 @@ class Shopgate_Framework_Model_Observer
                         break;
                 }
 
-                $notes[] = array("service" => $carrier, "tracking_number" => $track->getNumber());
+                $notes[] = array('service' => $carrier, 'tracking_number' => $track->getNumber());
             }
 
             foreach ($notes as $note) {
                 try {
                     ShopgateLogger::getInstance()->log(
-                                  "> Try to call SMA::addOrderDeliveryNote (Ordernumber: {$shopgateOrder->getShopgateOrderNumber()} )",
-                                  ShopgateLogger::LOGTYPE_DEBUG
+                        "> Try to call SMA::addOrderDeliveryNote (Ordernumber: {$shopgateOrder->getShopgateOrderNumber()} )",
+                        ShopgateLogger::LOGTYPE_DEBUG
                     );
                     $this->_merchantApi->addOrderDeliveryNote(
-                                       $shopgateOrder->getShopgateOrderNumber(),
-                                       $note["service"],
-                                       $note["tracking_number"]
+                        $shopgateOrder->getShopgateOrderNumber(),
+                        $note['service'],
+                        $note['tracking_number']
                     );
                     ShopgateLogger::getInstance()->log(
-                                  "> Call to SMA::addOrderDeliveryNote was successfull!",
-                                  ShopgateLogger::LOGTYPE_DEBUG
+                        '> Call to SMA::addOrderDeliveryNote was successfull!',
+                        ShopgateLogger::LOGTYPE_DEBUG
                     );
                     $reportedShipments[] = $shipment->getId();
                 } catch (ShopgateMerchantApiException $e) {
@@ -166,23 +166,23 @@ class Shopgate_Framework_Model_Observer
 
                         $errors++;
                         ShopgateLogger::getInstance()->log(
-                                      "! (#{$orderNumber})  SMA-Error on add delivery note! Message: {$e->getCode()} - {$e->getMessage()}",
-                                      ShopgateLogger::LOGTYPE_DEBUG
+                            "! (#{$orderNumber})  SMA-Error on add delivery note! Message: {$e->getCode()} - {$e->getMessage()}",
+                            ShopgateLogger::LOGTYPE_DEBUG
                         );
                         ShopgateLogger::getInstance()->log(
-                                      "(#{$orderNumber}) SMA-Error on add delivery note! Message: {$e->getCode()} - {$e->getMessage()}",
-                                      ShopgateLogger::LOGTYPE_ERROR
+                            "(#{$orderNumber}) SMA-Error on add delivery note! Message: {$e->getCode()} - {$e->getMessage()}",
+                            ShopgateLogger::LOGTYPE_ERROR
                         );
                     }
                 } catch (Exception $e) {
 
                     ShopgateLogger::getInstance()->log(
-                                  "! (#{$orderNumber})  SMA-Error on add delivery note! Message: {$e->getCode()} - {$e->getMessage()}",
-                                  ShopgateLogger::LOGTYPE_DEBUG
+                        "! (#{$orderNumber})  SMA-Error on add delivery note! Message: {$e->getCode()} - {$e->getMessage()}",
+                        ShopgateLogger::LOGTYPE_DEBUG
                     );
                     ShopgateLogger::getInstance()->log(
-                                  "(#{$orderNumber}) SMA-Error on add delivery note! Message: {$e->getCode()} - {$e->getMessage()}",
-                                  ShopgateLogger::LOGTYPE_ERROR
+                        "(#{$orderNumber}) SMA-Error on add delivery note! Message: {$e->getCode()} - {$e->getMessage()}",
+                        ShopgateLogger::LOGTYPE_ERROR
                     );
                     $errors++;
                 }
@@ -196,18 +196,18 @@ class Shopgate_Framework_Model_Observer
         $shopgateOrder->setReportedShippingCollections($reportedShipments);
         $shopgateOrder->save();
 
-        ShopgateLogger::getInstance()->log("> Save data and return!", ShopgateLogger::LOGTYPE_DEBUG);
+        ShopgateLogger::getInstance()->log('> Save data and return!', ShopgateLogger::LOGTYPE_DEBUG);
 
         if ($errors > 0) {
             Mage::getSingleton('core/session')->addError(
-                Mage::helper("shopgate")->__(
-                    "[SHOPGATE] Order status was updated but %s errors occurred",
+                Mage::helper('shopgate')->__(
+                    '[SHOPGATE] Order status was updated but %s errors occurred',
                     $errors['errorcount']
                 )
             );
         } else {
             Mage::getSingleton('core/session')->addSuccess(
-                Mage::helper("shopgate")->__("[SHOPGATE] Order status was updated successfully at Shopgate")
+                Mage::helper('shopgate')->__('[SHOPGATE] Order status was updated successfully at Shopgate')
             );
         }
     }
@@ -221,7 +221,7 @@ class Shopgate_Framework_Model_Observer
     {
         /* @var $config Shopgate_Framework_Model_Config */
         if ($this->_config == null) {
-            $this->_config = Mage::helper("shopgate/config")->getConfig($storeId);
+            $this->_config = Mage::helper('shopgate/config')->getConfig($storeId);
         }
         $builder            = new ShopgateBuilder($this->_config);
         $this->_merchantApi = $builder->buildMerchantApi();
@@ -250,69 +250,69 @@ class Shopgate_Framework_Model_Observer
             && $order->getState() == Mage_Sales_Model_Order::STATE_COMPLETE
         ) {
             ShopgateLogger::getInstance()->log(
-                          "> (#{$orderNumber}) Order state is complete and should send to Shopgate",
-                          ShopgateLogger::LOGTYPE_DEBUG
+                "> (#{$orderNumber}) Order state is complete and should send to Shopgate",
+                ShopgateLogger::LOGTYPE_DEBUG
             );
             $isShipmentComplete = true;
         }
 
         if (!$isShipmentComplete) {
             ShopgateLogger::getInstance()->log(
-                          "> (#{$orderNumber}) This order is not shipped completly",
-                          ShopgateLogger::LOGTYPE_DEBUG
+                "> (#{$orderNumber}) This order is not shipped completly",
+                ShopgateLogger::LOGTYPE_DEBUG
             );
             return true;
         }
 
         try {
             ShopgateLogger::getInstance()->log(
-                          "> (#{$orderNumber}) Try to call SMA::setOrderShippingCompleted (Ordernumber: {$shopgateOrder->getShopgateOrderNumber()} )",
-                          ShopgateLogger::LOGTYPE_DEBUG
+                "> (#{$orderNumber}) Try to call SMA::setOrderShippingCompleted (Ordernumber: {$shopgateOrder->getShopgateOrderNumber()} )",
+                ShopgateLogger::LOGTYPE_DEBUG
             );
             $this->_merchantApi->setOrderShippingCompleted($shopgateOrder->getShopgateOrderNumber());
             ShopgateLogger::getInstance()->log(
-                          "> (#{$orderNumber}) Call to SMA::setOrderShippingCompleted was successfull!",
-                          ShopgateLogger::LOGTYPE_DEBUG
+                "> (#{$orderNumber}) Call to SMA::setOrderShippingCompleted was successfull!",
+                ShopgateLogger::LOGTYPE_DEBUG
             );
         } catch (ShopgateMerchantApiException $e) {
             if ($e->getCode() == ShopgateMerchantApiException::ORDER_SHIPPING_STATUS_ALREADY_COMPLETED
                 || $e->getCode() == ShopgateMerchantApiException::ORDER_ALREADY_COMPLETED
             ) {
                 Mage::getSingleton('core/session')->addNotice(
-                    Mage::helper("shopgate")->__(
-                        "[SHOPGATE] The order status is already set to \"shipped\" at Shopgate!"
+                    Mage::helper('shopgate')->__(
+                        '[SHOPGATE] The order status is already set to "shipped" at Shopgate!'
                     )
                 );
             } else {
                 Mage::getSingleton('core/session')->addError(
-                    Mage::helper("shopgate")->__(
-                        "[SHOPGATE] An error occured while updating the shipping status.<br />Please contact Shopgate support."
+                    Mage::helper('shopgate')->__(
+                        '[SHOPGATE] An error occured while updating the shipping status.<br />Please contact Shopgate support.'
                     )
                 );
                 Mage::getSingleton('core/session')->addError("{$e->getCode()} - {$e->getMessage()}");
                 ShopgateLogger::getInstance()->log(
-                              "! (#{$orderNumber})  SMA-Error on set shipping complete! Message: {$e->getCode()} - {$e->getMessage()}",
-                              ShopgateLogger::LOGTYPE_DEBUG
+                    "! (#{$orderNumber})  SMA-Error on set shipping complete! Message: {$e->getCode()} - {$e->getMessage()}",
+                    ShopgateLogger::LOGTYPE_DEBUG
                 );
                 ShopgateLogger::getInstance()->log(
-                              "(#{$orderNumber}) SMA-Error on set shipping complete! Message: {$e->getCode()} - {$e->getMessage()}",
-                              ShopgateLogger::LOGTYPE_ERROR
+                    "(#{$orderNumber}) SMA-Error on set shipping complete! Message: {$e->getCode()} - {$e->getMessage()}",
+                    ShopgateLogger::LOGTYPE_ERROR
                 );
                 return false;
             }
         } catch (Exception $e) {
             Mage::getSingleton('core/session')->addError(
-                Mage::helper("shopgate")->__(
-                    "[SHOPGATE] An unknown error occured!<br />Please contact Shopgate support."
+                Mage::helper('shopgate')->__(
+                    '[SHOPGATE] An unknown error occured!<br />Please contact Shopgate support.'
                 )
             );
             ShopgateLogger::getInstance()->log(
-                          "! (#{$orderNumber}) unknown error on set shipping complete! Message: {$e->getCode()} - {$e->getMessage()}",
-                          ShopgateLogger::LOGTYPE_DEBUG
+                "! (#{$orderNumber}) unknown error on set shipping complete! Message: {$e->getCode()} - {$e->getMessage()}",
+                ShopgateLogger::LOGTYPE_DEBUG
             );
             ShopgateLogger::getInstance()->log(
-                          "(#{$orderNumber}) Unkwon error on set shipping complete! Message: {$e->getCode()} - {$e->getMessage()}",
-                          ShopgateLogger::LOGTYPE_ERROR
+                "(#{$orderNumber}) Unkwon error on set shipping complete! Message: {$e->getCode()} - {$e->getMessage()}",
+                ShopgateLogger::LOGTYPE_ERROR
             );
             return false;
         }
@@ -324,42 +324,44 @@ class Shopgate_Framework_Model_Observer
 
     /**
      * full cancel of the order at shopgate
-     * $data["order"] should set with an object of Mage_Sales_Model_Order
-     * called on event "order_cancel_after"
+     * $data['order'] should set with an object of Mage_Sales_Model_Order
+     * called on event 'order_cancel_after'
      * called from Mage_Sales_Model_Order::cancel()
      * Uses the cancle_order action in ShopgateMerchantApi
      *
      * @see http://wiki.shopgate.com/Merchant_API_cancel_order
      * @param Varien_Event_Observer $observer
-     * @return bool
+     *
+     * @return $this
      */
     public function cancelOrder(Varien_Event_Observer $observer)
     {
         /* @var $order Mage_Sales_Model_Order */
         $order = $observer->getEvent()->getOrder();
         /* @var $shopgateOrder Shopgate_Framework_Model_Shopgate_Order */
-        $shopgateOrder = Mage::getModel("shopgate/shopgate_order")->load($order->getId(), "order_id");
+        $shopgateOrder = Mage::getModel('shopgate/shopgate_order')->load($order->getId(), 'order_id');
 
         if (!$shopgateOrder->getId()) {
             return true;
         }
 
         if ($order instanceof Mage_Sales_Model_Order) {
+            $orderNumber = $shopgateOrder->getShopgateOrderNumber();
             try {
-                $orderNumber = $shopgateOrder->getShopgateOrderNumber();
+
                 $this->_initMerchantApi($order->getStoreId());
 
                 // Do nothing if plugin is not active for this store
                 if (!Mage::getStoreConfig(
-                         Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ACTIVE,
-                         $this->_config->getStoreViewId()
+                    Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ACTIVE,
+                    $this->_config->getStoreViewId()
                 )
                 ) {
-                    return true;
+                    return $this;
                 }
 
                 if (!$this->_config->isValidConfig()) {
-                    return true;
+                    return $this;
                 }
 
                 $cancellationItems = array();
@@ -368,7 +370,6 @@ class Shopgate_Framework_Model_Observer
                 $rd = $shopgateOrder->getShopgateOrderObject();
 
                 $orderItems = $order->getItemsCollection();
-                $rdItem     = false;
 
                 foreach ($orderItems as $orderItem) {
                     /**  @var $orderItem Mage_Sales_Model_Order_Item */
@@ -388,8 +389,8 @@ class Shopgate_Framework_Model_Observer
                     ) {
 
                         $cancellationItems[] = array(
-                            "item_number" => $rdItem->getItemNumber(),
-                            "quantity"    => intval($orderItem->getQtyCanceled()) + intval($orderItem->getQtyRefunded())
+                            'item_number' => $rdItem->getItemNumber(),
+                            'quantity'    => intval($orderItem->getQtyCanceled()) + intval($orderItem->getQtyRefunded())
                         );
                         $qtyCancelled += intval($orderItem->getQtyCanceled()) + intval($orderItem->getQtyRefunded());
                     }
@@ -399,16 +400,14 @@ class Shopgate_Framework_Model_Observer
                     && empty($cancellationItems)
                 ) {
                     $order->addStatusHistoryComment(
-                          '[SHOPGATE] Notice: Credit memo was not sent to Shopgate because no product quantity was affected.'
+                        '[SHOPGATE] Notice: Credit memo was not sent to Shopgate because no product quantity was affected.'
                     );
                     $order->save();
                     return true;
                 }
 
-                $fullCancellation    = empty($cancellationItems);
-                $fullCancellation    = $fullCancellation || $qtyCancelled == $order->getTotalQtyOrdered();
                 $cancelShippingCosts = !$shopgateOrder->hasShippedItems($order);
-                
+
                 /** @var Mage_Sales_Model_Order_Creditmemo $creditMemo */
                 $creditMemo = $observer->getEvent()->getCreditMemo();
                 if ($creditMemo) {
@@ -419,16 +418,19 @@ class Shopgate_Framework_Model_Observer
                     }
                 }
 
+                $fullCancellation = empty($cancellationItems) || $qtyCancelled == $order->getTotalQtyOrdered();
+                $fullCancellation = $fullCancellation && $cancelShippingCosts;
+
                 $this->_merchantApi->cancelOrder(
-                                   $shopgateOrder->getShopgateOrderNumber(),
-                                   $fullCancellation,
-                                   $cancellationItems,
-                                   $cancelShippingCosts,
-                                   "Order was cancelled in Shopsystem!"
+                    $shopgateOrder->getShopgateOrderNumber(),
+                    $fullCancellation,
+                    $cancellationItems,
+                    $cancelShippingCosts,
+                    'Order was cancelled in Shopsystem!'
                 );
 
                 Mage::getSingleton('core/session')->addSuccess(
-                    Mage::helper("shopgate")->__("[SHOPGATE] Order successfully cancelled at Shopgate.")
+                    Mage::helper('shopgate')->__('[SHOPGATE] Order successfully cancelled at Shopgate.')
                 );
 
                 $shopgateOrder->setIsCancellationSentToShopgate(true);
@@ -436,56 +438,58 @@ class Shopgate_Framework_Model_Observer
 
                 if (!$shopgateOrder->getIsSentToShopgate() && !$this->_completeShipping($shopgateOrder, $order)) {
                     $this->_logShopgateError(
-                         "! (#{$orderNumber})  not sent to shopgate and shipping not complete",
-                         ShopgateLogger::LOGTYPE_ERROR
+                        "! (#{$orderNumber})  not sent to shopgate and shipping not complete",
+                        ShopgateLogger::LOGTYPE_ERROR
                     );
                 }
             } catch (ShopgateMerchantApiException $e) {
 
-                if ($e->getCode() == "222") {
+                if ($e->getCode() == '222') {
                     // order already canceled in shopgate
                     $shopgateOrder->setIsCancellationSentToShopgate(true);
                     $shopgateOrder->save();
                 } else {
                     // Received error from shopgate server
                     Mage::getSingleton('core/session')->addError(
-                        Mage::helper("shopgate")->__(
-                            "[SHOPGATE] An error occured while trying to cancel the order at Shopgate.<br />Please contact Shopgate support."
+                        Mage::helper('shopgate')->__(
+                            '[SHOPGATE] An error occured while trying to cancel the order at Shopgate.<br />Please contact Shopgate support.'
                         )
                     );
 
                     Mage::getSingleton('core/session')->addError("Error: {$e->getCode()} - {$e->getMessage()}");
 
                     $this->_logShopgateError(
-                         "! (#{$orderNumber})  SMA-Error on cancel order! Message: {$e->getCode()} -
+                        "! (#{$orderNumber})  SMA-Error on cancel order! Message: {$e->getCode()} -
                      {$e->getMessage()}",
-                         ShopgateLogger::LOGTYPE_ERROR
+                        ShopgateLogger::LOGTYPE_ERROR
                     );
                     $this->_logShopgateError(
-                         "! (#{$orderNumber})  SMA-Error on cancel order! Message: {$e->getCode()} -
+                        "! (#{$orderNumber})  SMA-Error on cancel order! Message: {$e->getCode()} -
                      {$e->getMessage()}",
-                         ShopgateLogger::LOGTYPE_DEBUG
+                        ShopgateLogger::LOGTYPE_DEBUG
                     );
                 }
             } catch (Exception $e) {
                 Mage::getSingleton('core/session')->addError(
-                    Mage::helper("shopgate")->__(
-                        "[SHOPGATE] An unknown error occured!<br />Please contact Shopgate support."
+                    Mage::helper('shopgate')->__(
+                        '[SHOPGATE] An unknown error occured!<br />Please contact Shopgate support.'
                     )
                 );
 
                 $this->_logShopgateError(
-                     "! (#{$orderNumber})  SMA-Error on cancel order! Message: {$e->getCode()} -
+                    "! (#{$orderNumber})  SMA-Error on cancel order! Message: {$e->getCode()} -
                      {$e->getMessage()}",
-                     ShopgateLogger::LOGTYPE_ERROR
+                    ShopgateLogger::LOGTYPE_ERROR
                 );
                 $this->_logShopgateError(
-                     "! (#{$orderNumber})  SMA-Error on cancel order! Message: {$e->getCode()} -
+                    "! (#{$orderNumber})  SMA-Error on cancel order! Message: {$e->getCode()} -
                      {$e->getMessage()}",
-                     ShopgateLogger::LOGTYPE_DEBUG
+                    ShopgateLogger::LOGTYPE_DEBUG
                 );
             }
         }
+
+        return $this;
     }
 
     /**
@@ -555,8 +559,8 @@ class Shopgate_Framework_Model_Observer
                 $object = Mage::helper('shopgate')->getConfig()->jsonDecode($json_info);
             } catch (Exception $e) {
                 ShopgateLogger::getInstance()->log(
-                              "Product ID (#{$id}) Json parse error! Message: {$e->getCode()} - {$e->getMessage()}",
-                              ShopgateLogger::LOGTYPE_ERROR
+                    "Product ID (#{$id}) Json parse error! Message: {$e->getCode()} - {$e->getMessage()}",
+                    ShopgateLogger::LOGTYPE_ERROR
                 );
                 return false;
             }
@@ -576,12 +580,12 @@ class Shopgate_Framework_Model_Observer
      */
     public function beforeSalesrulesLoaded($observer)
     {
-        if (Mage::helper("shopgate")->isShopgateApiRequest()) {
+        if (Mage::helper('shopgate')->isShopgateApiRequest()) {
             $collection = $observer->getEvent()->getCollection();
             if ($collection instanceof Mage_SalesRule_Model_Resource_Rule_Collection) {
                 $collection->getSelect()->where(
-                    "coupon_type = " . Mage_SalesRule_Model_Rule::COUPON_TYPE_SPECIFIC .
-                    " OR simple_free_shipping IN (1,2)"
+                    'coupon_type = ' . Mage_SalesRule_Model_Rule::COUPON_TYPE_SPECIFIC .
+                    ' OR simple_free_shipping IN (1,2)'
                 );
             }
         }
@@ -592,34 +596,34 @@ class Shopgate_Framework_Model_Observer
      */
     public function deleteShopgateCouponProducts($observer)
     {
-        if (Mage::helper("shopgate")->isShopgateApiRequest()) {
-            $eventResourceModule = explode("/", $observer->getResourceName());
-            $eventResourceModule = count($eventResourceModule) ? $eventResourceModule[0] : "default";
+        if (Mage::helper('shopgate')->isShopgateApiRequest()) {
+            $eventResourceModule = explode('/', $observer->getResourceName());
+            $eventResourceModule = count($eventResourceModule) ? $eventResourceModule[0] : 'default';
             /* Prevent collection loading on admin to avoid an error while using flat tables */
-            if ((Mage::app()->getStore()->isAdmin() && !$eventResourceModule == "cron") ||
-                (!Mage::helper('shopgate')->isShopgateApiRequest() && !$eventResourceModule == "cron")
+            if ((Mage::app()->getStore()->isAdmin() && !$eventResourceModule == 'cron') ||
+                (!Mage::helper('shopgate')->isShopgateApiRequest() && !$eventResourceModule == 'cron')
             ) {
                 return;
             }
-    
+
             $oldStoreViewId = Mage::app()->getStore()->getId();
-    
-            if ($eventResourceModule == "cron") {
+
+            if ($eventResourceModule == 'cron') {
                 $storeViewIds = Mage::getModel('core/store')->getCollection()->toOptionArray();
             } else {
-                $storeViewIds = array(array("value" => $oldStoreViewId, "label" => "current"));
+                $storeViewIds = array(array('value' => $oldStoreViewId, 'label' => 'current'));
             }
-    
+
             foreach ($storeViewIds as $storeView) {
                 $storeViewId = $storeView['value'];
                 Mage::app()->setCurrentStore($storeViewId);
-    
+
                 $collection = Mage::getModel('catalog/product')
                                   ->getResourceCollection()
                                   ->addFieldToFilter('type_id', 'virtual');
-    
+
                 $helper = Mage::helper('shopgate/coupon');
-    
+
                 foreach ($collection->getItems() as $product) {
                     if ($helper->isShopgateCoupon($product)) {
                         Mage::app()->setCurrentStore(0);
@@ -646,14 +650,18 @@ class Shopgate_Framework_Model_Observer
             $storeViewId = Mage::app()->getRequest()->getParam('storeviewid');
 
             if (Mage::helper('shopgate/config')->isOAuthShopAlreadyRegistered($settings['shop_number'], $storeViewId)) {
-                Mage::throwException('For the current storeView with id #' . $storeViewId . ' is already a shopnumber set. OAuth registration canceled.');
+                Mage::throwException(
+                    'For the current storeView with id #' . $storeViewId . ' is already a shopnumber set. OAuth registration canceled.'
+                );
             }
 
             $config->setStoreViewId($storeViewId);
 
             /* pre save shop_number in proper scope to trigger the save mechanisms scope definition algorithm */
             if (!$config->oauthSaveNewShopNumber($settings['shop_number'], $storeViewId)) {
-                Mage::throwExecption('Could not determine proper scope for new shop with number: #' . $settings['shop_number']);
+                Mage::throwExecption(
+                    'Could not determine proper scope for new shop with number: #' . $settings['shop_number']
+                );
             }
 
             unset($settings['shop_number']);
@@ -669,7 +677,10 @@ class Shopgate_Framework_Model_Observer
             && Mage::app()->getRequest()->getParam('action') == 'receive_authorization'
         ) {
             $storeViewId = Mage::app()->getRequest()->getParam('storeviewid');
-            $shopnumber  = Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_SHOP_NUMBER, $storeViewId);
+            $shopnumber  = Mage::getStoreConfig(
+                Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_SHOP_NUMBER,
+                $storeViewId
+            );
 
             $collection = Mage::getModel('core/config_data')
                               ->getCollection()
@@ -692,14 +703,14 @@ class Shopgate_Framework_Model_Observer
      */
     public function checkForUpdates()
     {
-        $model  = Mage::getModel('shopgate/feed');
+        $model = Mage::getModel('shopgate/feed');
         $model->checkUpdate();
     }
 
     /**
      * @param Varien_Event_Observer $observer
      *
-     * @return $this|void
+     * @return $this
      */
     public function manipulateShipmentForBillsafe(Varien_Event_Observer $observer)
     {
@@ -709,15 +720,16 @@ class Shopgate_Framework_Model_Observer
             $code     = $shipment->getOrder()->getPayment()->getMethodInstance()->getCode();
 
             if ($code != Netresearch_Billsafe_Model_Payment::CODE) {
-                return;
+                return $this;
             }
 
-            $magentoShopgateOrder = Mage::getModel("shopgate/shopgate_order")->load(
-                $shipment->getOrder()->getId(), "order_id"
+            $magentoShopgateOrder = Mage::getModel('shopgate/shopgate_order')->load(
+                $shipment->getOrder()->getId(),
+                'order_id'
             );
 
             if ($magentoShopgateOrder->getId() == null) {
-                return;
+                return $this;
             }
 
             /**
@@ -730,7 +742,6 @@ class Shopgate_Framework_Model_Observer
             $order->setIsShopgateOrder(true);
 
             return $this;
-
         }
 
         return $this;
@@ -756,7 +767,8 @@ class Shopgate_Framework_Model_Observer
          */
         $config    = $observer->getConfig();
         $optionTab = $config->getNode('sections/shopgate/groups/option/fields');
-        $devConfig = new Mage_Core_Model_Config_Element('
+        $devConfig = new Mage_Core_Model_Config_Element(
+            '
             <fields>
                 <customer_number translate="label comment tooltip">
                     <label>Customer number</label>
@@ -792,7 +804,8 @@ class Shopgate_Framework_Model_Observer
                     </validate>
                 </api_key>
             </fields>
-        ');
+            '
+        );
 
         $optionTab->extend($devConfig);
 
@@ -802,7 +815,8 @@ class Shopgate_Framework_Model_Observer
          * @var Mage_Core_Model_Config_Element $shopgateSection
          */
         $shopgateSection = $config->getNode('sections/shopgate/groups');
-        $hiddenGroup     = new Mage_Core_Model_Config_Element('
+        $hiddenGroup     = new Mage_Core_Model_Config_Element(
+            '
             <hidden translate="label">
                 <label>Developer Only Section</label>
                 <sort_order>15</sort_order>
@@ -821,7 +835,8 @@ class Shopgate_Framework_Model_Observer
                     </oauth_access_token>
                 </fields>
             </hidden>
-        ');
+            '
+        );
         $shopgateSection->appendChild($hiddenGroup);
 
         return $this;

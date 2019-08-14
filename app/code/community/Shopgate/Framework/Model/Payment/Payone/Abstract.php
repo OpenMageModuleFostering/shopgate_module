@@ -58,11 +58,11 @@ class Shopgate_Framework_Model_Payment_Payone_Abstract extends Shopgate_Framewor
     protected $_transExists;
 
     /**
-     * @param ShopgateOrder $shopgateOrder
+     * Initialize Payone Factory on load
      */
-    public function __construct(ShopgateOrder $shopgateOrder)
+    public function _construct()
     {
-        $this->setShopgateOrder($shopgateOrder);
+        parent::_construct();
         $this->_initConfigs();
     }
 
@@ -241,7 +241,7 @@ class Shopgate_Framework_Model_Payment_Payone_Abstract extends Shopgate_Framewor
      *
      * @return Mage_Sales_Model_Order
      */
-    public function manipulateOrderWithPaymentData($order = null)
+    public function manipulateOrderWithPaymentData($order)
     {
         $paymentPayone = $this->getPaymentModel();
 

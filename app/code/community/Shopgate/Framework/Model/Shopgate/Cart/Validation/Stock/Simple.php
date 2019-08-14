@@ -53,6 +53,10 @@ class Shopgate_Framework_Model_Shopgate_Cart_Validation_Stock_Simple
             $stockItem = $item->getProduct()->getCustomOption('simple_product')->getProduct()->getStockItem();
         }
 
+        if (null == $product->getShopgateItemNumber()) {
+            $product->setShopgateItemNumber($product->getId());
+        }
+
         $errors = array();
 
         if (Mage::helper('shopgate/config')->getIsMagentoVersionLower1410()) {

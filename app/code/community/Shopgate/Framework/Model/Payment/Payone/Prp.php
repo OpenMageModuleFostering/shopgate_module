@@ -69,7 +69,7 @@ class Shopgate_Framework_Model_Payment_Payone_Prp
             $this->getOrder()->getPayment()->setPayoneClearingBankBic(strtoupper($info['clearing_bankbic']));
         }
 
-        return parent::manipulateOrderWithPaymentData();
+        return parent::manipulateOrderWithPaymentData($order);
     }
 
     /**

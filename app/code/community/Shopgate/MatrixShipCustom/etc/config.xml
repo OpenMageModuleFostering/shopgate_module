@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Shopgate_MatrixShipCustom>
+            <version>0.1.0</version>
+        </Shopgate_MatrixShipCustom>
+    </modules>
+    <global>
+        <helpers>
+            <shopgate_matrixShipCustom>
+                <class>Shopgate_MatrixShipCustom_Helper</class>
+            </shopgate_matrixShipCustom>
+            <shopgate>
+                <rewrite>
+                    <sales>Shopgate_MatrixShipCustom_Helper_Framework_Sales</sales>
+                </rewrite>
+            </shopgate>
+        </helpers>
+    </global>
+</config>

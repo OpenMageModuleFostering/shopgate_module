@@ -736,8 +736,8 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
         $item->setIsBuyable((int)$isBuyable);
         $item->setQtyBuyable($qtyBuyable);
         $item->setStockQuantity($stockQuantity);
-        $item->setUnitAmount($priceExclTax);
-        $item->setUnitAmountWithTax($priceInclTax);
+        $item->setUnitAmount(round($priceExclTax, 4));
+        $item->setUnitAmountWithTax(round($priceInclTax, 4));
 
         foreach ($errors as $error) {
             $item->setError($error['type']);
@@ -834,8 +834,8 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
     public function checkQtyIncrements($stockItem, $qty)
     {
         $result = new Varien_Object();
-        
-        if ($this->getSuppressCheckQtyIncrements()) {
+
+        if ($stockItem->getSuppressCheckQtyIncrements()) {
             return $result;
         }
 
@@ -861,8 +861,10 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
     }
 
     /**
-     * Generates the uri to direct back after oauth authorization
-     * and makes the uri unique via storeviewid
+     * Generates the URI to direct back after oAuth authorization
+     * and makes the URI unique via store view id.
+     * Due to this being called from frontend & backend we need
+     * to exclude SID to make the redirect_uri match in both calls.
      *
      * @param int $storeViewId
      *
@@ -874,17 +876,20 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
         $oldStoreViewId = Mage::app()->getStore()->getId();
         Mage::app()->setCurrentStore($storeViewId);
         $url = Mage::app()->getStore($storeViewId)
-                   ->getUrl('shopgate/framework/receive_authorization/storeviewid/' . $storeViewId);
+                   ->getUrl(
+                       'shopgate/framework/receive_authorization/storeviewid/' . $storeViewId,
+                       array('_nosid' => true)
+                   );
         Mage::app()->setCurrentStore($oldStoreViewId);
-
         $url = $this->includeHtpassToUrl($url);
+        
         return $url;
     }
 
     /**
      * Injects .htpassw user & pass into URL
      * E.g. http://user:pass@store.com/
-     * 
+     *
      * @param $url
      * @return string
      */
@@ -896,10 +901,10 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
             $htpsw = $_SERVER['PHP_AUTH_USER'] . ':' . $_SERVER['PHP_AUTH_PW'] . '@';
             $url   = str_replace(array($http, $https), array($http . $htpsw, $https . $htpsw), $url);
         }
-        
+
         return $url;
     }
-    
+
     /**
      * Check for enterprise edition
      *
@@ -977,9 +982,7 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
     public function calculateTaxRate($amount, $taxAmount, $precision = 2)
     {
         if ($taxAmount > 0) {
-            return round(
-                (100 * $taxAmount) / ($amount - $taxAmount), $precision
-            );
+            return round((100 * $taxAmount) / ($amount - $taxAmount), $precision);
         }
 
         return 0.00;
@@ -988,15 +991,18 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
     /**
      * Checks if totals from shopgate and magento differ by 1 cent
      *
-     * @param ShopgateOrder             $shopgateOrder
-     * @param Mage_Sales_Model_Order    $magentoOrder
+     * @param ShopgateOrder          $shopgateOrder
+     * @param Mage_Sales_Model_Order $magentoOrder
      * @return bool
      */
     public function oneCentBugDetected($shopgateOrder, $magentoOrder)
     {
-        $config         = $this->getConfig();
-        $bugDetected    = round(abs($shopgateOrder->getAmountComplete() - $magentoOrder->getQuoteBaseGrandTotal()), 2) == 0.01;
-        $shouldFixBug   = $config->getFixOneCentBug();
+        $config       = $this->getConfig();
+        $bugDetected  = round(
+                            abs($shopgateOrder->getAmountComplete() - $magentoOrder->getQuoteBaseGrandTotal()),
+                            2
+                        ) == 0.01;
+        $shouldFixBug = $config->getFixOneCentBug();
         return $bugDetected && $shouldFixBug;
     }
 }

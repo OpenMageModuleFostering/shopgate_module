@@ -45,6 +45,10 @@ class Shopgate_Framework_Model_Shopgate_Cart_Validation_Stock_Bundle
         $isBuyable  = true;
         $qtyBuyable = null;
 
+        if (null == $product->getShopgateItemNumber()) {
+            $product->setShopgateItemNumber($product->getId());
+        }
+
         foreach ($item->getChildren() as $childItem) {
             /** @var Mage_Catalog_Model_Product $childProduct */
             $childProduct = $childItem->getProduct();

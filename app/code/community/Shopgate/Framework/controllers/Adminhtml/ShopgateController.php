@@ -89,7 +89,8 @@ class Shopgate_Framework_Adminhtml_ShopgateController extends Mage_Adminhtml_Con
                     );
                 }
                 ShopgateLogger::getInstance()->log(
-                              "Unregister OAuth Shop Connection has failed \"" . (string)$connectionIds . "\"", ShopgateLogger::LOGTYPE_ERROR
+                    "Unregister OAuth Shop Connection has failed \"" . (string)$connectionIds . "\"",
+                    ShopgateLogger::LOGTYPE_ERROR
                 );
             }
         }
@@ -258,7 +259,8 @@ class Shopgate_Framework_Adminhtml_ShopgateController extends Mage_Adminhtml_Con
                 $responseData['errors'] = Mage::helper('shopgate')->__($msg);
             }
             ShopgateLogger::getInstance()->log(
-                          "Unregister OAuth Shop Connection with store View Id \"" . (string)$storeViewId . "\" could not get loaded", ShopgateLogger::LOGTYPE_ERROR
+                "Unregister OAuth Shop Connection with store View Id \"" . (string)$storeViewId
+                . "\" could not get loaded", ShopgateLogger::LOGTYPE_ERROR
             );
         }
 
@@ -309,6 +311,7 @@ class Shopgate_Framework_Adminhtml_ShopgateController extends Mage_Adminhtml_Con
      * Helper method to check if a storeViewId is already in use by a shopgate connection
      *
      * @param int $storeViewId
+     *
      * @return boolean
      */
     protected function _isStoreViewAlreadyRegisterdToConnection($storeViewId)
@@ -317,9 +320,20 @@ class Shopgate_Framework_Adminhtml_ShopgateController extends Mage_Adminhtml_Con
             Mage::getSingleton('adminhtml/session')->addError(
                 Mage::helper('shopgate')->__("The given storeview is already in use by a shopgate connection.")
             );
+
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * ACL fix for SUPEE-6285 changes
+     * 
+     * @return bool
+     */
+    public function _isAllowed()
+    {
+        return Mage::getSingleton('admin/session')->isAllowed('shopgate_menu/manage');
     }
 }

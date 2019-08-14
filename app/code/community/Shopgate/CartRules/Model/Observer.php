@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Shopgate GmbH
  *
@@ -20,32 +21,18 @@
  *
  * @author Shopgate GmbH <interfaces@shopgate.com>
  */
-
-
-/**
- * Handler for all online bank transfer payment interfaces
- *
- * Note: any online bank transfer config needs to be enabled for
- * Giro, Ideal, SUE to work, they don't actually need to be selected.
- *
- * @package Class Shopgate_Framework_Model_Payment_Payone_BankAbstract
- * @author  Konstantin Kiritsenko <konstantin@kiritsenko.com>
- */
-class Shopgate_Framework_Model_Payment_Payone_BankAbstract extends Shopgate_Framework_Model_Payment_Payone_Abstract
+class Shopgate_CartRules_Model_Observer extends Shopgate_Framework_Model_Observer
 {
-    const PAYONE_CORE_MODEL_CONFIG_IDENTIFIER = 'payone_online_bank_transfer';
-    const PAYMENT_MODEL                       = 'payone_core/payment_method_onlineBankTransfer';
-
     /**
-     * @param Mage_Sales_Model_Order $order
-     * @return Mage_Sales_Model_Order
-     * @throws Exception
+     * This observer blocks any rule that is not a coupon,
+     * so it's made to be empty to stop that restriction.
+     *
+     * @see https://shopgate.atlassian.net/browse/MAGENTO-1163
+     * @param Varien_Event_Observer $event
+     * @return $this
      */
-    public function manipulateOrderWithPaymentData($order)
+    public function beforeSalesrulesLoaded($event)
     {
-        $this->getOrder()->getPayment()->setPayoneOnlinebanktransferType($this->_getConfigCode());
-
-        return parent::manipulateOrderWithPaymentData($order);
+        return $this;
     }
-
 }

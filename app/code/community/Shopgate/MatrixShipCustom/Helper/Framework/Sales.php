@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Shopgate GmbH
  *
@@ -20,32 +21,22 @@
  *
  * @author Shopgate GmbH <interfaces@shopgate.com>
  */
-
-
-/**
- * Handler for all online bank transfer payment interfaces
- *
- * Note: any online bank transfer config needs to be enabled for
- * Giro, Ideal, SUE to work, they don't actually need to be selected.
- *
- * @package Class Shopgate_Framework_Model_Payment_Payone_BankAbstract
- * @author  Konstantin Kiritsenko <konstantin@kiritsenko.com>
- */
-class Shopgate_Framework_Model_Payment_Payone_BankAbstract extends Shopgate_Framework_Model_Payment_Payone_Abstract
+class Shopgate_MatrixShipCustom_Helper_Framework_Sales extends Shopgate_Framework_Helper_Sales
 {
-    const PAYONE_CORE_MODEL_CONFIG_IDENTIFIER = 'payone_online_bank_transfer';
-    const PAYMENT_MODEL                       = 'payone_core/payment_method_onlineBankTransfer';
 
     /**
-     * @param Mage_Sales_Model_Order $order
-     * @return Mage_Sales_Model_Order
-     * @throws Exception
+     * Quote setting per COST-492 & MAGENTO-1293 story.
+     * The quote is used by a customer matrix shipping
+     * rewrite that is using the checkout session to
+     * analyze the item data.
+     * 
+     * @param Mage_Checkout_Model_Cart $mageCart
+     * @return array
      */
-    public function manipulateOrderWithPaymentData($order)
+    public function getShippingMethods($mageCart)
     {
-        $this->getOrder()->getPayment()->setPayoneOnlinebanktransferType($this->_getConfigCode());
-
-        return parent::manipulateOrderWithPaymentData($order);
+        Mage::getSingleton('checkout/session')->replaceQuote($mageCart->getQuote());
+        
+        return parent::getShippingMethods($mageCart);
     }
-
 }

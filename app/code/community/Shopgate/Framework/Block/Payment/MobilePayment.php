@@ -34,6 +34,8 @@
  * @author      Shopgate GmbH, 35510 Butzbach, DE
  * @package     Shopgate_Framework
  */
+include_once Mage::getBaseDir("lib") . '/Shopgate/shopgate.php';
+
 class Shopgate_Framework_Block_Payment_MobilePayment extends Mage_Payment_Block_Info
 {
     /**

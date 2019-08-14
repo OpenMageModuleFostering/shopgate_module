@@ -49,7 +49,7 @@ class Shopgate_Framework_Model_Payment_Payone_Cc
         $this->getOrder()->getPayment()->setCcOwner($paymentInfo['credit_card']['holder']);
         $this->getOrder()->getPayment()->setCcNumberEnc($paymentInfo['credit_card']['masked_number']);
 
-        return parent::manipulateOrderWithPaymentData();
+        return parent::manipulateOrderWithPaymentData($order);
     }
 
     /**

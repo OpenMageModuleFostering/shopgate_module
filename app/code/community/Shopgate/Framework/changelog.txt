@@ -1,3 +1,12 @@
+'''Version 2.9.32'''
+* Shopgate dropdown is now visible with proper permissions set
+* Shopgate menu moved under the Systems dropdown
+* Fixed issue with PayOne Shopgate order not passed as array
+* Fixed partial shipping refunds
+* Fixed a bug with oAuth store connection & URI's with SID
+* Fixed amount and itemNumber in checkCart
+* Fixed bug in magento order detail page
+
 '''Version 2.9.31'''
 * improve discount detection
 * update to library version 2.9.41

@@ -204,8 +204,17 @@ class Shopgate_Framework_Helper_Sales extends Mage_Core_Helper_Abstract
 
         /** @var Mage_Sales_Model_Quote_Item $_item */
         foreach ($quote->getAllVisibleItems() as $_item) {
-            /** @var Mage_Catalog_Model_Product $_item */
-            $items[] = $validator->validateStock($_item, $_item->getPriceInclTax(), $_item->getPrice());
+            $price = $_item->getProduct()->getFinalPrice();
+            $priceIncludesTax = Mage::helper('tax')->priceIncludesTax($quote->getStore());
+            $percent = $_item->getTaxPercent();
+            if ($priceIncludesTax) {
+                $priceInclTax = $price;
+                $priceExclTax = $price / (1 + ($percent/100));
+            } else {
+                $priceInclTax = $price * (1 + ($percent/100));
+                $priceExclTax = $price;
+            }
+            $items[] = $validator->validateStock($_item, $priceInclTax, $priceExclTax);
         }
 
         foreach (Mage::helper('shopgate')->fetchMissingQuoteItems($cart, $quote) as $_item) {
