@@ -1,5 +1,17 @@
 '''English'''
 
+'''Version 2.9.22'''
+* Totals collector Invalid Block Type exception fix
+* Added redirect for quick search query links to mobile site
+* Fixed compatibility issue in get_settings with magento 1.4.x
+* Translated magento order status to shopgate order status
+* New Shopgate payment orders now have the correct state in Processing status
+* Added htpassw user & pass data in oAuth calls
+* Now prints customer custom fields in order history
+* Now saves customer custom fields if customer attribute exists in magento
+* added custom fields on get_orders
+* check_cart now returns the maximum quantity buyable if requested quantity is bigger than stock quantity
+
 '''Version 2.9.21'''
 * Fixed compatibility problem with Magento 1.4.0
 * fixed plugin not active error during oAuth registration

@@ -511,8 +511,8 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
 
         foreach ($order->getItems() as $item) {
             /* @var $item ShopgateOrderItem */
-            if (!$item->getInternalOrderInfo()) {
-                /** might be a shopgate coupon due to we only export products with internal_order_info */
+            if ($item->isSgCoupon()) {
+                /** is a shopgate coupon */
                 continue;
             }
 
@@ -758,15 +758,12 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
         if ($order instanceof ShopgateOrder) {
             foreach ($order->getItems() as $item) {
                 /** @var ShopgateOrderItem $item */
+                if (!$item->isSgCoupon()) {
+                    continue;
+                }
                 if ($this->useTaxClasses) {
-                    if ($item->getUnitAmount() >= 0) {
-                        continue;
-                    }
                     $itemAmount = $item->getUnitAmount();
                 } else {
-                    if ($item->getUnitAmountWithTax() >= 0 && $item->getInternalOrderInfo()) {
-                        continue;
-                    }
                     $itemAmount = $item->getUnitAmountWithTax();
                 }
 
@@ -1007,8 +1004,8 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             )
         );
 
-        $quote->setIsActive("0");
-        $quote->setRemoteIp("shopgate.com");
+        $quote->setIsActive('0');
+        $quote->setRemoteIp('shopgate.com');
         $quote->save();
         if (empty($externalCustomerId)) {
             $quote->getBillingAddress()->isObjectNew(false);
@@ -1112,21 +1109,23 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
      */
     protected function _addCustomFields(Mage_Sales_Model_Order $magentoOrder, ShopgateOrder $shopgateOrder)
     {
-        foreach ($shopgateOrder->getCustomFields() as $field) {
-            $magentoOrder->setDataUsingMethod($field->getInternalFieldName(), $field->getValue());
-        }
+        $magentoOrder = $this->_getHelper()->setCustomFields($magentoOrder, $shopgateOrder);
+
+        /**
+         * Assign custom fields to billing address
+         */
         $invoiceAddress = $shopgateOrder->getInvoiceAddress();
-        foreach ($invoiceAddress->getCustomFields() as $field) {
-            $billing = $magentoOrder->getBillingAddress();
-            $billing->setDataUsingMethod($field->getInternalFieldName(), $field->getValue());
-            $magentoOrder->setBillingAddress($billing);
-        }
+        $billing        = $magentoOrder->getBillingAddress();
+        $billing        = $this->_getHelper()->setCustomFields($billing, $invoiceAddress);
+        $magentoOrder->setBillingAddress($billing);
+
+        /**
+         * Assign custom fields to shipping address
+         */
         $deliveryAddress = $shopgateOrder->getDeliveryAddress();
-        foreach ($deliveryAddress->getCustomFields() as $field) {
-            $shipping = $magentoOrder->getShippingAddress();
-            $shipping->setDataUsingMethod($field->getInternalFieldName(), $field->getValue());
-            $magentoOrder->setShippingAddress($shipping);
-        }
+        $shipping        = $magentoOrder->getShippingAddress();
+        $shipping        = $this->_getHelper()->setCustomFields($shipping, $deliveryAddress);
+        $magentoOrder->setShippingAddress($shipping);
 
         return $magentoOrder;
     }
@@ -1172,22 +1171,8 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             ),
             false
         );
-
-        if (Mage::getStoreConfig(
-            Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ORDER_CUSTOMFIELDS_TO_STATUSHISTORY,
-            $this->_getConfig()->getStoreViewId()
-        )
-        ) {
-            foreach ($shopgateOrder->getCustomFields() as $field) {
-                $order->addStatusHistoryComment(
-                    $this->_getHelper()
-                         ->__("[SHOPGATE] Custom fields:") . "\n\"" . addslashes(
-                        $field->getLabel()
-                    ) . "\" => \"" . addslashes($field->getValue()) . "\"",
-                    false
-                );
-            }
-        }
+        
+        Mage::helper('shopgate/import_order')->printCustomFieldComments($order, $shopgateOrder);
 
         return $order;
     }

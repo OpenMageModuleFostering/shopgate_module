@@ -78,6 +78,12 @@ class Shopgate_Framework_Helper_Sales extends Mage_Core_Helper_Abstract
             'save_in_address_book' => $saveInAddressBook,
         );
 
+        $customFields = array();
+        foreach ($address->getCustomFields() as $field) {
+            $customFields[] = array($field->getInternalFieldName() => $field->getValue());
+        }
+        $addressData = array_merge($addressData, $customFields);
+        
         return $addressData;
     }
 

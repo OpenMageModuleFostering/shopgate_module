@@ -421,8 +421,8 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
      */
     public function getStatusFromState($state)
     {
-        if (Mage::helper("shopgate/config")->getIsMagentoVersionLower15() ||
-            (Mage::helper("shopgate/config")->getEdition() == 'Enterprise' &&
+        if ($this->_getConfigHelper()->getIsMagentoVersionLower15() ||
+            ($this->_getConfigHelper()->getEdition() == 'Enterprise' &&
              version_compare(Mage::getVersion(), '1.9.1.2', '<'))
         ) {
             return $this->_getStatusFromStateMagento14x($state);
@@ -734,7 +734,7 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
         $item->setInputs($product->getShopgateInputs());
         $item->setAttributes($product->getShhopgateAttributes());
         $item->setIsBuyable((int)$isBuyable);
-        $item->setQtyBuyable($isBuyable ? $qtyBuyable : 0);
+        $item->setQtyBuyable($qtyBuyable);
         $item->setStockQuantity($stockQuantity);
         $item->setUnitAmount($priceExclTax);
         $item->setUnitAmountWithTax($priceInclTax);
@@ -873,9 +873,29 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
                    ->getUrl('shopgate/framework/receive_authorization/storeviewid/' . $storeViewId);
         Mage::app()->setCurrentStore($oldStoreViewId);
 
+        $url = $this->includeHtpassToUrl($url);
         return $url;
     }
 
+    /**
+     * Injects .htpassw user & pass into URL
+     * E.g. http://user:pass@store.com/
+     * 
+     * @param $url
+     * @return string
+     */
+    public function includeHtpassToUrl($url)
+    {
+        if (isset($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])) {
+            $http  = 'http://';
+            $https = 'https://';
+            $htpsw = $_SERVER['PHP_AUTH_USER'] . ':' . $_SERVER['PHP_AUTH_PW'] . '@';
+            $url   = str_replace(array($http, $https), array($http . $htpsw, $https . $htpsw), $url);
+        }
+        
+        return $url;
+    }
+    
     /**
      * Check for enterprise edition
      *
@@ -919,5 +939,46 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
         }
 
         return $result;
+    }
+
+    /**
+     * @param Mage_Customer_Model_Address_Abstract|Mage_Sales_Model_Abstract $magentoObject
+     * @param ShopgateOrder|ShopgateAddress|ShopgateCustomer                 $shopgateObject
+     * @return mixed
+     */
+    public function setCustomFields($magentoObject, $shopgateObject)
+    {
+        foreach ($shopgateObject->getCustomFields() as $field) {
+            $magentoObject->setData($field->getInternalFieldName(), $field->getValue());
+        }
+
+        return $magentoObject;
+    }
+
+    /**
+     * @return Shopgate_Framework_Helper_Config
+     */
+    protected function _getConfigHelper()
+    {
+        return Mage::helper('shopgate/config');
+    }
+
+    /**
+     * @param     $amount
+     * @param     $taxAmount
+     * @param int $precision
+     *
+     * @return float
+     */
+    public function calculateTaxRate($amount, $taxAmount, $precision = 2)
+    {
+        if ($taxAmount > 0) {
+            return round(
+                (100 * $taxAmount) / ($amount - $taxAmount), $precision
+            );
+        } else {
+            return $amount;
+        }
+
     }
 }

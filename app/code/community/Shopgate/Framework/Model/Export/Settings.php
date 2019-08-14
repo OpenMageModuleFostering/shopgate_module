@@ -147,8 +147,10 @@ class Shopgate_Framework_Model_Export_Settings extends Shopgate_Framework_Model_
         /** @var Mage_Sales_Model_quote $quote */
         $store                  = Mage::app()->getStore()->getId();
         $shopgatePaymentMethods = array();
-
-        $paymentMethods = Mage::helper('payment')->getPaymentMethods($store);
+        $paymentMethods         = Mage::getStoreConfig(
+                                      Mage_Payment_Helper_Data::XML_PATH_PAYMENT_METHODS,
+                                      $store
+        );
 		$emptyQuote = Mage::getModel('sales/quote');
         foreach ( $paymentMethods as $code => $methodConfig) {
             $prefix = 'payment/' . $code . '/';

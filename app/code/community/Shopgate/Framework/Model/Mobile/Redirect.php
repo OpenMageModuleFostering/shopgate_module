@@ -38,73 +38,73 @@ class Shopgate_Framework_Model_Mobile_Redirect extends Mage_Core_Model_Abstract
 {
 
     /**
-     * caching const
+     * Caching const
      */
     const CACHE_PRODUCT_OBJECT_ID = 'shopgate_mobile_redirect_product';
     const CACHE_PAGE_IDENTIFIER   = 'shopgate_mobile_redirect_category';
 
     /**
-     * type const
+     * Type const
      */
-    const CATEGORY = "category";
-    const PRODUCT  = "product";
-    const PAGE     = "page";
-    const INDEX    = "index";
-    
+    const CATEGORY = 'category';
+    const PRODUCT  = 'product';
+    const PAGE     = 'page';
+    const SEARCH   = 'result';
+    const INDEX    = 'index';
+
     /**
      * @var Shopgate_Framework_Model_Config
      */
     protected $_config;
 
     /**
-     * construct and define config
+     * Construct and define config
      */
     public function _construct()
     {
         parent::_construct();
-        $this->_config = Mage::helper("shopgate/config")->getConfig();
+        $this->_config = Mage::helper('shopgate/config')->getConfig();
     }
 
     /**
-     * redirect with 301
+     * Redirect with 301
      */
     public function redirectWithCode()
     {
-
         try {
             // no redirection in admin
             if (Mage::app()->getStore()->isAdmin()) {
-                Mage::getSingleton("core/session")->setData("shopgate_header", '');
+                Mage::getSingleton('core/session')->setData('shopgate_header', '');
                 return;
             }
 
             // isAjax is not available on Magento < 1.5 >> no ajax-check
-            if (method_exists(Mage::app()->getRequest(), "isAjax")
+            if (method_exists(Mage::app()->getRequest(), 'isAjax')
                 && Mage::app()->getRequest()->isAjax()
             ) {
-                Mage::getSingleton("core/session")->setData("shopgate_header", '');
+                Mage::getSingleton('core/session')->setData('shopgate_header', '');
                 return;
             }
 
             if (!$this->_config->isValidConfig()) {
-                Mage::getSingleton("core/session")->setData("shopgate_header", '');
+                Mage::getSingleton('core/session')->setData('shopgate_header', '');
                 return;
             }
 
             if (!Mage::getStoreConfig(
-                     Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ACTIVE,
-                     $this->_config->getStoreViewId()
+                Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ACTIVE,
+                $this->_config->getStoreViewId()
             )
             ) {
-                Mage::getSingleton("core/session")->setData("shopgate_header", '');
+                Mage::getSingleton('core/session')->setData('shopgate_header', '');
                 return;
             }
 
             $jsHeader = $this->_getJsHeader();
 
-            Mage::getSingleton("core/session")->setData("shopgate_header", $jsHeader);
+            Mage::getSingleton('core/session')->setData('shopgate_header', $jsHeader);
         } catch (Exception $e) {
-            Mage::getSingleton("core/session")->setData("shopgate_header", '');
+            Mage::getSingleton('core/session')->setData('shopgate_header', '');
             ShopgateLogger::getInstance()->log('error in mobile redirector: ' . $e->getMessage());
         }
     }
@@ -119,19 +119,19 @@ class Shopgate_Framework_Model_Mobile_Redirect extends Mage_Core_Model_Abstract
         $objId  = Mage::app()->getRequest()->getParam('id');
         $action = Mage::app()->getRequest()->getControllerName();
 
-        $baseUrl    = trim(Mage::app()->getRequest()->getBaseUrl(), "/");
-        $requestUrl = trim(Mage::app()->getRequest()->getRequestUri(), "/");
+        $baseUrl    = trim(Mage::app()->getRequest()->getBaseUrl(), '/');
+        $requestUrl = trim(Mage::app()->getRequest()->getRequestUri(), '/');
 
         if (Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_EXPORT_STORES)
-            && $action == "index" && $baseUrl != $requestUrl
+            && $action == 'index' && $baseUrl != $requestUrl
         ) {
-            $action = "category";
+            $action = 'category';
             $objId  = Mage::app()->getStore()->getRootCategoryId();
         }
 
         $redirectType      = Mage::getStoreConfig(
-                                 Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_REDIRECT_TYPE,
-                                 $this->_config->getStoreViewId()
+            Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_REDIRECT_TYPE,
+            $this->_config->getStoreViewId()
         );
         $automaticRedirect = $redirectType == Shopgate_Framework_Model_Config::REDIRECTTYPE_HTTP ? true : false;
 
@@ -146,6 +146,10 @@ class Shopgate_Framework_Model_Mobile_Redirect extends Mage_Core_Model_Abstract
                 $objId          = Mage::app()->getRequest()->getParam('page_id');
                 $pageIdentifier = $this->_getPageIdentifier($objId);
                 $jsHeader       = $this->_getCachedJsHeaderByType(self::PAGE, $pageIdentifier, $automaticRedirect);
+                break;
+            case self::SEARCH:
+                $search   = Mage::app()->getRequest()->getParam('q');
+                $jsHeader = $this->_getCachedJsHeaderByType(self::SEARCH, $search, $automaticRedirect);
                 break;
             case self::INDEX:
                 $jsHeader = $this->_getCachedJsHeaderByType(self::INDEX, null, $automaticRedirect);
@@ -181,7 +185,7 @@ class Shopgate_Framework_Model_Mobile_Redirect extends Mage_Core_Model_Abstract
             return unserialize($cacheData);
         }
 
-        $page   = Mage::getModel("cms/page")->load($pageId);
+        $page   = Mage::getModel('cms/page')->load($pageId);
         $result = $page->getIdentifier();
         Mage::app()->saveCache(
             serialize($result),
@@ -196,9 +200,9 @@ class Shopgate_Framework_Model_Mobile_Redirect extends Mage_Core_Model_Abstract
     }
 
     /**
-     * get cached header js for redirect or load and save to cache 
-     * 
-     * @param $type string
+     * Get cached header js for redirect or load and save to cache
+     *
+     * @param $type  string
      * @param $objId string|int
      * @param $automaticRedirect
      * @return mixed|string|void
@@ -208,22 +212,29 @@ class Shopgate_Framework_Model_Mobile_Redirect extends Mage_Core_Model_Abstract
         $storeViewId = $this->_config->getStoreViewId();
         switch ($type) {
             case self::CATEGORY:
-                $cacheKey = $storeViewId .'_sg_mobile_category_' . $objId . '_redirect_type_' . intval($automaticRedirect);
+                $cacheKey = $storeViewId . '_sg_mobile_category_' . $objId . '_redirect_type_' . intval(
+                        $automaticRedirect
+                    );
                 break;
             case self::PRODUCT:
-                $cacheKey = $storeViewId .'_sg_mobile_item_' . $objId . '_redirect_type_' . intval($automaticRedirect);
+                $cacheKey = $storeViewId . '_sg_mobile_item_' . $objId . '_redirect_type_' . intval($automaticRedirect);
                 break;
             case self::PAGE:
-                $cacheKey = $storeViewId .'_sg_mobile_page_' . $objId . '_redirect_type_' . intval($automaticRedirect);
+                $cacheKey = $storeViewId . '_sg_mobile_page_' . $objId . '_redirect_type_' . intval($automaticRedirect);
+                break;
+            case self::SEARCH:
+                $cacheKey = $storeViewId . '_sg_mobile_catalogsearch_' . md5($objId) . '_redirect_type_' . intval(
+                        $automaticRedirect
+                    );
                 break;
             case self::INDEX:
-                $cacheKey = $storeViewId .'_sg_mobile_index_redirect_type_' . intval($automaticRedirect);
+                $cacheKey = $storeViewId . '_sg_mobile_index_redirect_type_' . intval($automaticRedirect);
                 break;
             default:
-                $cacheKey = $storeViewId .'_sg_mobile_default_type_' . intval($automaticRedirect);
+                $cacheKey = $storeViewId . '_sg_mobile_default_type_' . intval($automaticRedirect);
                 break;
         }
-        
+
         $cache = Mage::app()->getCacheInstance();
         $value = $cache->load($cacheKey);
 
@@ -233,12 +244,20 @@ class Shopgate_Framework_Model_Mobile_Redirect extends Mage_Core_Model_Abstract
             $builder          = new ShopgateBuilder($this->_config);
             $shopgateRedirect = $builder->buildRedirect();
 
-            if (!in_array(Mage::app()->getRequest()->getControllerName(), array("category", "product", "index"))
+            if (!in_array(
+                    Mage::app()->getRequest()->getControllerName(),
+                    array(
+                        self::CATEGORY,
+                        self::PRODUCT,
+                        self::SEARCH,
+                        self::INDEX
+                    )
+                )
                 && !Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ENABLE_DEFAULT_REDIRECT)
             ) {
                 $shopgateRedirect->suppressRedirect();
             }
-            
+
             $disabledRoutes = explode(
                 ',',
                 Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_DISABLE_REDIRECT_ROUTES)
@@ -247,7 +266,7 @@ class Shopgate_Framework_Model_Mobile_Redirect extends Mage_Core_Model_Abstract
             if (in_array($route, $disabledRoutes)) {
                 $shopgateRedirect->suppressRedirect();
             }
-            
+
             $disabledControllers = explode(
                 ',',
                 Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_DISABLE_REDIRECT_CONTROLLERS)
@@ -257,7 +276,7 @@ class Shopgate_Framework_Model_Mobile_Redirect extends Mage_Core_Model_Abstract
                 $shopgateRedirect->suppressRedirect();
             }
 
-            if ($controllerName == "product") {
+            if ($controllerName == 'product') {
                 $productId        = Mage::app()->getRequest()->getParam('id');
                 $disabledProducts = explode(
                     ',',
@@ -269,7 +288,7 @@ class Shopgate_Framework_Model_Mobile_Redirect extends Mage_Core_Model_Abstract
                 }
             }
 
-            if ($controllerName == "category") {
+            if ($controllerName == 'category') {
                 $categoryId         = Mage::app()->getRequest()->getParam('id');
                 $disabledCategories = explode(
                     ',',
@@ -279,7 +298,7 @@ class Shopgate_Framework_Model_Mobile_Redirect extends Mage_Core_Model_Abstract
                     $shopgateRedirect->suppressRedirect();
                 }
             }
-            
+
             switch ($type) {
                 case self::CATEGORY:
                     $jsHeader = $shopgateRedirect->buildScriptCategory($objId, $automaticRedirect);
@@ -290,6 +309,9 @@ class Shopgate_Framework_Model_Mobile_Redirect extends Mage_Core_Model_Abstract
                 case self::PAGE:
                     $jsHeader = $shopgateRedirect->buildScriptCms($objId, $automaticRedirect);
                     break;
+                case self::SEARCH:
+                    $jsHeader = $shopgateRedirect->buildScriptSearch($objId, $automaticRedirect);
+                    break;
                 case self::INDEX:
                     $jsHeader = $shopgateRedirect->buildScriptShop($automaticRedirect);
                     break;
@@ -297,15 +319,15 @@ class Shopgate_Framework_Model_Mobile_Redirect extends Mage_Core_Model_Abstract
                     $jsHeader = $shopgateRedirect->buildScriptDefault($automaticRedirect);
                     break;
             }
-            
+
             $cache->save(
-                  serialize($jsHeader),
-                  $cacheKey,
-                  array(
-                      'shopgate_mobile_redirect',
-                      Mage_Core_Model_Layout_Update::LAYOUT_GENERAL_CACHE_TAG
-                  ),
-                  7200
+                serialize($jsHeader),
+                $cacheKey,
+                array(
+                    'shopgate_mobile_redirect',
+                    Mage_Core_Model_Layout_Update::LAYOUT_GENERAL_CACHE_TAG
+                ),
+                7200
             );
         }
         return $jsHeader;

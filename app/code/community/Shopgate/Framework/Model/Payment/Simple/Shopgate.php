@@ -30,9 +30,10 @@ class Shopgate_Framework_Model_Payment_Simple_Shopgate
     extends Shopgate_Framework_Model_Payment_Abstract
     implements Shopgate_Framework_Model_Payment_Interface
 {
-    const PAYMENT_IDENTIFIER = ShopgateOrder::SHOPGATE;
-    const MODULE_CONFIG      = 'Shopgate_Framework';
-    const PAYMENT_MODEL      = 'shopgate/payment_shopgate';
+    const PAYMENT_IDENTIFIER     = ShopgateOrder::SHOPGATE;
+    const MODULE_CONFIG          = 'Shopgate_Framework';
+    const PAYMENT_MODEL          = 'shopgate/payment_shopgate';
+    const XML_CONFIG_STATUS_PAID = 'payment/shopgate/order_status';
 
     /**
      * No need to check activation, just import!
@@ -42,16 +43,5 @@ class Shopgate_Framework_Model_Payment_Simple_Shopgate
     public function isEnabled()
     {
         return true;
-    }
-
-    /**
-     * No need to pull status, it is assigned automatically
-     * 
-     * @param Mage_Sales_Model_Order $magentoOrder
-     * @return mixed
-     */
-    public function setOrderStatus($magentoOrder)
-    {
-        return $magentoOrder->setShopgateStatusSet(true);
     }
 }

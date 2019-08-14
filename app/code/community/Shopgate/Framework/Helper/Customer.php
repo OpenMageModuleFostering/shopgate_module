@@ -65,6 +65,7 @@ class Shopgate_Framework_Helper_Customer extends Shopgate_Framework_Helper_Data
                 $magentoCustomerAddress->setTelephone($shopgateCustomerAddress->getPhone());
             }
         }
+        $magentoCustomerAddress = $this->setCustomFields($magentoCustomerAddress, $shopgateCustomerAddress);
 
         return $magentoCustomerAddress;
     }
@@ -192,7 +193,8 @@ class Shopgate_Framework_Helper_Customer extends Shopgate_Framework_Helper_Data
      */
     public function registerCustomer($magentoCustomer, $shopgateCustomer)
     {
-	    $magentoCustomer = $this->_registerSetBasicData($magentoCustomer, $shopgateCustomer);
+        $magentoCustomer = $this->_registerSetBasicData($magentoCustomer, $shopgateCustomer);
+        $magentoCustomer = $this->setCustomFields($magentoCustomer, $shopgateCustomer);
         $this->_registerAddCustomerAddresses($magentoCustomer, $shopgateCustomer);
     }
 
@@ -215,7 +217,7 @@ class Shopgate_Framework_Helper_Customer extends Shopgate_Framework_Helper_Data
         $magentoCustomer->save();
         $magentoCustomer->sendNewAccountEmail('registered', '', $magentoCustomer->getStore()->getId());
 
-	    return $magentoCustomer;
+        return $magentoCustomer;
     }
 
     /**
@@ -229,7 +231,7 @@ class Shopgate_Framework_Helper_Customer extends Shopgate_Framework_Helper_Data
         foreach ($shopgateCustomer->getAddresses() as $shopgateCustomerAddress) {
             $magentoCustomerAddress = $this->getMagentoCustomerAddress($shopgateCustomerAddress);
             $magentoCustomerAddress->setCustomer($magentoCustomer);
-	        $magentoCustomerAddress->setCustomerId($magentoCustomer->getId());
+            $magentoCustomerAddress->setCustomerId($magentoCustomer->getId());
             $magentoCustomerAddress->save();
 
             if ($magentoCustomerAddress->getIsInvoiceAddress() && !$magentoCustomer->getDefaultBillingAddress()) {

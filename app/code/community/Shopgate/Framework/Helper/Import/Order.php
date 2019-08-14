@@ -10,7 +10,7 @@ class Shopgate_Framework_Helper_Import_Order extends Mage_Core_Helper_Abstract
 {
     /**
      * @deprecated  v2.9.19 handled in classes now
-     * @param       string  $paymentType
+     * @param       string $paymentType
      *
      * @return Mage_Payment_Model_Method_Abstract
      */
@@ -128,5 +128,52 @@ class Shopgate_Framework_Helper_Import_Order extends Mage_Core_Helper_Abstract
     protected function _isModuleActive($moduleName)
     {
         return Mage::getConfig()->getModuleConfig($moduleName)->is('active', 'true');
+    }
+
+    /**
+     * Print comments inside order
+     *
+     * @param Mage_Sales_Model_Order $order
+     * @param ShopgateOrder          $shopgateOrder
+     * @return mixed
+     */
+    public function printCustomFieldComments($order, $shopgateOrder)
+    {
+        if (Mage::getStoreConfig(
+            Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ORDER_CUSTOMFIELDS_TO_STATUSHISTORY,
+            Mage::helper('shopgate/config')->getConfig()->getStoreViewId()
+        )
+        ) {
+            $comment        = '';
+            $customFieldSet = array(
+                $this->_getHelper()
+                     ->__('[SHOPGATE] Custom fields:') => $shopgateOrder->getCustomFields(),
+                $this->_getHelper()
+                     ->__('Shipping Address fields:')  => $shopgateOrder->getDeliveryAddress()->getCustomFields(),
+                $this->_getHelper()
+                     ->__('Billing Address fields:')   => $shopgateOrder->getInvoiceAddress()->getCustomFields()
+            );
+
+            foreach ($customFieldSet as $title => $set) {
+                $comment .= '<strong>' . $title . '</strong><br/>';
+                foreach ($set as $field) {
+                    $comment .= '"' . addslashes(
+                            $field->getLabel()
+                        ) . '" => "' . addslashes($field->getValue()) . '"<br />';
+                }
+            }
+
+            $order->addStatusHistoryComment($comment, false);
+        }
+
+        return $order;
+    }
+
+    /**
+     * @return Shopgate_Framework_Helper_Data
+     */
+    protected function _getHelper()
+    {
+        return Mage::helper('shopgate');
     }
 }

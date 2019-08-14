@@ -94,6 +94,8 @@ class Shopgate_Framework_Model_Export_Customer_Orders extends Shopgate_Framework
                     $shopgateExternalOrder->setOrderTaxes($this->_getOrderTaxFormatted($order));
                     $shopgateExternalOrder->setDeliveryNotes($this->_getDeliveryNotes($order));
                     $shopgateExternalOrder->setExternalCoupons($this->_getCouponsFormatted($order));
+                    $shopgateExternalOrder->setStatusName(ucwords(str_replace('_', ' ', $order->getStatus())));
+                    $shopgateExternalOrder->setExtraCosts($this->_getExtraCost($order));
 
                     array_push($response, $shopgateExternalOrder);
                 }
@@ -178,8 +180,8 @@ class Shopgate_Framework_Model_Export_Customer_Orders extends Shopgate_Framework
                 $shopgateItem->setItemNumberPublic($item->getSku());
                 $shopgateItem->setQuantity((int)$item->getQtyOrdered());
                 $shopgateItem->setname($item->getName());
-                $shopgateItem->setUnitAmount($item->getRowTotal());
-                $shopgateItem->setUnitAmountWithTax($item->getRowTotalInclTax());
+                $shopgateItem->setUnitAmount($item->getPrice());
+                $shopgateItem->setUnitAmountWithTax($item->getPriceInclTax());
                 $shopgateItem->setTaxPercent($item->getTaxPercent());
                 $shopgateItem->setCurrency($order->getOrderCurrencyCode());
                 $shopgateItem->setDescription($item->getDescription());
@@ -259,6 +261,64 @@ class Shopgate_Framework_Model_Export_Customer_Orders extends Shopgate_Framework
             $externalCoupon->setInternalInfo($this->_getConfig()->jsonEncode($couponInfo));
             $externalCoupon->setAmount($order->getDiscountAmount());
             array_push($result, $externalCoupon);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param Mage_Sales_Model_Order $order
+     *
+     * @return array
+     */
+    protected function _getExtraCost($order)
+    {
+        $result = array();
+
+        /**
+         * shipping
+         */
+        $shippingCostAmount = $order->getShippingAmount();
+
+        if ($shippingCostAmount > 0) {
+            $extraCost = new ShopgateExternalOrderExtraCost();
+            $extraCost->setAmount($shippingCostAmount);
+            $extraCost->setType(ShopgateExternalOrderExtraCost::TYPE_SHIPPING);
+            $extraCost->setTaxPercent(
+                Mage::helper('shopgate')->calculateTaxRate(
+                    $shippingCostAmount, $order->getShippingTaxAmount()
+                )
+            );
+
+            $result[] = $extraCost;
+        }
+
+        /**
+         * payment
+         */
+        $shopgatePaymentFee = $order->getShopgatePaymentFee();
+
+        if ($shopgatePaymentFee > 0) {
+            $extraCost = new ShopgateExternalOrderExtraCost();
+            $extraCost->setAmount($shopgatePaymentFee);
+            $extraCost->setType(ShopgateExternalOrderExtraCost::TYPE_PAYMENT);
+
+            $result[] = $extraCost;
+        }
+
+        $codPaymentFee = $order->getCodFee();
+
+        if ($codPaymentFee > 0) {
+            $extraCost = new ShopgateExternalOrderExtraCost();
+            $extraCost->setAmount($codPaymentFee);
+            $extraCost->setType(ShopgateExternalOrderExtraCost::TYPE_PAYMENT);
+            $extraCost->setTaxPercent(
+                Mage::helper('shopgate')->calculateTaxRate(
+                    $codPaymentFee, $order->getCodTaxAmount()
+                )
+            );
+
+            $result[] = $extraCost;
         }
 
         return $result;
