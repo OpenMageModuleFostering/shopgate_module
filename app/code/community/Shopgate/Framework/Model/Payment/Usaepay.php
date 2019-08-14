@@ -40,7 +40,7 @@ class Shopgate_Framework_Model_Payment_Usaepay
      */
     public function manipulateOrderWithPaymentData($order, $shopgateOrder)
     {
-        return Mage::getModel('shopgate/payment_cc_usaepay', $shopgateOrder)->manipulateOrderWithPaymentData($order);
+        return Mage::getModel('shopgate/payment_cc_usaepay', array($shopgateOrder))->manipulateOrderWithPaymentData($order);
     }
 
 }

@@ -570,7 +570,7 @@ class Shopgate_Framework_Model_Export_Product_Csv extends Shopgate_Framework_Mod
     protected function _setMsrp($product)
     {
         if ($msrp = $this->getMsrp($product)) {
-            $this->_defaultRow['msrp'] = $msrp;
+            $this->_defaultRow['msrp'] = round($msrp,2);
         }
     }
 

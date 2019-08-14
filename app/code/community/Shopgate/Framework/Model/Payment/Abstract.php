@@ -90,7 +90,7 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
             return $this->_shopgate_order;
         }
 
-        $shopgateOrder = $this->_data;
+        $shopgateOrder = current($this->_data);
         if (!$shopgateOrder instanceof ShopgateOrder) {
             $error = $this->_getHelper()->__('Incorrect class provided to: %s::_constructor()', get_class($this));
             ShopgateLogger::getInstance()->log($error, ShopgateLogger::LOGTYPE_ERROR);

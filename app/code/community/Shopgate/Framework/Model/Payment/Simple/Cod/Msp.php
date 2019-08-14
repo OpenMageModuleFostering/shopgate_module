@@ -23,14 +23,14 @@
 
 /**
  * Support for MSP_COD plugin added v1.2.5 and up
- * 
+ *
  * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
 class Shopgate_Framework_Model_Payment_Simple_Cod_Msp
     extends Shopgate_Framework_Model_Payment_Simple_Cod_Abstract
     implements Shopgate_Framework_Model_Payment_Interface
 {
-    const MODULE_CONFIG          = 'MSP_CashOnDelivery';
-    const XML_CONFIG_ENABLED     = 'payment/msp_cashondelivery/active';
-    const PAYMENT_MODEL          = 'msp_cashondelivery/cashondelivery';
+    const MODULE_CONFIG      = 'MSP_CashOnDelivery';
+    const PAYMENT_MODEL      = 'msp_cashondelivery/cashondelivery';
+    const XML_CONFIG_ENABLED = 'payment/msp_cashondelivery/active';
 }

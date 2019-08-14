@@ -26,7 +26,7 @@ class Shopgate_Framework_Model_Payment_Amazon
      */
     public function createNewOrder($quote)
     {
-        return Mage::getModel('shopgate/payment_simple_mws', new ShopgateOrder())->createNewOrder($quote);
+        return Mage::getModel('shopgate/payment_simple_mws', array(new ShopgateOrder()))->createNewOrder($quote);
     }
 
     /**
@@ -38,7 +38,7 @@ class Shopgate_Framework_Model_Payment_Amazon
      */
     public function manipulateOrderWithPaymentData($order, $shopgateOrder)
     {
-        return Mage::getModel('shopgate/payment_simple_mws', $shopgateOrder)->manipulateOrderWithPaymentData($order);
+        return Mage::getModel('shopgate/payment_simple_mws', array($shopgateOrder))->manipulateOrderWithPaymentData($order);
     }
 
     /**
@@ -52,7 +52,7 @@ class Shopgate_Framework_Model_Payment_Amazon
      */
     public function prepareQuote($quote, $payment, $info)
     {
-        return Mage::getModel('shopgate/payment_simple_mws', new ShopgateOrder())->prepareQuote($quote, $info);
+        return Mage::getModel('shopgate/payment_simple_mws', array(new ShopgateOrder()))->prepareQuote($quote, $info);
     }
 }
 

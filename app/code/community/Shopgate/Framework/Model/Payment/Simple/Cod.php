@@ -28,6 +28,9 @@
  */
 class Shopgate_Framework_Model_Payment_Simple_Cod extends Shopgate_Framework_Model_Payment_Simple
 {
+    /**
+     * Necessary for isModuleActive() call
+     */
     const MODULE_CONFIG = 'Phoenix_CashOnDelivery';
 
     /**
@@ -39,7 +42,7 @@ class Shopgate_Framework_Model_Payment_Simple_Cod extends Shopgate_Framework_Mod
     public function getModelByPaymentMethod()
     {
         if ($this->_getConfigHelper()->getIsMagentoVersionLower1700() === false) {
-            $class = Mage::getModel('shopgate/payment_simple_cod_native', $this->getShopgateOrder());
+            $class = Mage::getModel('shopgate/payment_simple_cod_native', array($this->getShopgateOrder()));
             if ($class instanceof Shopgate_Framework_Model_Payment_Interface && $class->isValid()) {
                 $this->setPaymentMethod('Native');
             }
@@ -53,7 +56,7 @@ class Shopgate_Framework_Model_Payment_Simple_Cod extends Shopgate_Framework_Mod
             }
         }
 
-        $msp = Mage::getModel('shopgate/payment_simple_cod_msp', $this->getShopgateOrder());
+        $msp = Mage::getModel('shopgate/payment_simple_cod_msp', array($this->getShopgateOrder()));
         if ($msp instanceof Shopgate_Framework_Model_Payment_Interface && $msp->isValid()) {
             $this->setPaymentMethod('Msp');
         }

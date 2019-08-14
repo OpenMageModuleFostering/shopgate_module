@@ -41,7 +41,7 @@ class Shopgate_Framework_Model_Payment_Wspp
      */
     public function createNewOrder($quote)
     {
-        return Mage::getModel('shopgate/payment_pp_wspp', new ShopgateOrder())->createNewOrder($quote);
+        return Mage::getModel('shopgate/payment_pp_wspp', array(new ShopgateOrder()))->createNewOrder($quote);
     }
 
     /**
@@ -53,7 +53,7 @@ class Shopgate_Framework_Model_Payment_Wspp
      */
     public function manipulateOrderWithPaymentData($order, $shopgateOrder)
     {
-        return Mage::getModel('shopgate/payment_pp_wspp', $shopgateOrder)->manipulateOrderWithPaymentData($order);
+        return Mage::getModel('shopgate/payment_pp_wspp', array($shopgateOrder))->manipulateOrderWithPaymentData($order);
     }
 
     /**
@@ -64,7 +64,7 @@ class Shopgate_Framework_Model_Payment_Wspp
      */
     public function prepareQuote($quote, $data)
     {
-        return Mage::getModel('shopgate/payment_pp_wspp', new ShopgateOrder())->prepareQuote($quote, $data);
+        return Mage::getModel('shopgate/payment_pp_wspp', array(new ShopgateOrder()))->prepareQuote($quote, $data);
     }
 
     /**

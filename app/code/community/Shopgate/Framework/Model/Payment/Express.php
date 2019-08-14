@@ -46,7 +46,7 @@ class Shopgate_Framework_Model_Payment_Express
      */
     public function createNewOrder($quote)
     {
-        return Mage::getModel('shopgate/payment_simple_paypal_express', new ShopgateOrder())->createNewOrder($quote);
+        return Mage::getModel('shopgate/payment_simple_paypal_express', array(new ShopgateOrder()))->createNewOrder($quote);
     }
 
     /**
@@ -59,7 +59,7 @@ class Shopgate_Framework_Model_Payment_Express
      */
     public function manipulateOrderWithPaymentData($order, $shopgateOrder)
     {
-        return Mage::getModel('shopgate/payment_simple_paypal_express', $shopgateOrder)->manipulateOrderWithPaymentData($order);
+        return Mage::getModel('shopgate/payment_simple_paypal_express', array($shopgateOrder))->manipulateOrderWithPaymentData($order);
     }
 
     /**
@@ -72,7 +72,7 @@ class Shopgate_Framework_Model_Payment_Express
      */
     public function prepareQuote($quote, $data)
     {
-        return Mage::getModel('shopgate/payment_simple_paypal_express', new ShopgateOrder())->prepareQuote($quote, $data);
+        return Mage::getModel('shopgate/payment_simple_paypal_express', array(new ShopgateOrder()))->prepareQuote($quote, $data);
     }
 
     /**

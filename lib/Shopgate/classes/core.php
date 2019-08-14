@@ -24,7 +24,7 @@
 ###################################################################################
 # define constants
 ###################################################################################
-define('SHOPGATE_LIBRARY_VERSION', '2.9.38');
+define('SHOPGATE_LIBRARY_VERSION', '2.9.39');
 define('SHOPGATE_LIBRARY_ENCODING' , 'UTF-8');
 define('SHOPGATE_BASE_DIR', realpath(dirname(__FILE__).'/../'));
 
@@ -89,7 +89,7 @@ function ShopgateShutdownHandler() {
  * @param string $errfile
  * @param int $errline
  * @param array $errContext
- * @return boolean
+ * @return bool
  * @see http://php.net/manual/en/function.set-error-handler.php
  */
 function ShopgateErrorHandler($errno, $errstr, $errfile, $errline, $errContext) {
@@ -1566,7 +1566,7 @@ abstract class ShopgatePlugin extends ShopgateObject {
 	
 	/**
 	 *
-	 * @var boolean true use tax classes for export
+	 * @var bool true use tax classes for export
 	 */
 	protected $useTaxClasses = false;
 	

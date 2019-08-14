@@ -38,18 +38,18 @@ class Shopgate_Framework_Model_Payment_Simple_Prepay extends Shopgate_Framework_
     public function getModelByPaymentMethod()
     {
         if ($this->_getConfigHelper()->getIsMagentoVersionLower1700() === false) {
-            $native = Mage::getModel('shopgate/payment_simple_prepay_native', $this->getShopgateOrder());
+            $native = Mage::getModel('shopgate/payment_simple_prepay_native', array($this->getShopgateOrder()));
             if ($native instanceof Shopgate_Framework_Model_Payment_Interface && $native->isValid()) {
                 $this->setPaymentMethod('Native');
             }
         } else {
-            $checkmo = Mage::getModel('shopgate/payment_simple_prepay_checkmo', $this->getShopgateOrder());
+            $checkmo = Mage::getModel('shopgate/payment_simple_prepay_checkmo', array($this->getShopgateOrder()));
             if ($checkmo instanceof Shopgate_Framework_Model_Payment_Interface && $checkmo->isValid()) {
                 $this->setPaymentMethod('Checkmo');
             }
         }
 
-        $phoenix = Mage::getModel('shopgate/payment_simple_prepay_phoenix', $this->getShopgateOrder());
+        $phoenix = Mage::getModel('shopgate/payment_simple_prepay_phoenix', array($this->getShopgateOrder()));
         if ($phoenix instanceof Shopgate_Framework_Model_Payment_Interface && $phoenix->isValid()) {
             $this->setPaymentMethod('Phoenix');
         }

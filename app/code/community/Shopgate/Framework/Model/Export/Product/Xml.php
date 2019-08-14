@@ -525,7 +525,7 @@ class Shopgate_Framework_Model_Export_Product_Xml
         $priceModel->setPrice($this->_formatPrice($price));
         $priceModel->setCost($this->_formatPrice($this->item->getCost()));
         $priceModel->setSalePrice($this->_formatPrice($finalPrice));
-        $priceModel->setMsrp($this->_formatPrice($this->item->getMsrp()));
+        $priceModel->setMsrp(round($this->_formatPrice($this->item->getMsrp()),2));
 
 
         if ($isGross) {

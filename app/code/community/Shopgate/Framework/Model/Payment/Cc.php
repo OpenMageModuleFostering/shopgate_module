@@ -41,9 +41,9 @@ class Shopgate_Framework_Model_Payment_Cc extends Shopgate_Framework_Model_Payme
      */
     public function getModelByPaymentMethod()
     {
-        if (Mage::getModel('shopgate/payment_cc_authncim', $this->getShopgateOrder())->isValid()) {
+        if (Mage::getModel('shopgate/payment_cc_authncim', array($this->getShopgateOrder()))->isValid()) {
             $this->setPaymentMethod('AUTHNCIM_CC');
-        } elseif (Mage::getModel('shopgate/payment_cc_chargeitpro', $this->getShopgateOrder())->isValid()) {
+        } elseif (Mage::getModel('shopgate/payment_cc_chargeitpro', array($this->getShopgateOrder()))->isValid()) {
             $this->setPaymentMethod('CHARGEITPRO_CC');
         }
 

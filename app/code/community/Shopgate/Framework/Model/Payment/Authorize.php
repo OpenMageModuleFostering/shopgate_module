@@ -39,6 +39,6 @@ class Shopgate_Framework_Model_Payment_Authorize
      */
     public function manipulateOrderWithPaymentData($order, $shopgateOrder)
     {
-        return Mage::getModel('shopgate/payment_cc_authn', $shopgateOrder)->manipulateOrderWithPaymentData($order);
+        return Mage::getModel('shopgate/payment_cc_authn', array($shopgateOrder))->manipulateOrderWithPaymentData($order);
     }
 }

@@ -22,7 +22,7 @@
  */
 
 /**
- * Support for Phoenix_CashOnDelivery v1.8.0 and older
+ * Support for Phoenix_CashOnDelivery v1.0.8 and older
  * 
  * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */

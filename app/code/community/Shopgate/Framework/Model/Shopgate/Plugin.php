@@ -120,7 +120,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
     {
         if (!$this->_factory) {
             $shopgateOrder = Mage::getModel('core/session')->getShopgateOrder();
-            $factory       = Mage::getModel('shopgate/payment_factory', $shopgateOrder);
+            $factory       = Mage::getModel('shopgate/payment_factory', array($shopgateOrder));
             $this->_setFactory($factory);
         }
         return $this->_factory;
@@ -1032,7 +1032,8 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
         );
 
         $quote->setIsActive('0');
-        $quote->setRemoteIp('shopgate.com');
+        $ip = $order->getCustomerIp() ? $order->getCustomerIp() : 'shopgate.com';
+        $quote->setRemoteIp($ip);
         $quote->save();
         if (empty($externalCustomerId)) {
             $quote->getBillingAddress()->isObjectNew(false);
@@ -1425,7 +1426,10 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
         } else {
             $stateObject    = new Varien_Object();
             $methodInstance = $magentoOrder->getPayment()->getMethodInstance();
-            $methodInstance->initialize($methodInstance->getConfigData('payment_action'), $stateObject);
+            if (strpos($shopgateOrder->getPaymentMethod(), 'PAYONE') === false) {
+                // avoid calling Payone again. Initialization will be removed from here in the nearest future
+                $methodInstance->initialize($methodInstance->getConfigData('payment_action'), $stateObject);
+            }
 
             if (!$stateObject->getState()) {
                 $status = $methodInstance->getConfigData("order_status");
@@ -1434,8 +1438,10 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                     && Mage::getConfig()->getModuleConfig('Phoenix_CashOnDelivery')->is('active', 'true')
                 ) {
                     $stateObject->setState(Mage_Sales_Model_Order::STATE_NEW);
-                } else {
+                } elseif ($status) {
                     $stateObject->setState($this->_getHelper()->getStateForStatus($status));
+                } else {
+                    $stateObject->setState(Mage_Sales_Model_Order::STATE_PROCESSING);
                 }
 
                 $stateObject->setStatus($status);
@@ -2090,7 +2096,14 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
         } else {
             $ids = $collection->getAllIds();
         }
-
+        
+        if (empty($ids) || count($ids) == 1) {
+            $this->log(
+                "Warning! Low amount of items to export, id's: " . print_r($ids),
+                ShopgateLogger::LOGTYPE_DEBUG
+            );
+        }
+        
         return $ids;
     }
 
@@ -2136,6 +2149,8 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
     }
 
     /**
+     * Item XML export function
+     * 
      * @param int   $limit
      * @param int   $offset
      * @param array $uids

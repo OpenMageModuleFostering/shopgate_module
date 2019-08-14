@@ -1,3 +1,10 @@
+'''Version 2.9.29'''
+* Fixed wrong shipping tax in case that tax class is 'none'
+* Added support for php5.2 on mobileRedirect
+* Fix for Payone initialization exception
+* Bugfix for rounding MRSP in product export
+* Added a helpful error log entry for empty product XML exports
+
 '''Version 2.9.28'''
 * Fixed error in get_settings, when setting values from the shopgate plugin config
 * Fixed value in default payment configuration

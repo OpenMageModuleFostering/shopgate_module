@@ -486,25 +486,27 @@ class Shopgate_Framework_Model_Payment_Payone_Abstract extends Shopgate_Framewor
      */
     protected function _getPayoneTransactionExist()
     {
-        if ($this->_transExists === null) {
-            $info    = $this->getShopgateOrder()->getPaymentInfos();
-            $factory = Mage::getModel('payone_core/factory');
-
-            if (isset($info['txid']) && $factory) {
-                $transaction = $factory->getModelTransaction();
-                if ($transaction->load($info['txid'], 'txid')->hasData()) {
-                    $debug = $this->_getHelper()->__('PayOne transaction "%s" already exists', $transaction->getTxid());
-                    ShopgateLogger::getInstance()->log($debug, ShopgateLogger::LOGTYPE_DEBUG);
-                    return $this->_transExists = true;
-                }
-            } else {
-                $debug = $this->_getHelper()->__('Either "txid" or PayOne: Factory cannot be loaded');
-                ShopgateLogger::getInstance()->log($debug, ShopgateLogger::LOGTYPE_DEBUG);
-            }
-        } else {
+        if (!is_null($this->_transExists)) {
             return $this->_transExists;
         }
-        return $this->_transExists = false;
+        
+        $info    = $this->getShopgateOrder()->getPaymentInfos();
+        $factory = Mage::getModel('payone_core/factory');
+        $this->_transExists = false;
+        
+        if (isset($info['txid']) && $factory) {
+            $transaction = $factory->getModelTransaction();
+            if ($transaction->load($info['txid'], 'txid')->hasData()) {
+                $debug = $this->_getHelper()->__('PayOne transaction "%s" already exists', $transaction->getTxid());
+                ShopgateLogger::getInstance()->log($debug, ShopgateLogger::LOGTYPE_DEBUG);
+                return $this->_transExists = true;
+            }
+        } else {
+            $debug = $this->_getHelper()->__('Either "txid" or PayOne: Factory cannot be loaded');
+            ShopgateLogger::getInstance()->log($debug, ShopgateLogger::LOGTYPE_DEBUG);
+        }
+        
+        return $this->_transExists;
     }
 
     /**

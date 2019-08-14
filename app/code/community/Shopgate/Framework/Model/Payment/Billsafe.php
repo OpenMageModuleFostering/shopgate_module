@@ -40,7 +40,7 @@ class Shopgate_Framework_Model_Payment_Billsafe extends Shopgate_Framework_Model
      */
     public function manipulateOrderWithPaymentData($order, $shopgateOrder)
     {
-        return Mage::getModel('shopgate/payment_simple_billsafe', $shopgateOrder)
+        return Mage::getModel('shopgate/payment_simple_billsafe', array($shopgateOrder))
                    ->manipulateOrderWithPaymentData($order);
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Shopgate GmbH
  *
@@ -18,17 +19,18 @@
  * transfer to third parties is only permitted where we previously consented thereto in writing. The provisions
  * of paragraph 69 d, sub-paragraphs 2, 3 and paragraph 69, sub-paragraph e of the German Copyright Act shall remain unaffected.
  *
- * @author Shopgate GmbH <interfaces@shopgate.com>
+ * @author             Shopgate GmbH <interfaces@shopgate.com>
+ *
+ * @coversDefaultClass Shopgate_Framework_Helper_Data
  */
-
 class Shopgate_Framework_Test_Helper_Data extends EcomDev_PHPUnit_Test_Case
 {
     /**
      * @param float $amount
      * @param float $taxAmount
      * @param float $expectedTaxRate
+     * @covers       ::calculateTaxRate
      *
-     * @test
      * @dataProvider dataProvider
      */
     public function testCalculateTaxRate($amount, $taxAmount, $expectedTaxRate)

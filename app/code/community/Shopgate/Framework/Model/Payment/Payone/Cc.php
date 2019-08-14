@@ -65,8 +65,6 @@ class Shopgate_Framework_Model_Payment_Payone_Cc
         /**
          * @var string $key
          * @var string $value
-         *
-         * @todo check mapping
          */
         foreach ($this->getSystemConfig()->toSelectArray() as $key => $value) {
             if (strtolower($value) == $paymentInfo['credit_card']['type']) {

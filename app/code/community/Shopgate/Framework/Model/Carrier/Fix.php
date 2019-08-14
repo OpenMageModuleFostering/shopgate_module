@@ -96,6 +96,9 @@ class Shopgate_Framework_Model_Carrier_Fix
 
         $storeViewId = Mage::helper("shopgate/config")->getConfig()->getStoreViewId();
         $shippingIncludesTax = Mage::helper("tax")->shippingPriceIncludesTax($storeViewId);
+        if (Mage::helper("tax")->getShippingTaxClass($storeViewId) == 0) {
+            $shippingIncludesTax = true;
+        };
 
         $amount['shipping'] = $shippingIncludesTax ? $shippingInfo->getAmountGross() : $shippingInfo->getAmountNet();
 

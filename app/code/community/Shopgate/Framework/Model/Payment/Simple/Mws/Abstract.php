@@ -219,7 +219,6 @@ class Shopgate_Framework_Model_Payment_Simple_Mws_Abstract
         //backup for potential plugin lower version malfunctions
         if (!$magentoOrder->getState()) {
             $magentoOrder->setState(
-                Mage_Sales_Model_Order::STATE_PROCESSING,
                 Mage_Sales_Model_Order::STATE_PROCESSING
             );
         }
@@ -231,7 +230,7 @@ class Shopgate_Framework_Model_Payment_Simple_Mws_Abstract
     /**
      * Gets a payment type that is supported in 
      * higher versions of magento only
-     * @see fallback in Mws1400.php
+     * @see fallback in Mws15.php
      * 
      * @return mixed
      */

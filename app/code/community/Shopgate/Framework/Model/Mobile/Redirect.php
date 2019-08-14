@@ -339,14 +339,12 @@ class Shopgate_Framework_Model_Mobile_Redirect extends Mage_Core_Model_Abstract
      *
      * @param $type  string
      * @param $objId string|int
-     * @param $automaticRedirect
-     * @return mixed|string|void
+     * 
+     * @return Shopgate_Helper_Redirect_MobileRedirect|null
      */
     protected function _createMobileRedirect($type, $objId)
     {
-        $builder     = new ShopgateBuilder($this->_config);
-        $redirectObj = $builder->buildMobileRedirect($_SERVER['HTTP_USER_AGENT'], $_GET, $_COOKIE);
-
+        $redirectObj = null;
         try {
             $storeId   = $this->_config->getStoreViewId();
             $siteName  = Mage::app()->getWebsite()->getName();
@@ -371,17 +369,16 @@ class Shopgate_Framework_Model_Mobile_Redirect extends Mage_Core_Model_Abstract
                 $pageTitle = $siteName;
             }
 
-            empty($siteName)  ?: $redirectObj->addSiteParameter(
-                Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_SITENAME, $siteName);
-            empty($shopUrl)   ?: $redirectObj->addSiteParameter(
-                Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_DESKTOP_URL, $shopUrl);
-            empty($mobileUrl) ?: $redirectObj->addSiteParameter(
-                Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_MOBILE_WEB_URL, $mobileUrl);
-            empty($pageTitle) ?: $redirectObj->addSiteParameter(
-                Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_TITLE, $pageTitle);
+            $redirectVars = array(
+                Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_SITENAME       => $siteName,
+                Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_DESKTOP_URL    => $shopUrl,
+                Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_MOBILE_WEB_URL => $mobileUrl,
+                Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_TITLE          => $pageTitle
+            );
 
             if ($type == self::PRODUCT) {
-
+                $imageUrl = $ean = $categoryName = '';
+                
                 /** @var Mage_Catalog_Model_Product $product */
                 $product = Mage::getModel('catalog/product')->setStoreId($storeId)->load($objId);
 
@@ -436,30 +433,48 @@ class Shopgate_Framework_Model_Mobile_Redirect extends Mage_Core_Model_Abstract
                     $priceGross = round($price * (1 + $taxRate), 2);
                 }
 
-                empty($imageUrl) ?: $redirectObj->addSiteParameter(
-                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_IMAGE, $imageUrl);
-                empty($name) ?: $redirectObj->addSiteParameter(
-                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_NAME, $name);
-                empty($description) ?: $redirectObj->addSiteParameter(
-                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_DESCRIPTION_SHORT, $description);
-                empty($ean) ?: $redirectObj->addSiteParameter(
-                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_EAN, $ean);
-                empty($availableText) ?: $redirectObj->addSiteParameter(
-                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_AVAILABILITY, $availableText);
-                empty($categoryName) ?: $redirectObj->addSiteParameter(
-                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_CATEGORY, $categoryName);
-                empty($priceGross) ?: $redirectObj->addSiteParameter(
-                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_PRICE, $priceGross);
-                empty($priceGross) ?: $redirectObj->addSiteParameter(
-                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_CURRENCY, $defaultCurrency);
-                empty($priceNet) ?: $redirectObj->addSiteParameter(
-                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_PRETAX_PRICE, $priceNet);
-                empty($priceNet) ?: $redirectObj->addSiteParameter(
-                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_PRETAX_CURRENCY, $defaultCurrency);
+                $varTemp = array(
+                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_IMAGE             => $imageUrl,
+                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_NAME              => $name,
+                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_DESCRIPTION_SHORT => $description,
+                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_EAN               => $ean,
+                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_AVAILABILITY      => $availableText,
+                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_CATEGORY          => $categoryName,
+                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_PRICE             => $priceGross,
+                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_PRETAX_PRICE      => $priceNet
+                );
 
+                if ($price) {
+                    $varTemp[Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_CURRENCY] = $defaultCurrency;
+                    $varTemp[Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_PRETAX_CURRENCY] = $defaultCurrency;
+                }
+
+                $redirectVars = array_merge($redirectVars, $varTemp);
             }
+            $redirectObj = $this->parseRedirectValues($redirectVars);
         } catch (Exception $e) {
             ShopgateLogger::getInstance()->log('error on tag creation for type:' . $type . ' object ID:' . $objId);
+        }
+
+        return $redirectObj;
+    }
+
+    /**
+     * Parses key values and adds them as site
+     * parameters to the mobile redirect object
+     * 
+     * @param $redirectList
+     * @return Shopgate_Helper_Redirect_MobileRedirect
+     */
+    private function parseRedirectValues($redirectList)
+    {
+        $builder     = new ShopgateBuilder($this->_config);
+        $redirectObj = $builder->buildMobileRedirect($_SERVER['HTTP_USER_AGENT'], $_GET, $_COOKIE);
+
+        foreach ($redirectList as $redirectKey => $redirectValue) {
+            if ($redirectValue) {
+                $redirectObj->addSiteParameter($redirectKey, $redirectValue);
+            }
         }
 
         return $redirectObj;

@@ -61,9 +61,9 @@ class Shopgate_Framework_Model_Payment_Factory extends Shopgate_Framework_Model_
     public function calculatePaymentClass()
     {
         if ($this->isSimpleClass()):
-            return Mage::getModel('shopgate/payment_simple', $this->getShopgateOrder())->getMethodModel();
+            return Mage::getModel('shopgate/payment_simple', array($this->getShopgateOrder()))->getMethodModel();
         elseif ($this->isComplexClass()):
-            return Mage::getModel('shopgate/payment_router', $this->getShopgateOrder())->getMethodModel();
+            return Mage::getModel('shopgate/payment_router', array($this->getShopgateOrder()))->getMethodModel();
         else:
             return false;
         endif;

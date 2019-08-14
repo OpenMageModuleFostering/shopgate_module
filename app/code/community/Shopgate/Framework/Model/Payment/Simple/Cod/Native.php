@@ -30,7 +30,7 @@ class Shopgate_Framework_Model_Payment_Simple_Cod_Native
     extends Shopgate_Framework_Model_Payment_Simple_Cod_Abstract
     implements Shopgate_Framework_Model_Payment_Interface
 {
-    const XML_CONFIG_ENABLED = 'payment/cashondelivery/active';
     const MODULE_CONFIG      = 'Mage_Payment';
     const PAYMENT_MODEL      = 'payment/method_cashondelivery';
+    const XML_CONFIG_ENABLED = 'payment/cashondelivery/active';
 }

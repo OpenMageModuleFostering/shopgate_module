@@ -25,8 +25,6 @@
  * Handles all payment routing for Multi-Payment implementations like PayOne & PayPal.
  * It helps figure out which class model to use based on payment_method provided.
  *
- * Class Shopgate_Framework_Model_Payment_Router
- *
  * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
 class Shopgate_Framework_Model_Payment_Router extends Shopgate_Framework_Model_Payment_Abstract
@@ -48,7 +46,7 @@ class Shopgate_Framework_Model_Payment_Router extends Shopgate_Framework_Model_P
     public function getModelByPaymentMethod()
     {
         $class = $this->getClassFromMethod();
-        $model = Mage::getModel($class, $this->getShopgateOrder());
+        $model = Mage::getModel($class, array($this->getShopgateOrder()));
 
         if ($model) {
             if ($model instanceof Shopgate_Framework_Model_Payment_Interface) {
@@ -105,8 +103,9 @@ class Shopgate_Framework_Model_Payment_Router extends Shopgate_Framework_Model_P
     {
         //user friendly, first part (1) == 0 for array
         $index = $this->_payment_method_part;
+        $index--;
         $parts = explode('_', $this->getPaymentMethod());
-        return $parts[--$index] ? $parts[$index] : $parts[0];
+        return isset($parts[$index]) ? $parts[$index] : $parts[0];
     }
 
     /** ======= Fallback Functionality ======== */
@@ -123,7 +122,7 @@ class Shopgate_Framework_Model_Payment_Router extends Shopgate_Framework_Model_P
         $class        = $this->getCurrentClassShortName();
         foreach ($combinations as $combination) {
             $className = $class . $combination;
-            $model     = Mage::getModel($className, $this->getShopgateOrder());
+            $model     = Mage::getModel($className, array($this->getShopgateOrder()));
             if ($model instanceof Shopgate_Framework_Model_Payment_Interface) {
                 return $model;
             } elseif ($model instanceof Shopgate_Framework_Model_Payment_Router) {
@@ -158,7 +157,7 @@ class Shopgate_Framework_Model_Payment_Router extends Shopgate_Framework_Model_P
      * @param $temp_string
      * @param $collect
      */
-    function depthPicker($arr, $temp_string, &$collect)
+    private function depthPicker($arr, $temp_string, &$collect)
     {
         if ($temp_string != "") {
             $collect [] = $temp_string;

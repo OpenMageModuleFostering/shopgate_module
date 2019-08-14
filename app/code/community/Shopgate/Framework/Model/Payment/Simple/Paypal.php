@@ -37,7 +37,7 @@ class Shopgate_Framework_Model_Payment_Simple_Paypal extends Shopgate_Framework_
      */
     public function getModelByPaymentMethod()
     {
-        $standard = Mage::getModel('shopgate/payment_simple_paypal_standard', $this->getShopgateOrder());
+        $standard = Mage::getModel('shopgate/payment_simple_paypal_standard', array($this->getShopgateOrder()));
 
         if ($standard instanceof Shopgate_Framework_Model_Payment_Interface && $standard->isValid()) {
             if ($this->_getConfigHelper()->getIsMagentoVersionLower1410()) {
