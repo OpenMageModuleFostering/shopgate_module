@@ -34,7 +34,7 @@ class Shopgate_Framework_Model_Payment_Cc_Authn
 {
     const XML_CONFIG_ENABLED = 'payment/authorizenet/active';
     const MODULE_CONFIG      = 'Mage_Paygate';
-    
+
     /**
      * Init variables
      */
@@ -44,7 +44,7 @@ class Shopgate_Framework_Model_Payment_Cc_Authn
         $this->_transactionType = $paymentInfos['transaction_type'];
         $this->_responseCode    = $paymentInfos['response_code'];
     }
-    
+
     /**
      * Use AuthnCIM as guide to refactor this class
      *
@@ -57,12 +57,12 @@ class Shopgate_Framework_Model_Payment_Cc_Authn
         $this->_initVariables();
         $shopgateOrder = $this->getShopgateOrder();
         $paymentInfos  = $shopgateOrder->getPaymentInfos();
-        
+
         $this->_saveToCardStorage();
         $this->getOrder()->getPayment()->setCcTransId($paymentInfos['transaction_id']);
-        $this->getOrder()->getPayment()->setCcApproval($paymentInfos['authorization_number']);
+        $this->getOrder()->getPayment()->setCcApproval($paymentInfos['authorization_code']);
         $this->getOrder()->getPayment()->setLastTransId($paymentInfos['transaction_id']);
-        
+
         switch ($this->_transactionType) {
             case self::SHOPGATE_PAYMENT_STATUS_AUTH_CAPTURE:
                 $newTransactionType      = Mage_Sales_Model_Order_Payment_Transaction::TYPE_CAPTURE;
@@ -74,7 +74,7 @@ class Shopgate_Framework_Model_Payment_Cc_Authn
                 $defaultExceptionMessage = Mage::helper('paygate')->__('Payment authorization error.');
                 break;
         }
-        
+
         try {
             switch ($this->_responseCode) {
                 case self::RESPONSE_CODE_APPROVED:
@@ -82,7 +82,7 @@ class Shopgate_Framework_Model_Payment_Cc_Authn
                     $this->getOrder()->getPayment()->setBaseAmountAuthorized($this->getOrder()->getBaseGrandTotal());
                     $this->getOrder()->getPayment()->setIsTransactionPending(true);
                     $this->_createTransaction($newTransactionType);
-                    
+
                     if ($this->_transactionType == self::SHOPGATE_PAYMENT_STATUS_AUTH_CAPTURE) {
                         $this->getOrder()->getPayment()->setIsTransactionPending(false);
                     }
@@ -103,12 +103,12 @@ class Shopgate_Framework_Model_Payment_Cc_Authn
             $this->getOrder()->addStatusHistoryComment(Mage::helper('sales')->__('Note: %s', $x->getMessage()));
             Mage::logException($x);
         }
-        
+
         $this->_createInvoice();
-        
+
         return $this->getOrder();
     }
-    
+
     /**
      * @param $type
      * @param $additionalInformation
@@ -128,11 +128,11 @@ class Shopgate_Framework_Model_Payment_Cc_Authn
         }
         $transaction->save();
     }
-    
+
     /**
      * Utilize card storage if it exists
      * It does not in mage 1.4.0.0
-     * 
+     *
      * @throws Exception
      */
     protected function _saveToCardStorage()
@@ -143,11 +143,11 @@ class Shopgate_Framework_Model_Payment_Cc_Authn
         $paymentAuthorize->setInfoInstance($this->getOrder()->getPayment());
         $this->getOrder()->getPayment()->setMethodInstance($paymentAuthorize);
         $this->getOrder()->save();
-        
+
         if (!method_exists($paymentAuthorize, 'getCardsStorage')) {
             return $this;
         }
-        
+
         $paymentInfos = $this->getShopgateOrder()->getPaymentInfos();
         $lastFour     = substr($paymentInfos['credit_card']['masked_number'], -4);
         $cardStorage  = $paymentAuthorize->getCardsStorage($this->getOrder()->getPayment());
@@ -163,9 +163,8 @@ class Shopgate_Framework_Model_Payment_Cc_Authn
              ->setCcExpYear("")
              ->setCcSsIssue("")
              ->setCcSsStartMonth("")
-             ->setCcSsStartYear("")
-        ;
-        
+             ->setCcSsStartYear("");
+
         switch ($this->_responseCode) {
             case self::RESPONSE_CODE_APPROVED:
                 if ($this->_transactionType == self::SHOPGATE_PAYMENT_STATUS_AUTH_CAPTURE) {

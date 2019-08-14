@@ -485,12 +485,12 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             /** $this->_setQuoteItems */
             "_setQuoteShopgateCoupons",
             /** $this->_setQuoteShopgateCoupons */
+            "_setQuoteVirtualItem",
+            /** $this->_setQuoteVirtualItem */
             "_setQuoteCustomer",
             /** $this->_setQuoteCustomer */
             "_setQuotePayment",
             /** $this->_setQuotePayment */
-            "_setQuoteVirtualItem",
-            /** $this->_setQuoteVirtualItem */
             "_setQuoteShopCoupons",
             /** $this->_setQuoteShopCoupons */
         );

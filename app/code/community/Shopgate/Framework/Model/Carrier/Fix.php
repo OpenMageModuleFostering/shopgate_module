@@ -94,15 +94,18 @@ class Shopgate_Framework_Model_Carrier_Fix
         $method->setMethod($this->_method);
         $method->setMethodTitle($methodTitle);
 
-        $amount['shipping'] = $shippingInfo->getAmountNet();
+        $storeViewId = Mage::helper("shopgate/config")->getConfig()->getStoreViewId();
+        $shippingIncludesTax = Mage::helper("tax")->shippingPriceIncludesTax($storeViewId);
+
+        $amount['shipping'] = $shippingIncludesTax ? $shippingInfo->getAmountGross() : $shippingInfo->getAmountNet();
 
         $amountShopPayment = $sgOrder->getAmountShopPayment();
         if ($amountShopPayment >= 0) {
             // set payment fee only if payment fee is positive or 0
             // and its not cod with phoenix_cod active
             if ($sgOrder->getPaymentMethod() != ShopgateOrder::COD
-                && (!Mage::getConfig()->getModuleConfig('Phoenix_CashOnDelivery')->is('active', 'true')
-                || !Mage::getConfig()->getModuleConfig('MSP_CashOnDelivery')->is('active', 'true'))
+                || (!Mage::getConfig()->getModuleConfig('Phoenix_CashOnDelivery')->is('active', 'true')
+                    && !Mage::getConfig()->getModuleConfig('MSP_CashOnDelivery')->is('active', 'true'))
             ) {
                 $amount["payment"] = $this->_getNetForGrossShipping($amountShopPayment);
             }

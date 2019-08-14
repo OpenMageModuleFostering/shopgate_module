@@ -50,7 +50,7 @@ class Shopgate_Framework_Model_Payment_Cc_AuthnAbstract extends Shopgate_Framewo
     const RESPONSE_REASON_CODE_PENDING_REVIEW_AUTHORIZED = 252;
     const RESPONSE_REASON_CODE_PENDING_REVIEW            = 253;
     const RESPONSE_REASON_CODE_PENDING_REVIEW_DECLINED   = 254;
-    
+
     protected $_transactionType = '';
     protected $_responseCode    = '';
     
@@ -62,14 +62,14 @@ class Shopgate_Framework_Model_Payment_Cc_AuthnAbstract extends Shopgate_Framewo
     protected function _isOrderPendingReview()
     {
         $paymentInfos = $this->getShopgateOrder()->getPaymentInfos();
-        
+
         return array_key_exists('response_reason_code', $paymentInfos)
-        && (
-            $paymentInfos['response_reason_code'] == self::RESPONSE_REASON_CODE_PENDING_REVIEW_AUTHORIZED
-            || $paymentInfos['response_reason_code'] == self::RESPONSE_REASON_CODE_PENDING_REVIEW
-        );
+               && (
+                   $paymentInfos['response_reason_code'] == self::RESPONSE_REASON_CODE_PENDING_REVIEW_AUTHORIZED
+                   || $paymentInfos['response_reason_code'] == self::RESPONSE_REASON_CODE_PENDING_REVIEW
+               );
     }
-    
+
     /**
      * Sets order status
      *
@@ -77,41 +77,52 @@ class Shopgate_Framework_Model_Payment_Cc_AuthnAbstract extends Shopgate_Framewo
      *
      * @return Mage_Sales_Model_Order
      */
-    public function setOrderStatus($order = null)
+    public function setOrderStatus($order)
     {
         $captured = $this->_order->getBaseCurrency()->formatTxt($this->_order->getBaseTotalInvoiced());
-        $state    = $this->_getHelper()->getStateForStatus('payment_review');
+        $state    = Mage_Sales_Model_Order::STATE_PROCESSING;
         $status   = $this->_getHelper()->getStatusFromState($state);
         $message  = '';
-        
+
         switch ($this->_responseCode) {
             case self::RESPONSE_CODE_APPROVED:
                 $duePrice = $this->_order->getBaseCurrency()->formatTxt($this->_order->getTotalDue());
                 $message  = Mage::helper('paypal')->__('Authorized amount of %s.', $duePrice);
-                
+
                 if ($this->_transactionType == self::SHOPGATE_PAYMENT_STATUS_AUTH_CAPTURE) {
                     $message = Mage::helper('sales')->__('Captured amount of %s online.', $captured);
-                    $state  = Mage_Sales_Model_Order::STATE_PROCESSING;
-                    $status = $this->_getHelper()->getStatusFromState($state);
                 }
                 break;
             case self::RESPONSE_CODE_HELD:
+                $state  = $this->_getHelper()->getStateForStatus('payment_review');
+                $status = $this->_getHelper()->getStatusFromState($state);
+
                 if ($this->_isOrderPendingReview()) {
                     $message = Mage::helper('sales')->__(
                         'Capturing amount of %s is pending approval on gateway.',
                         $captured
-                    )
-                    ;
-                    $this->_order->setState($state, $status, $message);
+                    );
+                } else {
+                    $paymentInfos = $this->getShopgateOrder()->getPaymentInfos();
+                    if (!empty($paymentInfos['response_reason_code'])) {
+                        $message = $this->_getHelper()->__(
+                            '[SHOPGATE] Unrecognized response reason: %s',
+                            $paymentInfos['response_reason_code']
+                        );
+                        ShopgateLogger::getInstance()->log($message, ShopgateLogger::LOGTYPE_ERROR);
+                    }
                 }
                 break;
+            default:
+                $message = $this->_getHelper()->__('[SHOPGATE] Unrecognized response code: %s', $this->_responseCode);
+                ShopgateLogger::getInstance()->log($message, ShopgateLogger::LOGTYPE_ERROR);
         }
         $this->_order->setState($state, $status, $message);
         $order->setShopgateStatusSet(true);
-        
+
         return $order;
     }
-    
+
     /**
      *  Handles invoice creation
      *
@@ -121,7 +132,7 @@ class Shopgate_Framework_Model_Payment_Cc_AuthnAbstract extends Shopgate_Framewo
     protected function _createInvoice()
     {
         $paymentInfos = $this->getShopgateOrder()->getPaymentInfos();
-        
+
         switch ($this->_responseCode) {
             case self::RESPONSE_CODE_APPROVED:
                 if ($this->_transactionType == self::SHOPGATE_PAYMENT_STATUS_AUTH_CAPTURE) {
@@ -144,7 +155,7 @@ class Shopgate_Framework_Model_Payment_Cc_AuthnAbstract extends Shopgate_Framewo
                 }
                 break;
         }
-        
+
         return $this;
     }
 }

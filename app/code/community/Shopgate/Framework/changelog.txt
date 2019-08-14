@@ -1,5 +1,12 @@
 '''English'''
 
+'''Version 2.9.24'''
+* fix Quote order problems
+* fixed payment fees are now possible for cash on delivery
+* set shipping amount net or gross depending on the shop settings
+* fixed authorize_only Auth.NET orders getting stuck "In Review", now correctly set to be in "processing"
+* fixed order import bug for PHP versions 5.2 and below
+
 '''Version 2.9.23'''
 * export images for sub products of grouped products
 * Bug fix: PayOne (v330+) order's will now be processed by PayOne module

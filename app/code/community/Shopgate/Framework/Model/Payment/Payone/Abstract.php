@@ -79,7 +79,7 @@ class Shopgate_Framework_Model_Payment_Payone_Abstract extends Shopgate_Framewor
         /**
          * prepare the system config model
          */
-        switch ($this::PAYONE_CORE_MODEL_CONFIG_IDENTIFIER) {
+        switch ($this->getConstant('PAYONE_CORE_MODEL_CONFIG_IDENTIFIER')) {
             case Payone_Core_Model_System_Config_PaymentMethodCode::ONLINEBANKTRANSFER :
                 $this->_systemConfig  = $factory->getModelSystemConfigOnlinebanktransferType();
                 $this->_statusMapping = new Varien_Object(

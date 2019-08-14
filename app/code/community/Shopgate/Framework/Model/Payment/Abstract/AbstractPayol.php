@@ -114,7 +114,7 @@ class Shopgate_Framework_Model_Payment_Abstract_AbstractPayol extends Shopgate_F
                 $status = Mage_Sales_Model_Order::STATE_HOLDED;
             }
         } else {
-            $status  = Mage::getStoreConfig($this::XML_CONFIG_STATUS_PAID);
+            $status  = Mage::getStoreConfig($this->getConstant('XML_CONFIG_STATUS_PAID'));
             $state   = $this->_getHelper()->getStateForStatus($status);
             $message = Mage::helper('sales')->__(
                 '%sed amount of %s online.',

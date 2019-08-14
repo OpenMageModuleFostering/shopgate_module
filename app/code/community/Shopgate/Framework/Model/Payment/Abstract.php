@@ -167,7 +167,8 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
      */
     protected function _getVersion()
     {
-        return Mage::getConfig()->getModuleConfig($this::MODULE_CONFIG)->version;
+        $constant = $this->getConstant('MODULE_CONFIG');
+        return Mage::getConfig()->getModuleConfig($constant)->version;
     }
 
     /**
@@ -193,13 +194,14 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
      */
     public function isPayment()
     {
-        $flag = $this->getPaymentMethod() === $this::PAYMENT_IDENTIFIER;
+        $payment = $this->getConstant('PAYMENT_IDENTIFIER');
+        $flag    = $this->getPaymentMethod() === $payment;
 
         if (!$flag) {
             $debug = $this->_getHelper()->__(
                 'Payment method "%s" does not equal to identifier "%s" in class "%s"',
                 $this->getPaymentMethod(),
-                $this::PAYMENT_IDENTIFIER,
+                $payment,
                 get_class($this)
             );
             ShopgateLogger::getInstance()->log($debug, ShopgateLogger::LOGTYPE_DEBUG);
@@ -215,12 +217,13 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
      */
     public function isEnabled()
     {
-        $val     = Mage::getStoreConfig($this::XML_CONFIG_ENABLED);
+        $config  = $this->getConstant('XML_CONFIG_ENABLED');
+        $val     = Mage::getStoreConfig($config);
         $enabled = !empty($val);
         if (!$enabled) {
             $debug = $this->_getHelper()->__(
                 'Enabled check by path "%s" was evaluated as empty: "%s" in class "%s"',
-                $this::XML_CONFIG_ENABLED,
+                $config,
                 $val,
                 get_class($this)
             );
@@ -236,12 +239,13 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
      */
     public function isModuleActive()
     {
-        $active = Mage::getConfig()->getModuleConfig($this::MODULE_CONFIG)->is('active', 'true');
+        $config = $this->getConstant('MODULE_CONFIG');
+        $active = Mage::getConfig()->getModuleConfig($config)->is('active', 'true');
 
         if (!$active) {
             $debug = $this->_getHelper()->__(
                 'Module by config "%s" was not active in class "%s"',
-                $this::MODULE_CONFIG,
+                $config,
                 get_class($this)
             );
             ShopgateLogger::getInstance()->log($debug, ShopgateLogger::LOGTYPE_DEBUG);
@@ -330,13 +334,16 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
      */
     public function setOrderStatus($magentoOrder)
     {
+        $paid    = $this->getConstant('XML_CONFIG_STATUS_PAID');
+        $notPaid = $this->getConstant('XML_CONFIG_STATUS_NOT_PAID');
+
         if ($this->getShopgateOrder()->getIsPaid()) {
-            $status = Mage::getStoreConfig($this::XML_CONFIG_STATUS_PAID, $magentoOrder->getStoreId());
+            $status = Mage::getStoreConfig($paid, $magentoOrder->getStoreId());
         } else {
-            if ($this::XML_CONFIG_STATUS_NOT_PAID) {
-                $status = Mage::getStoreConfig($this::XML_CONFIG_STATUS_NOT_PAID, $magentoOrder->getStoreId());
+            if ($notPaid) {
+                $status = Mage::getStoreConfig($notPaid, $magentoOrder->getStoreId());
             } else {
-                $status = Mage::getStoreConfig($this::XML_CONFIG_STATUS_PAID, $magentoOrder->getStoreId());
+                $status = Mage::getStoreConfig($paid, $magentoOrder->getStoreId());
             }
         }
 
@@ -352,17 +359,18 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
 
     /**
      * Returns the payment model of a class,
-     * else falls back to mobilePayment 
+     * else falls back to mobilePayment
      *
      * @return mixed
      */
     public function getPaymentModel()
     {
-        $model = Mage::getModel($this::PAYMENT_MODEL);
+        $payment = $this->getConstant('PAYMENT_MODEL');
+        $model   = Mage::getModel($payment);
         if (!$model) {
             $debug = $this->_getHelper()->__(
                 'Could not find PAYMENT_MODEL %s in class %s',
-                $this::PAYMENT_MODEL,
+                $payment,
                 get_class($this)
             );
             ShopgateLogger::getInstance()->log($debug, ShopgateLogger::LOGTYPE_DEBUG);
@@ -399,5 +407,18 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
     protected function _getConfigHelper()
     {
         return Mage::helper('shopgate/config');
+    }
+
+    /**
+     * Added support for PHP version 5.2
+     * constant retrieval
+     *
+     * @param string $input
+     * @return mixed
+     */
+    protected final function getConstant($input)
+    {
+        $configClass = new ReflectionClass($this);
+        return $configClass->getConstant($input);
     }
 }
