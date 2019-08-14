@@ -632,7 +632,7 @@ class Shopgate_Framework_Model_Export_Product_Xml
         $stockItem = $this->item->getStockItem();
         $stock     = new Shopgate_Model_Catalog_Stock();
         $useStock  = false;
-        if ($stockItem->getManageStock() && !$this->item->isSuper()) {
+        if ($stockItem->getManageStock()) {
             switch ($stockItem->getBackorders() && $stockItem->getIsInStock()) {
                 case Mage_CatalogInventory_Model_Stock::BACKORDERS_YES_NONOTIFY:
                 case Mage_CatalogInventory_Model_Stock::BACKORDERS_YES_NOTIFY:
@@ -1224,17 +1224,20 @@ class Shopgate_Framework_Model_Export_Product_Xml
                 $configChild = Mage::getModel('catalog/product')
                     ->setStoreId($this->_getConfig()->getStoreViewId())
                     ->load($child);
-                $childProducts[] = $configChild;
+                if ($configChild->getStatus() != Mage_Catalog_Model_Product_Status::STATUS_DISABLED) {
+                    $childProducts[] = $configChild;
+                }
             }
         }
 
         if ($this->item->isGrouped()) {
-            $groupChildren = $this->item->getTypeInstance()->getAssociatedProducts($this->item);
-            $childProducts = array();
-            foreach ($groupChildren as $groupChild) {
-                /** @var Mage_Catalog_Model_Product $groupChild */
-                if ($groupChild->getStatus() != Mage_Catalog_Model_Product_Status::STATUS_DISABLED) {
-                    $childProducts[] = $groupChild;
+            $childProductIds = $this->item->getTypeInstance()->getAssociatedProductIds();
+            foreach ($childProductIds as $child) {
+                $configChild = Mage::getModel('catalog/product')
+                    ->setStoreId($this->_getConfig()->getStoreViewId())
+                    ->load($child);
+                if ($configChild->getStatus() != Mage_Catalog_Model_Product_Status::STATUS_DISABLED) {
+                    $childProducts[] = $configChild;
                 }
             }
         }

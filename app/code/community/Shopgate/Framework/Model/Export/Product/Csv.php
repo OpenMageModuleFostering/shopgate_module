@@ -269,7 +269,7 @@ class Shopgate_Framework_Model_Export_Product_Csv extends Shopgate_Framework_Mod
 
         $useStock = 0;
 
-        if ($stockItem->getManageStock() && !$product->isSuper()) {
+        if ($stockItem->getManageStock()) {
             switch ($stockItem->getBackorders() && $stockItem->getIsInStock()) {
                 case Mage_CatalogInventory_Model_Stock::BACKORDERS_YES_NONOTIFY:
                 case Mage_CatalogInventory_Model_Stock::BACKORDERS_YES_NOTIFY:

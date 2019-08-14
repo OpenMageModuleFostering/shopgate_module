@@ -78,9 +78,14 @@ class Shopgate_Framework_Model_Payment_Simple_Billsafe
         $orderTrans->setTxnId($paymentInfos['billsafe_transaction_id']);
         $orderTrans->setTxnType(Mage_Sales_Model_Order_Payment_Transaction::TYPE_AUTH);
         $orderTrans->save();
-        $order->getPayment()->importTransactionInfo($orderTrans);
-        $order->getPayment()->setDataChanges(true);
-
+    
+        /**
+         * Support for magento version 1.4.0.0
+         */
+        if (!$this->_getConfigHelper()->getIsMagentoVersionLower1410()) {
+            $order->getPayment()->importTransactionInfo($orderTrans);
+            $order->getPayment()->setDataChanges(true);
+        }
         return $order;
     }
 }

@@ -1,3 +1,18 @@
+'''Version 2.9.31'''
+* added ShopgateShippingInfo:$amount_net and $amount_gross properties, getters and setters
+* ShopgateShippingInfo:$amount, getter and setter are now deprecated
+
+'''Version 2.9.30'''
+* amount_complete is now being set correctly for get_orders
+
+'''Version 2.9.29'''
+* added a constructor to the category export model, so it can be called without any harm
+
+'''Version 2.9.28'''
+* XML export: fixed a bug that lead to unwanted occurrences of 'xmlns=""' in the XML
+
+'''Version 2.9.27'''
+* XML export: omit empty subnodes if they are defined as optional by the XSD
 
 '''Version 2.9.26'''
 * added constants for order item types

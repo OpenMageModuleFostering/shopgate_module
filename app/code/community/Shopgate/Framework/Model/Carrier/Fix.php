@@ -94,11 +94,7 @@ class Shopgate_Framework_Model_Carrier_Fix
         $method->setMethod($this->_method);
         $method->setMethodTitle($methodTitle);
 
-	    $shippingContainsTax = $sgOrder->getShippingTaxPercent() > 0
-            ? true
-            : false;
-
-	    $amount['shipping'] = $this->_getNetForGrossShipping($shippingInfo->getAmount(), $shippingContainsTax);
+        $amount['shipping'] = $shippingInfo->getAmountNet();
 
         $amountShopPayment = $sgOrder->getAmountShopPayment();
         if ($amountShopPayment >= 0) {

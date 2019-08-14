@@ -43,4 +43,22 @@ class Shopgate_Framework_Model_Payment_Payone_Pp
         return Payone_Api_Enum_WalletType::PAYPAL_EXPRESS;
     }
 
+    /**
+     * Creates an invoice for the order
+     *
+     * @throws Exception
+     */
+    protected function _addInvoice()
+    {
+        if ($this->getShopgateOrder()->getIsPaid()) {
+           parent::_addInvoice();
+        } else {
+            $info    = $this->getShopgateOrder()->getPaymentInfos();
+            $invoice = $this->_getPaymentHelper()->createOrderInvoice($this->getOrder());
+            $invoice->setIsPaid(false);
+            $invoice->setTransactionId($info['txn_id']);
+            $invoice->save();
+            $this->getOrder()->addRelatedObject($invoice);
+        }
+    }
 }

@@ -1,5 +1,22 @@
 '''English'''
 
+'''Version 2.9.23'''
+* export images for sub products of grouped products
+* Bug fix: PayOne (v330+) order's will now be processed by PayOne module
+* Feature: PayOne paid orders will have an invoice created automatically
+* Feature: PayOne PayPal orders will have an invoice independent of paid status
+* Use amount_net to set shipping costs in add_order
+* Library update to 2.9.31
+* item export: skip inactive child products
+* use_stock was always false for parent items, is now set correctly
+* Added support to BillSAFE for magento version 1.4.0.0
+* New Shopgate payment orders now have the correct state in Processing status
+* Now prints customer custom fields in order history
+* Now saves customer custom fields if customer attribute exists in magento
+* Fixed compatibility issue in get_settings with magento 1.4.x
+* changed identification of shopgate coupons
+* added custom fields on get_orders
+
 '''Version 2.9.22'''
 * Totals collector Invalid Block Type exception fix
 * Added redirect for quick search query links to mobile site

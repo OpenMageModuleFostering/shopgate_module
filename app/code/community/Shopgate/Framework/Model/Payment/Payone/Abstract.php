@@ -105,14 +105,11 @@ class Shopgate_Framework_Model_Payment_Payone_Abstract extends Shopgate_Framewor
                 );
                 break;
             case Payone_Core_Model_System_Config_PaymentMethodCode::ADVANCEPAYMENT :
-                //$this->_systemConfig  = $factory->getModelConfigType();
                 $this->_statusMapping = new Varien_Object(
                     $this->getConfig()->getGeneral()->getStatusMapping()->getAdvancepayment()
                 );
                 break;
             case Payone_Core_Model_System_Config_PaymentMethodCode::INVOICE :
-                //todo: not sure if it's needed for all payment methods
-                //$this->_systemConfig  = $factory->getInvoice();
                 $this->_statusMapping = new Varien_Object(
                     $this->getConfig()->getGeneral()->getStatusMapping()->getInvoice()
                 );
@@ -282,6 +279,7 @@ class Shopgate_Framework_Model_Payment_Payone_Abstract extends Shopgate_Framewor
         }
         $this->getOrder()->save();
         $this->_addTransaction();
+        $this->_addInvoice();
 
         return $this->getOrder();
     }
@@ -305,6 +303,24 @@ class Shopgate_Framework_Model_Payment_Payone_Abstract extends Shopgate_Framewor
         $handler->setPayment($this->getOrder()->getPayment());
         $handler->setRequest($request);
         $handler->handle($response);
+    }
+
+    /**
+     * Creates an invoice if it's paid
+     *
+     * @throws Exception
+     */
+    protected function _addInvoice()
+    {
+        if ($this->getShopgateOrder()->getIsPaid()) {
+            $info    = $this->getShopgateOrder()->getPaymentInfos();
+            $invoice = $this->_getPaymentHelper()->createOrderInvoice($this->getOrder());
+            $invoice->setIsPaid(true);
+            $invoice->pay();
+            $invoice->setTransactionId($info['txn_id']);
+            $invoice->save();
+            $this->getOrder()->addRelatedObject($invoice);
+        }
     }
 
     /**
@@ -390,7 +406,7 @@ class Shopgate_Framework_Model_Payment_Payone_Abstract extends Shopgate_Framewor
         $message = $this->_getHelper()->__('[SHOPGATE] Using PayOne configured status');
 
         //status fallback
-        if (empty($mapping)) {
+        if (!isset($mapping['state'], $mapping['status'])) {
             $mapping['state']  = Mage_Sales_Model_Order::STATE_PROCESSING;
             $mapping['status'] = $this->_getHelper()->getStatusFromState($mapping['state']);
             $message           = $this->_getHelper()->__('[SHOPGATE] Using default order status');
@@ -421,14 +437,14 @@ class Shopgate_Framework_Model_Payment_Payone_Abstract extends Shopgate_Framewor
     /**
      * Different versions have
      * different config options
-     * 
+     *
      * @return bool
      */
     public function isEnabled()
     {
         if (version_compare($this->_getVersion(), '3.3.0', '>=')) {
-            parent::isEnabled();
-        } 
+            return parent::isEnabled();
+        }
         $val = Mage::getStoreConfig('payone_general/global/key');
         return !empty($val);
     }
@@ -437,7 +453,7 @@ class Shopgate_Framework_Model_Payment_Payone_Abstract extends Shopgate_Framewor
      * Checks if config is found for this method
      * && transaction does not already exists
      * && payOne API response is APPROVED
-     * Else fallback import with Shogate Mobile Payment Method
+     * Else fallback import with Shopgate Mobile Payment
      *
      * @return bool
      */

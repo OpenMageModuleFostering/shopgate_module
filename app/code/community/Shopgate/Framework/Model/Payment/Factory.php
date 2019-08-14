@@ -158,18 +158,6 @@ class Shopgate_Framework_Model_Payment_Factory extends Shopgate_Framework_Model_
     }
 
     /**
-     * Check for identifier containment instead of equality
-     *
-     * @param $identifier - payment_id to test against
-     * @return bool
-     */
-    public function isPayment($identifier)
-    {
-        $parts = explode('_', $this->getPaymentMethod());
-        return in_array($identifier, $parts, true);
-    }
-
-    /**
      * A simple class will contain only one word
      * inside payment_method, e.g. PAYPAL
      *
