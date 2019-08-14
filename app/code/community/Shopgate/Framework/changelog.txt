@@ -1,3 +1,11 @@
+'''Version 2.9.45'''
+* Added support for cart price rule blocking for older magento versions
+* Removed references of external order id in PayPal orders
+* Fixed issue missing shipping costs in order import
+* Fixed missing payment method in checkCart request
+* Fixed order total amount when shopgate coupons are used
+* Fixed tax issue when using shopgate prices in order import
+
 '''Version 2.9.44'''
 * fixed shipping costs in case of taxes being based on the origin
 * Fixed character \n appearing in customer address

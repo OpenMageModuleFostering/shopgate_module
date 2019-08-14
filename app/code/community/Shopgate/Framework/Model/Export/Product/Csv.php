@@ -794,7 +794,7 @@ class Shopgate_Framework_Model_Export_Product_Csv extends Shopgate_Framework_Mod
             $options         = $product->getOptions();
             $num_inputs      = 1;
             $num_options     = 1;
-            $pricesInclTaxes = Mage::helper("tax")->shippingPriceIncludesTax($this->_getConfig()->getStoreViewId());
+            $pricesInclTaxes = Mage::helper("tax")->priceIncludesTax($this->_getConfig()->getStoreViewId());
 
             foreach ($options as $option) {
                 /* @var $option Mage_Catalog_Model_Product_Option */

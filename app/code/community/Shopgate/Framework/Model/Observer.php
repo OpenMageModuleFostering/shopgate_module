@@ -51,6 +51,7 @@ class Shopgate_Framework_Model_Observer
      *
      * @see http://wiki.shopgate.com/Merchant_API_add_order_delivery_note
      * @see http://wiki.shopgate.com/Merchant_API_set_order_shipping_completed
+     *
      * @param Varien_Event_Observer $observer
      */
     public function setShippingStatus(Varien_Event_Observer $observer)
@@ -74,12 +75,14 @@ class Shopgate_Framework_Model_Observer
 
         if (!Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ACTIVE, $order->getStore())) {
             ShopgateLogger::getInstance()->log('> Plugin is not active, return!', ShopgateLogger::LOGTYPE_DEBUG);
+
             return;
         }
 
         $this->_initMerchantApi($order->getStoreId());
         if (!$this->_config->isValidConfig()) {
             ShopgateLogger::getInstance()->log('> Plugin has no valid config data!', ShopgateLogger::LOGTYPE_DEBUG);
+
             return;
         }
 
@@ -236,6 +239,7 @@ class Shopgate_Framework_Model_Observer
      *
      * @param $shopgateOrder Shopgate_Framework_Model_Shopgate_Order
      * @param $order         Mage_Sales_Model_Order
+     *
      * @return bool
      */
     protected function _completeShipping($shopgateOrder, $order)
@@ -265,6 +269,7 @@ class Shopgate_Framework_Model_Observer
                 "> (#{$orderNumber}) This order is not shipped completly",
                 ShopgateLogger::LOGTYPE_DEBUG
             );
+
             return true;
         }
 
@@ -302,6 +307,7 @@ class Shopgate_Framework_Model_Observer
                     "(#{$orderNumber}) SMA-Error on set shipping complete! Message: {$e->getCode()} - {$e->getMessage()}",
                     ShopgateLogger::LOGTYPE_ERROR
                 );
+
                 return false;
             }
         } catch (Exception $e) {
@@ -318,11 +324,13 @@ class Shopgate_Framework_Model_Observer
                 "(#{$orderNumber}) Unkwon error on set shipping complete! Message: {$e->getCode()} - {$e->getMessage()}",
                 ShopgateLogger::LOGTYPE_ERROR
             );
+
             return false;
         }
 
         $shopgateOrder->setIsSentToShopgate(true);
         $shopgateOrder->save();
+
         return true;
     }
 
@@ -334,6 +342,7 @@ class Shopgate_Framework_Model_Observer
      * Uses the cancle_order action in ShopgateMerchantApi
      *
      * @see http://wiki.shopgate.com/Merchant_API_cancel_order
+     *
      * @param Varien_Event_Observer $observer
      *
      * @return $this
@@ -387,9 +396,10 @@ class Shopgate_Framework_Model_Observer
                         );
                     }
 
-                    if ($orderItem->getProductType() != Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE &&
-                        $orderItem->getQtyCanceled() + $orderItem->getQtyRefunded() > 0 &&
-                        !$orderItem->getIsVirtual() && $rdItem
+                    if ($orderItem->getProductType() != Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE
+                        && $orderItem->getQtyCanceled() + $orderItem->getQtyRefunded() > 0
+                        && !$orderItem->getIsVirtual()
+                        && $rdItem
                     ) {
 
                         $cancellationItems[] = array(
@@ -407,6 +417,7 @@ class Shopgate_Framework_Model_Observer
                         '[SHOPGATE] Notice: Credit memo was not sent to Shopgate because no product quantity was affected.'
                     );
                     $order->save();
+
                     return true;
                 }
 
@@ -516,6 +527,7 @@ class Shopgate_Framework_Model_Observer
     /**
      * @param $items
      * @param $productID
+     *
      * @return bool
      */
     protected function _findItemByProductId($items, $productID)
@@ -548,6 +560,7 @@ class Shopgate_Framework_Model_Observer
     /**
      * @param $items
      * @param $id
+     *
      * @return bool
      */
     protected function findItemByOriginal($items, $id)
@@ -566,6 +579,7 @@ class Shopgate_Framework_Model_Observer
                     "Product ID (#{$id}) Json parse error! Message: {$e->getCode()} - {$e->getMessage()}",
                     ShopgateLogger::LOGTYPE_ERROR
                 );
+
                 return false;
             }
 
@@ -573,6 +587,7 @@ class Shopgate_Framework_Model_Observer
                 return $item;
             }
         }
+
         return false;
     }
 
@@ -588,11 +603,15 @@ class Shopgate_Framework_Model_Observer
             $this->_initConfig();
             if (!$this->_config->applyCartRulesToCart() || Mage::registry('shopgate_disable_sales_rules')) {
                 $collection = $observer->getEvent()->getCollection();
-                if ($collection instanceof Mage_SalesRule_Model_Resource_Rule_Collection) {
-                    $collection->getSelect()->where(
-                        'coupon_type = ' . Mage_SalesRule_Model_Rule::COUPON_TYPE_SPECIFIC .
-                        ' OR simple_free_shipping IN (1,2)'
-                    );
+                if ($collection instanceof Mage_SalesRule_Model_Resource_Rule_Collection
+                    || $collection instanceof Mage_SalesRule_Model_Mysql4_Rule_Collection
+                ) {
+                    if (Mage::helper('shopgate/config')->getIsMagentoVersionLower1410()) {
+                        $couponType = "coupon_code <> ''";
+                    } else {
+                        $couponType = 'coupon_type = ' . Mage_SalesRule_Model_Rule::COUPON_TYPE_SPECIFIC;
+                    }
+                    $collection->getSelect()->where($couponType . ' OR simple_free_shipping IN (1,2)');
                 }
             }
         }
@@ -607,8 +626,8 @@ class Shopgate_Framework_Model_Observer
             $eventResourceModule = explode('/', $observer->getResourceName());
             $eventResourceModule = count($eventResourceModule) ? $eventResourceModule[0] : 'default';
             /* Prevent collection loading on admin to avoid an error while using flat tables */
-            if ((Mage::app()->getStore()->isAdmin() && !$eventResourceModule == 'cron') ||
-                (!Mage::helper('shopgate')->isShopgateApiRequest() && !$eventResourceModule == 'cron')
+            if ((Mage::app()->getStore()->isAdmin() && !$eventResourceModule == 'cron')
+                || (!Mage::helper('shopgate')->isShopgateApiRequest() && !$eventResourceModule == 'cron')
             ) {
                 return;
             }
@@ -658,7 +677,8 @@ class Shopgate_Framework_Model_Observer
 
             if (Mage::helper('shopgate/config')->isOAuthShopAlreadyRegistered($settings['shop_number'], $storeViewId)) {
                 Mage::throwException(
-                    'For the current storeView with id #' . $storeViewId . ' is already a shopnumber set. OAuth registration canceled.'
+                    'For the current storeView with id #' . $storeViewId
+                    . ' is already a shopnumber set. OAuth registration canceled.'
                 );
             }
 
@@ -718,6 +738,7 @@ class Shopgate_Framework_Model_Observer
      * Adds extra parameters for developers
      *
      * @param Varien_Event_Observer $observer
+     *
      * @return $this
      */
     public function addDevSystemConfig(Varien_Event_Observer $observer)
@@ -816,6 +837,7 @@ class Shopgate_Framework_Model_Observer
      * because PayOne plugin is not setting it correctly.
      *
      * @param Varien_Event_Observer $event
+     *
      * @return $this
      * @throws Exception
      */

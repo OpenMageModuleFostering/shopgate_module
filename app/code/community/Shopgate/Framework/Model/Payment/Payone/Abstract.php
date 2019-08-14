@@ -228,7 +228,6 @@ class Shopgate_Framework_Model_Payment_Payone_Abstract extends Shopgate_Framewor
             $order->addItem($orderItem);
         }
         $order->setQuote($quote);
-        $order->setExtOrderId($quote->getPayment()->getTransactionId());
         $order->setCanSendNewEmailFlag(false);
 
         $order->getPayment()->setData('payone_config_payment_method_id', $this->_getMethodId());
@@ -489,11 +488,11 @@ class Shopgate_Framework_Model_Payment_Payone_Abstract extends Shopgate_Framewor
         if (!is_null($this->_transExists)) {
             return $this->_transExists;
         }
-        
+
         $info    = $this->getShopgateOrder()->getPaymentInfos();
         $factory = Mage::getModel('payone_core/factory');
         $this->_transExists = false;
-        
+
         if (isset($info['txid']) && $factory) {
             $transaction = $factory->getModelTransaction();
             if ($transaction->load($info['txid'], 'txid')->hasData()) {
@@ -505,7 +504,7 @@ class Shopgate_Framework_Model_Payment_Payone_Abstract extends Shopgate_Framewor
             $debug = $this->_getHelper()->__('Either "txid" or PayOne: Factory cannot be loaded');
             ShopgateLogger::getInstance()->log($debug, ShopgateLogger::LOGTYPE_DEBUG);
         }
-        
+
         return $this->_transExists;
     }
 

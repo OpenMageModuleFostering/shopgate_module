@@ -66,7 +66,6 @@ class Shopgate_Framework_Model_Payment_Abstract_AbstractPayol extends Shopgate_F
             $this->getOrder()->addItem($orderItem);
         }
         $this->getOrder()->setQuote($quote);
-        $this->getOrder()->setExtOrderId($quote->getPayment()->getTransactionId());
         $this->getOrder()->setCanSendNewEmailFlag(false);
 
         $this->_initTransaction($quote);

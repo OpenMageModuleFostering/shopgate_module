@@ -78,7 +78,6 @@ class Shopgate_Framework_Model_Payment_Pp_Wspp
             $order->addItem($orderItem);
         }
         $order->setQuote($quote);
-        $order->setExtOrderId($quote->getPayment()->getTransactionId());
         $order->setCanSendNewEmailFlag(false);
         $transaction->addObject($order);
         $transaction->addCommitCallback(array($order, 'save'));

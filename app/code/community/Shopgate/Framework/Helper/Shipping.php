@@ -103,7 +103,7 @@ class Shopgate_Framework_Helper_Shipping
          *
          * @see https://shopgate.atlassian.net/browse/MAGENTO-880
          */
-        if ($this->hasFreeShippingCoupon($order) && !Mage::helper('shopgate/config')->getIsMagentoVersionLower15()) {
+        if (!Mage::helper('shopgate/config')->getIsMagentoVersionLower15()) {
             $quote->setData('totals_collected_flag', false);
             $quote->collectTotals();
         }

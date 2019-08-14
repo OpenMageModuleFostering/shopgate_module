@@ -97,7 +97,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
         if (!in_array($country, $netCountries)) {
             $this->setUseTaxClasses(true);
         }
-        
+
         return true;
     }
 
@@ -505,9 +505,10 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                 continue;
             }
 
-            $orderInfo      = $item->getInternalOrderInfo();
-            $orderInfo      = $this->jsonDecode($orderInfo, true);
-            $amountWithTax  = $item->getUnitAmountWithTax();
+            $orderInfo     = $item->getInternalOrderInfo();
+            $orderInfo     = $this->jsonDecode($orderInfo, true);
+            $amountWithTax = $item->getUnitAmountWithTax();
+            $amountNet     = $item->getUnitAmount();
 
             $stackQuantity = 1;
             if (!empty($orderInfo['stack_quantity']) && $orderInfo['stack_quantity'] > 1) {
@@ -516,6 +517,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
 
             if ($stackQuantity > 1) {
                 $amountWithTax = $amountWithTax / $stackQuantity;
+                $amountNet     = $amountNet / $stackQuantity;
             }
 
             $pId = $orderInfo["product_id"];
@@ -605,8 +607,13 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                 $quoteItem = $quote->getItemByProduct($product);
 
                 if ($this->_getConfig()->useShopgatePrices()) {
-                    $quoteItem->setCustomPrice($amountWithTax);
-                    $quoteItem->setOriginalCustomPrice($amountWithTax);
+                    if (Mage::helper("tax")->priceIncludesTax($this->_getConfig()->getStoreViewId())) {
+                        $quoteItem->setCustomPrice($amountWithTax);
+                        $quoteItem->setOriginalCustomPrice($amountWithTax);
+                    } else {
+                        $quoteItem->setCustomPrice($amountNet);
+                        $quoteItem->setOriginalCustomPrice($amountNet);
+                    }
                 }
                 $quoteItem->setTaxPercent($item->getTaxPercent());
 
@@ -776,11 +783,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                 if (!$item->isSgCoupon()) {
                     continue;
                 }
-                if ($this->useTaxClasses) {
-                    $itemAmount = $item->getUnitAmountWithTax();
-                } else {
-                    $itemAmount = $item->getUnitAmount();
-                }
+                $itemAmount = $item->getUnitAmountWithTax();
 
                 $obj = new Varien_Object();
                 $obj->setName($item->getName());
@@ -1063,7 +1066,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                         'Field "internal_info" is empty.'
                     );
                 }
-                
+
                 if (!isset($couponInfos["coupon_id"])) {
                     throw new ShopgateLibraryException(
                         ShopgateLibraryException::COUPON_NOT_VALID,
@@ -1201,7 +1204,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             ),
             false
         );
-        
+
         Mage::helper('shopgate/import_order')->printCustomFieldComments($order, $shopgateOrder);
 
         return $order;
@@ -1459,7 +1462,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
     /**
      * Run order manipulation with isPaid flag true.
      * Set to Private as this will be refactored.
-     * 
+     *
      * @param Mage_Sales_Model_Order $magentoOrder
      * @param ShopgateOrder          $shopgateOrder
      *
@@ -1509,7 +1512,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
      *
      * @param ShopgateCart $cart The ShopgateCart object containing the coupons that should be redeemed.
      *
-     * @return array('external_coupons' => ShopgateExternalCoupon[])
+     * @return array - ('external_coupons' => ShopgateExternalCoupon[])
      * @throws ShopgateLibraryException if an error occurs.
      */
     public function redeemCoupons(ShopgateCart $cart)
@@ -1662,28 +1665,28 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             )
         );
 
-        $shippingMethods = $this->_getSalesHelper()->getShippingMethods($mageCart);
-        if ($mageCart->getQuote()->hasItems() && $shippingMethods) {
-            $response['shipping_methods'] = $shippingMethods;
-            $this->log('Shipping methods loaded', ShopgateLogger::LOGTYPE_DEBUG);
-        }
-        
         $coupons = $this->checkCoupons($mageCart, $cart);
         if ($coupons) {
             $response['external_coupons'] = $coupons;
             $this->log('Coupons loaded', ShopgateLogger::LOGTYPE_DEBUG);
         }
-        
-        $paymentMethods = $this->_getSalesHelper()->getPaymentMethods($mageCart);
-        if ($paymentMethods) {
-            $response['payment_methods'] = $paymentMethods;
-            $this->log('Payment methods loaded', ShopgateLogger::LOGTYPE_DEBUG);
+
+        $shippingMethods = $this->_getSalesHelper()->getShippingMethods($mageCart);
+        if ($mageCart->getQuote()->hasItems() && $shippingMethods) {
+            $response['shipping_methods'] = $shippingMethods;
+            $this->log('Shipping methods loaded', ShopgateLogger::LOGTYPE_DEBUG);
         }
-        
+
         $items = $this->_getSalesHelper()->getItems($mageCart->getQuote(), $cart);
         if ($items) {
             $response['items'] = $items;
             $this->log('Items loaded', ShopgateLogger::LOGTYPE_DEBUG);
+        }
+
+        $paymentMethods = $this->_getSalesHelper()->getPaymentMethods($mageCart);
+        if ($paymentMethods) {
+            $response['payment_methods'] = $paymentMethods;
+            $this->log('Payment methods loaded', ShopgateLogger::LOGTYPE_DEBUG);
         }
 
         $affiliateCoupon = $affiliateFactory->redeemCoupon($mageCart->getQuote(), $this->useTaxClasses);
@@ -2062,14 +2065,14 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
         } else {
             $ids = $collection->getAllIds();
         }
-        
+
         if (empty($ids) || count($ids) == 1) {
             $this->log(
                 "Warning! Low amount of items to export, id's: " . print_r($ids, 1),
                 ShopgateLogger::LOGTYPE_DEBUG
             );
         }
-        
+
         return $ids;
     }
 
@@ -2116,7 +2119,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
 
     /**
      * Item XML export function
-     * 
+     *
      * @param int   $limit
      * @param int   $offset
      * @param array $uids
