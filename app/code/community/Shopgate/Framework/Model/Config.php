@@ -95,6 +95,7 @@ class Shopgate_Framework_Model_Config extends ShopgateConfig
     const XML_PATH_SHOPGATE_ORDER_MARK_UNBLOCKED_AS_PAID         = "shopgate/orders/mark_unblocked_orders_as_paid";
     const XML_PATH_SHOPGATE_ORDER_SEND_NEW_ORDER_MAIL            = "shopgate/orders/send_new_order_mail";
     const XML_PATH_SHOPGATE_ORDER_CUSTOMFIELDS_TO_STATUSHISTORY  = "shopgate/orders/write_customfields_into_statushistory";
+    const XML_PATH_SHOPGATE_ORDER_APPLY_CART_RULES               = "shopgate/orders/apply_cart_rules";
 	const XML_PATH_SHOPGATE_ORDER_ADD_ONLY_SIMPLE                = "shopgate/orders/add_only_simple";
     const XML_PATH_SHOPGATE_ORDER_USE_SHOPGATE_PRICES            = "shopgate/orders/use_shopgate_prices";
     const XML_PATH_SHOPGATE_REDIRECT_TYPE                        = "shopgate/mobile/redirect_type";
@@ -322,6 +323,7 @@ class Shopgate_Framework_Model_Config extends ShopgateConfig
                                            => Mage_CatalogInventory_Helper_Data::XML_PATH_SHOW_OUT_OF_STOCK,
             "available_text_attribute_code"
                                            => self::XML_PATH_SHOPGATE_EXPORT_AVAILABLE_TEXT_ATTRIBUTE_CODE,
+            "apply_cart_rules"             => self::XML_PATH_SHOPGATE_ORDER_APPLY_CART_RULES,
             "add_only_simple"              => self::XML_PATH_SHOPGATE_ORDER_ADD_ONLY_SIMPLE,
             "fix_one_cent_bug"             => self::XML_PATH_SHOPGATE_FIX_ONE_CENT_BUG,
             "use_shopgate_prices"          => self::XML_PATH_SHOPGATE_ORDER_USE_SHOPGATE_PRICES,
@@ -1042,6 +1044,19 @@ class Shopgate_Framework_Model_Config extends ShopgateConfig
         $countries = Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_NET_MARKET_COUNTRIES, $this->getStoreViewId());
 
         return explode(",", $countries);
+    }
+
+    /**
+     * Returns if cart rules should be applied to shopgate carts
+     *
+     * @return mixed
+     */
+    public function applyCartRulesToCart()
+    {
+        return Mage::getStoreConfigFlag(
+            Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ORDER_APPLY_CART_RULES,
+            $this->getStoreViewId()
+        );
     }
 
 	/**

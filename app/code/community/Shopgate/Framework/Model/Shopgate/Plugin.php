@@ -1062,6 +1062,10 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
      */
     protected function _setQuoteShopCoupons($quote, $order)
     {
+        if ($this->_getConfig()->applyCartRulesToCart()) {
+            $order = $this->_getCouponHelper()->removeCartRuleCoupons($order);
+        }
+
         if (count($order->getExternalCoupons()) > 1) {
             throw new ShopgateLibraryException(ShopgateLibraryException::COUPON_TOO_MANY_COUPONS);
         }
@@ -1114,6 +1118,11 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                 }
             }
             $quote->save();
+        }
+
+        if ($this->_getConfig()->applyCartRulesToCart()) {
+            $session = Mage::getSingleton('checkout/session');
+            $session->replaceQuote($quote);
         }
 
         return $quote;
@@ -1556,10 +1565,9 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
     /**
      * Create a Magento cart and the quote
      *
-     * @throws ShopgateLibraryException
-     *
      * @param ShopgateCart $cart
      *
+     * @throws ShopgateLibraryException
      * @return Mage_Checkout_Model_Cart
      */
     protected function _createMagentoCartFromShopgateCart(ShopgateCart $cart)
@@ -1595,21 +1603,24 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
      * * Coupon cannot found
      * * Magento throws an exception
      *
-     * @param              $mageCart
-     * @param ShopgateCart $cart
+     * @param Mage_Checkout_Model_Cart $mageCart
+     * @param ShopgateCart             $cart
      *
-     * @return mixed|null|ShopgateExternalCoupon
+     * @return ShopgateExternalCoupon[]
      * @throws ShopgateLibraryException
      */
     public function checkCoupons($mageCart, ShopgateCart $cart)
     {
         /* @var $mageQuote Mage_Sales_Model_Quote */
-        /* @var $mageCart Mage_Checkout_Model_Cart */
         /* @var $mageCoupon Mage_SalesRule_Model_Coupon */
         /* @var $mageRule Mage_SalesRule_Model_Rule */
 
+        if ($this->_getConfig()->applyCartRulesToCart()) {
+            return $this->_getCouponHelper()->checkCouponsAndCartRules($mageCart, $cart, $this->useTaxClasses);
+        }
+
         if (!$cart->getExternalCoupons()) {
-            return null;
+            return array();
         }
 
         $externalCoupons    = array();
@@ -1617,72 +1628,15 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
         $validCouponsInCart = 0;
 
         foreach ($cart->getExternalCoupons() as $coupon) {
-            /** @var ShopgateExternalCoupon $coupon */
-            $externalCoupon = new ShopgateExternalCoupon();
-            $externalCoupon->setIsValid(true);
-            $externalCoupon->setCode($coupon->getCode());
-
-            try {
-                $mageQuote->setCouponCode($coupon->getCode());
-                $mageQuote->setTotalsCollectedFlag(false)->collectTotals();
-            } catch (Exception $e) {
-                $externalCoupon->setIsValid(false);
-                $externalCoupon->setNotValidMessage($e->getMessage());
-            }
-
-            if ($this->_getConfigHelper()->getIsMagentoVersionLower1410()) {
-                $mageRule   = Mage::getModel('salesrule/rule')->load($coupon->getCode(), 'coupon_code');
-                $mageCoupon = $mageRule;
-            } else {
-                $mageCoupon = Mage::getModel('salesrule/coupon')->load($coupon->getCode(), 'code');
-                $mageRule   = Mage::getModel('salesrule/rule')->load($mageCoupon->getRuleId());
-            }
-
-            if ($mageRule->getId() && $mageQuote->getCouponCode()) {
-                $couponInfo              = array();
-                $couponInfo["coupon_id"] = $mageCoupon->getId();
-                $couponInfo["rule_id"]   = $mageRule->getId();
-
-                $amountCoupon = $mageQuote->getSubtotal() - $mageQuote->getSubtotalWithDiscount();
-
-                $storeLabel = $mageRule->getStoreLabel(Mage::app()->getStore()->getId());
-                $externalCoupon->setName($storeLabel ? $storeLabel : $mageRule->getName());
-                $externalCoupon->setDescription($mageRule->getDescription());
-                $externalCoupon->setIsFreeShipping((bool)$mageQuote->getShippingAddress()->getFreeShipping());
-                $externalCoupon->setInternalInfo($this->jsonEncode($couponInfo));
-                if ($this->useTaxClasses) {
-                    $externalCoupon->setAmountGross($amountCoupon);
-                } else {
-                    $externalCoupon->setAmountNet($amountCoupon);
-                }
-                if (!$amountCoupon && !$externalCoupon->getIsFreeShipping()) {
-                    $externalCoupon->setIsValid(false);
-                    $externalCoupon->setNotValidMessage(
-                        $this->_getHelper()->__(
-                            'Coupon code "%s" is not valid.',
-                            Mage::helper('core')->htmlEscape($coupon->getCode())
-                        )
-                    );
-                }
-
-            } else {
-                $externalCoupon->setIsValid(false);
-                $externalCoupon->setNotValidMessage(
-                    $this->_getHelper()->__(
-                        'Coupon code "%s" is not valid.',
-                        Mage::helper('core')->htmlEscape($coupon->getCode())
-                    )
-                );
-            }
-
-            if ($externalCoupon->getIsValid() && $validCouponsInCart >= 1) {
-                $errorCode = ShopgateLibraryException::COUPON_TOO_MANY_COUPONS;
-                $externalCoupon->setIsValid(false);
-                $externalCoupon->setNotValidMessage(ShopgateLibraryException::getMessageFor($errorCode));
-            }
+            $externalCoupon = $this->_getCouponHelper()->validateExternalCoupon($coupon, $mageQuote, $this->useTaxClasses);
 
             if ($externalCoupon->getIsValid()) {
                 $validCouponsInCart++;
+            }
+            if ($validCouponsInCart > 1) {
+                $errorCode = ShopgateLibraryException::COUPON_TOO_MANY_COUPONS;
+                $externalCoupon->setIsValid(false);
+                $externalCoupon->setNotValidMessage(ShopgateLibraryException::getMessageFor($errorCode));
             }
 
             $externalCoupons[] = $externalCoupon;

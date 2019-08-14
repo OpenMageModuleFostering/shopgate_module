@@ -1,3 +1,7 @@
+'''Version 2.9.36'''
+* Update to library version 2.9.42
+* Added support of shopping cart price rules for mobile orders
+
 '''Version 2.9.35'''
 * Fixed PayPal Website Payments Pro missing IPN data & no invoice
 * Fixed bug with getting BillSAFE orders to ship

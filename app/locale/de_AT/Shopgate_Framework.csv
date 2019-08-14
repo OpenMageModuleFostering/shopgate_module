@@ -228,6 +228,8 @@
 "Attributes which should be exported","Attribute die exportiert werden sollen"
 "Use Article Price Index in Product Export","Preis Index beim Export benutzen"
 "Using the price index will speed up the export process but may show wrong prices if the index is outdated.","Die Benutzung des Preis Indexes wird den Export beschleunigen, kann aber zu falschen Preisen führen wenn der Index veraltet ist."
+"Apply Shopping Cart Price Rules to mobile orders","Warenkorb Preisregeln auf mobile Bestellungen anwenden"
+"Note: The discount will be shown as a coupon on the mobile shop's cart page.","Hinweis: Der Rabatt wird im mobilen Shop als Gutschein dargestellt."
 "Add only the simple Product to order","Nur den einfachen Artikel der Bestellung hinzufügen"
 "Note: In case the order contains a simple/config product, only the the simple product will be added to the order.","Hinweis: Wenn eine Bestellung konfigurierbare Artikel enthält werden nur die jeweiligen einfachen Artikel der Bestellung hinzugefügt."
 "Virtual","Virtuelle Artikel"

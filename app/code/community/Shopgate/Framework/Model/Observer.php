@@ -207,16 +207,25 @@ class Shopgate_Framework_Model_Observer
     }
 
     /**
+     * get config
+     *
+     * @param $storeId
+     */
+    protected function _initConfig($storeId = null)
+    {
+        if ($this->_config == null || ($storeId !== null && $storeId !== $this->_config->getStoreViewId())) {
+            $this->_config = Mage::helper('shopgate/config')->getConfig($storeId);
+        }
+    }
+
+    /**
      * get merchant api
      *
      * @param $storeId
      */
     protected function _initMerchantApi($storeId)
     {
-        /* @var $config Shopgate_Framework_Model_Config */
-        if ($this->_config == null) {
-            $this->_config = Mage::helper('shopgate/config')->getConfig($storeId);
-        }
+        $this->_initConfig($storeId);
         $builder            = new ShopgateBuilder($this->_config);
         $this->_merchantApi = $builder->buildMerchantApi();
     }
@@ -575,12 +584,15 @@ class Shopgate_Framework_Model_Observer
     public function beforeSalesrulesLoaded($observer)
     {
         if (Mage::helper('shopgate')->isShopgateApiRequest()) {
-            $collection = $observer->getEvent()->getCollection();
-            if ($collection instanceof Mage_SalesRule_Model_Resource_Rule_Collection) {
-                $collection->getSelect()->where(
-                    'coupon_type = ' . Mage_SalesRule_Model_Rule::COUPON_TYPE_SPECIFIC .
-                    ' OR simple_free_shipping IN (1,2)'
-                );
+            $this->_initConfig();
+            if (!$this->_config->applyCartRulesToCart() || Mage::registry('shopgate_disable_sales_rules')) {
+                $collection = $observer->getEvent()->getCollection();
+                if ($collection instanceof Mage_SalesRule_Model_Resource_Rule_Collection) {
+                    $collection->getSelect()->where(
+                        'coupon_type = ' . Mage_SalesRule_Model_Rule::COUPON_TYPE_SPECIFIC .
+                        ' OR simple_free_shipping IN (1,2)'
+                    );
+                }
             }
         }
     }
@@ -613,8 +625,8 @@ class Shopgate_Framework_Model_Observer
                 Mage::app()->setCurrentStore($storeViewId);
 
                 $collection = Mage::getModel('catalog/product')
-                                  ->getResourceCollection()
-                                  ->addFieldToFilter('type_id', 'virtual');
+                    ->getResourceCollection()
+                    ->addFieldToFilter('type_id', 'virtual');
 
                 $helper = Mage::helper('shopgate/coupon');
 
@@ -677,9 +689,9 @@ class Shopgate_Framework_Model_Observer
             );
 
             $collection = Mage::getModel('core/config_data')
-                              ->getCollection()
-                              ->addFieldToFilter('path', Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_SHOP_NUMBER)
-                              ->addFieldToFilter('value', $shopnumber);
+                ->getCollection()
+                ->addFieldToFilter('path', Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_SHOP_NUMBER)
+                ->addFieldToFilter('value', $shopnumber);
 
             if ($collection->getSize() && $collection->getFirstItem()->getScope() == 'websites') {
                 Mage::getConfig()->saveConfig(

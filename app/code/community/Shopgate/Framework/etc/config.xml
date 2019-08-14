@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Shopgate_Framework>
-            <version>2.9.35</version>
+            <version>2.9.36</version>
         </Shopgate_Framework>
     </modules>
     <phpunit>
@@ -364,6 +364,7 @@
                 <write_customfields_into_statushistory>1</write_customfields_into_statushistory>
                 <payment_title>Shopgate</payment_title>
                 <shipping_title>Shopgate</shipping_title>
+                <apply_cart_rules>0</apply_cart_rules>
                 <add_only_simple>0</add_only_simple>
                 <use_shopgate_prices>0</use_shopgate_prices>
             </orders>
