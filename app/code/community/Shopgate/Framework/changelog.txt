@@ -1,3 +1,7 @@
+'''Version 2.9.42'''
+* fixed redirect of cms pages
+* Removed bot indexing of mobile shop for stores using mobile app only
+
 '''Version 2.9.41'''
 * Improved error printing for configurable products in checkCart
 * Removed coupon title from displaying in shopgate mobile site

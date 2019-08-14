@@ -1,3 +1,13 @@
+'''Version 2.9.46'''
+* made isMobile() check public in the redirector class
+
+'''Version 2.9.45'''
+* fixed product export issue related to invalid data in field tax_class
+
+'''Version 2.9.44'''
+* won't crash anymore when an array of objects expected from the Shopgate Merchant API is set, but empty
+* fixed encoding issue with non-object responses
+
 '''Version 2.9.43'''
 * changed error reporting settings for development environments
 * fixes redirect when a shop is not active & full view mode 
