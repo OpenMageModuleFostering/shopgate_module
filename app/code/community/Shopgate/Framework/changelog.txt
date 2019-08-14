@@ -1,3 +1,6 @@
+'''Version 2.9.40'''
+* Fixed mage cart page exception for collector calls without a Shopgate object in session
+
 '''Version 2.9.39'''
 * Updated to library version 2.9.44
 * Orders are no longer on hold if a Prepay order is mapped to an enabled plugin

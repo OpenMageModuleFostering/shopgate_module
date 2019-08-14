@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Shopgate GmbH
  *
@@ -18,37 +19,28 @@
  * transfer to third parties is only permitted where we previously consented thereto in writing. The provisions
  * of paragraph 69 d, sub-paragraphs 2, 3 and paragraph 69, sub-paragraph e of the German Copyright Act shall remain unaffected.
  *
- *  @author Shopgate GmbH <interfaces@shopgate.com>
+ * @author Shopgate GmbH <interfaces@shopgate.com>
  */
-
 class Shopgate_Framework_Model_Sales_Creditmemo_Total_ShopgatePaymentFee extends Mage_Sales_Model_Order_Creditmemo_Total_Abstract
 {
     /**
-     * Collect totals
-     *
-     * @param Mage_Sales_Model_Order_Creditmemo $creditmemo
-     *
-     * @return $this
+     * @inheritdoc
      */
     public function collect(Mage_Sales_Model_Order_Creditmemo $creditmemo)
     {
         parent::collect($creditmemo);
-
         $order = $creditmemo->getOrder();
 
-        if ($order->getShopgatePaymentFee() && $order->getBaseShopgatePaymentFee()) {
+        if ($order->getData('shopgate_payment_fee') && $order->getData('base_shopgate_payment_fee')) {
 
-            $creditmemoBaseGrandTotal = $creditmemo->getBaseGrandTotal();
-            $creditmemoGrandTotal     = $creditmemo->getGrandTotal();
-
-            $shopgateBaseGrandTotal = $creditmemoBaseGrandTotal + $order->getBaseShopgatePaymentFee();
-            $shopgateGrandTotal     = $creditmemoGrandTotal + $order->getShopgatePaymentFee();
+            $shopgateBaseGrandTotal = $creditmemo->getBaseGrandTotal() + $order->getData('base_shopgate_payment_fee');
+            $shopgateGrandTotal     = $creditmemo->getGrandTotal() + $order->getData('shopgate_payment_fee');
 
             $creditmemo->setBaseGrandTotal($shopgateBaseGrandTotal);
             $creditmemo->setGrandTotal($shopgateGrandTotal);
 
-            $creditmemo->setBaseShopgatePaymentFee($order->getBaseShopgatePaymentFee());
-            $creditmemo->setShopgatePaymentFee($order->getShopgatePaymentFee());
+            $creditmemo->setData('base_shopgate_payment_fee', $order->getData('base_shopgate_payment_fee'));
+            $creditmemo->setData('shopgate_payment_fee', $order->getData('shopgate_payment_fee'));
 
         }
 

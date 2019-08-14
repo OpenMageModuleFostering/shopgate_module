@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Shopgate GmbH
  *
@@ -18,42 +19,28 @@
  * transfer to third parties is only permitted where we previously consented thereto in writing. The provisions
  * of paragraph 69 d, sub-paragraphs 2, 3 and paragraph 69, sub-paragraph e of the German Copyright Act shall remain unaffected.
  *
- *  @author Shopgate GmbH <interfaces@shopgate.com>
+ * @author Shopgate GmbH <interfaces@shopgate.com>
  */
-
 class Shopgate_Framework_Model_Sales_Invoice_Total_ShopgatePaymentFee extends Mage_Sales_Model_Order_Invoice_Total_Abstract
 {
-    protected $_code = 'shopgate_payment_fee';
-
     /**
-     * Get label
-     *
-     * @return string
+     * @inheritdoc
      */
-    public function getLabel()
-    {
-        return Mage::helper('shopgate')->__('Payment Fee');
-    }
-
     public function collect(Mage_Sales_Model_Order_Invoice $invoice)
     {
         parent::collect($invoice);
-
         $order = $invoice->getOrder();
 
-        if ($order->getShopgatePaymentFee() && $order->getBaseShopgatePaymentFee()) {
+        if ($order->getData('shopgate_payment_fee') && $order->getData('base_shopgate_payment_fee')) {
 
-            $invoiceBaseGrandTotal = $invoice->getBaseGrandTotal();
-            $invoiceGrandTotal     = $invoice->getGrandTotal();
-
-            $shopgateBaseGrandTotal = $invoiceBaseGrandTotal + $order->getBaseShopgatePaymentFee();
-            $shopgateGrandTotal     = $invoiceGrandTotal + $order->getShopgatePaymentFee();
+            $shopgateBaseGrandTotal = $invoice->getBaseGrandTotal() + $order->getData('base_shopgate_payment_fee');
+            $shopgateGrandTotal     = $invoice->getGrandTotal() + $order->getData('shopgate_payment_fee');
 
             $invoice->setBaseGrandTotal($shopgateBaseGrandTotal);
             $invoice->setGrandTotal($shopgateGrandTotal);
 
-            $invoice->setBaseShopgatePaymentFee($order->getBaseShopgatePaymentFee());
-            $invoice->setShopgatePaymentFee($order->getShopgatePaymentFee());
+            $invoice->setData('base_shopgate_payment_fee', $order->getData('base_shopgate_payment_fee'));
+            $invoice->setData('shopgate_payment_fee', $order->getData('shopgate_payment_fee'));
         }
 
         return $this;

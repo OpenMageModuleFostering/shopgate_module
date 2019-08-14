@@ -24,12 +24,11 @@
 class Shopgate_Framework_Model_Sales_Quote_Address_Total_ShopgatePaymentFee extends Mage_Sales_Model_Quote_Address_Total_Abstract
 {
 
+    /** @inheritdoc */
     protected $_code = 'shopgate_payment_fee';
 
     /**
-     * Get label
-     *
-     * @return string
+     * @inheritdoc
      */
     public function getLabel()
     {
@@ -37,24 +36,20 @@ class Shopgate_Framework_Model_Sales_Quote_Address_Total_ShopgatePaymentFee exte
     }
 
     /**
-     * @param Mage_Sales_Model_Quote_Address $address
-     *
-     * @return $this|Mage_Sales_Model_Quote_Address_Total_Abstract
+     * @inheritdoc
      */
     public function collect(Mage_Sales_Model_Quote_Address $address)
     {
         parent::collect($address);
         $shopgateOrder = Mage::getSingleton('core/session')->getData('shopgate_order');
         $quote         = $address->getQuote();
-        $paymentFee    = $shopgateOrder->getAmountShopPayment();
+        $hasFee        = $shopgateOrder && $shopgateOrder->getAmountShopPayment() != 0;
 
-        if ($address->getAddressType() === Mage_Sales_Model_Quote_Address::TYPE_BILLING
-            || is_null($shopgateOrder)
-            || $paymentFee == 0
+        if ($address->getAddressType() === Mage_Sales_Model_Quote_Address::TYPE_BILLING || !$hasFee
         ) {
             return $this;
         }
-
+        $paymentFee = $shopgateOrder->getAmountShopPayment();
         $address->setData('shopgate_payment_fee', $paymentFee);
         $address->setData('base_shopgate_payment_fee', $paymentFee);
 
@@ -68,16 +63,14 @@ class Shopgate_Framework_Model_Sales_Quote_Address_Total_ShopgatePaymentFee exte
     }
 
     /**
-     * @param Mage_Sales_Model_Quote_Address $address
-     *
-     * @return $this
+     * @inheritdoc
      */
     public function fetch(Mage_Sales_Model_Quote_Address $address)
     {
-        $amt = $address->getData('shopgate_payment_fee');
-        if ($amt != 0) {
+        $fee = $address->getData('shopgate_payment_fee');
+        if ($fee != 0) {
             $address->addTotal(
-                array('code' => $this->getCode(), 'title' => $this->getLabel(), 'value' => $amt)
+                array('code' => $this->getCode(), 'title' => $this->getLabel(), 'value' => $fee)
             );
         }
 
