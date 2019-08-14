@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Shopgate_Framework>
-            <version>2.9.29</version>
+            <version>2.9.30</version>
         </Shopgate_Framework>
     </modules>
     <phpunit>
@@ -292,9 +292,9 @@
     <frontend>
         <layout>
             <updates>
-                <framework>
+                <shopgate_framework_main>
                     <file>shopgate.xml</file>
-                </framework>
+                </shopgate_framework_main>
             </updates>
         </layout>
         <routers>

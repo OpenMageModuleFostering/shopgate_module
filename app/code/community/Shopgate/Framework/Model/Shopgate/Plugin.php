@@ -2099,7 +2099,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
         
         if (empty($ids) || count($ids) == 1) {
             $this->log(
-                "Warning! Low amount of items to export, id's: " . print_r($ids),
+                "Warning! Low amount of items to export, id's: " . print_r($ids, 1),
                 ShopgateLogger::LOGTYPE_DEBUG
             );
         }
