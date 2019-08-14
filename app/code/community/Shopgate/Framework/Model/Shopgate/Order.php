@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Shopgate GmbH
  *
@@ -19,21 +20,7 @@
  * of paragraph 69 d, sub-paragraphs 2, 3 and paragraph 69, sub-paragraph e of the German Copyright Act shall remain unaffected.
  *
  * @author Shopgate GmbH <interfaces@shopgate.com>
- */
-
-/**
- * User: Peter Liebig
- * Date: 23.01.14
- * Time: 00:51
- * E-Mail: p.liebig@me.com
- */
-
-/**
- * @author      Shopgate GmbH, 35510 Butzbach, DE
- * @package     Shopgate_Framework
- */
-
-/**
+ *
  * @method int getShopgateOrderId()
  * @method Shopgate_Framework_Model_Shopgate_Order setStoreId(int $value)
  * @method int getStoreId()
@@ -55,12 +42,11 @@
  * @method Shopgate_Framework_Model_Shopgate_Order setIsTest(bool $value)
  * @method bool getIsCustomerInvoiceBlocked()
  * @method Shopgate_Framework_Model_Shopgate_Order setIsCustomerInvoiceBlocked(bool $value)
- *
  */
 class Shopgate_Framework_Model_Shopgate_Order extends Mage_Core_Model_Abstract
 {
     /**
-     * init model
+     * Init Shopgate model
      */
     protected function _construct()
     {
@@ -82,19 +68,36 @@ class Shopgate_Framework_Model_Shopgate_Order extends Mage_Core_Model_Abstract
     public function getShopgateOrderObject()
     {
         $data = $this->getReceivedData();
-        $data = unserialize($data);
+        
+        if ($data) {
+            $data = unserialize($data);
+        }
+
+        if (!$data instanceof ShopgateOrder) {
+            $orderNumber = $this->getShopgateOrderNumber();
+            ShopgateLogger::getInstance()->log("Could not unserialize order $orderNumber. Requesting Merchant API.");
+            $config      = Mage::helper('shopgate/config')->getConfig($this->getStoreId());
+            $builder     = new ShopgateBuilder($config);
+            $merchantApi = $builder->buildMerchantApi();
+            $response    = $merchantApi->getOrders(array('order_numbers[0]' => $orderNumber, 'with_items' => 1));
+            $dataArray   = $response->getData();
+            $data        = $dataArray[0];
+            $this->setReceivedData(serialize($data));
+            $this->save();
+            ShopgateLogger::getInstance()->log("Got order $orderNumber again. Saved to database");
+        }
 
         return $data;
     }
 
     /**
-     * get all shipments for the order
+     * Get all shipments for the order
      *
      * @return array
      */
     public function getReportedShippingCollections()
     {
-        $data = $this->getData("reported_shipping_collections");
+        $data = $this->getData('reported_shipping_collections');
         $data = unserialize($data);
         if (!$data) {
             $data = array();
@@ -110,7 +113,7 @@ class Shopgate_Framework_Model_Shopgate_Order extends Mage_Core_Model_Abstract
     public function setReportedShippingCollections(array $collection_ids)
     {
         $collection_ids = serialize($collection_ids);
-        $this->setData("reported_shipping_collections", $collection_ids);
+        $this->setData('reported_shipping_collections', $collection_ids);
 
         return $this;
     }
@@ -138,14 +141,14 @@ class Shopgate_Framework_Model_Shopgate_Order extends Mage_Core_Model_Abstract
     }
 
     /**
-     * return real order from shopgate order if exists
+     * Return real order from shopgate order if exists
      *
      * @return Mage_Sales_Model_Order|NULL
      */
     public function getOrder()
     {
         if ($this->getOrderId() !== null) {
-            return Mage::getModel("sales/order")->load($this->getOrderId());
+            return Mage::getModel('sales/order')->load($this->getOrderId());
         }
 
         return null;

@@ -21,12 +21,7 @@
  * @author Shopgate GmbH <interfaces@shopgate.com>
  */
 
-/**
- * User: Peter Liebig
- * Date: 27.01.14
- * Time: 15:55
- * E-Mail: p.liebig@me.com
- */
+include_once Mage::getBaseDir("lib") . '/Shopgate/shopgate.php';
 
 /**
  * mobile payment block
@@ -34,12 +29,10 @@
  * @author      Shopgate GmbH, 35510 Butzbach, DE
  * @package     Shopgate_Framework
  */
-include_once Mage::getBaseDir("lib") . '/Shopgate/shopgate.php';
-
 class Shopgate_Framework_Block_Payment_MobilePayment extends Mage_Payment_Block_Info
 {
     /**
-     * construct
+     * Sets template directly
      */
     protected function _construct()
     {
@@ -60,7 +53,7 @@ class Shopgate_Framework_Block_Payment_MobilePayment extends Mage_Payment_Block_
      */
     public function getShopgateOrder()
     {
-        return Mage::getModel("shopgate/shopgate_order")->load($this->getOrder()->getId(), 'order_id');
+        return Mage::getModel('shopgate/shopgate_order')->load($this->getOrder()->getId(), 'order_id');
     }
 
     /**
@@ -94,9 +87,34 @@ class Shopgate_Framework_Block_Payment_MobilePayment extends Mage_Payment_Block_
         $order         = $this->getOrder();
         $shopgateOrder = $this->getShopgateOrder()->getShopgateOrderObject();
 
-        $isDifferent = !Mage::helper("shopgate")->isOrderTotalCorrect($shopgateOrder, $order, $msg);
+        if (!$shopgateOrder instanceof ShopgateOrder) {
+            return false;
+        }
+
+        $isDifferent = !Mage::helper('shopgate')->isOrderTotalCorrect($shopgateOrder, $order, $msg);
 
         return $isDifferent;
+    }
+
+    /**
+     * Error message wrapper
+     *
+     * @param $errorMessage - wraps the message with error markup
+     *
+     * @return string
+     */
+    public function printHtmlError($errorMessage)
+    {
+        $html = '';
+        if (!$errorMessage) {
+            return $html;
+        }
+
+        $html .= '<strong style="color: red; font-size: 1.2em;">';
+        $html .= $this->__($errorMessage);
+        $html .= '</strong><br/>';
+
+        return $html;
     }
 
     /**
@@ -114,13 +132,15 @@ class Shopgate_Framework_Block_Payment_MobilePayment extends Mage_Payment_Block_
                 if (is_array($_value)) {
                     return $this->printPaymentInfo($_value, $html);
                 } else {
-                    $html .= '<span style="font-weight: bold">' 
-                             . $this->__(uc_words($_key, ' ') . "</span> : " 
-                                         . uc_words($_value, ' ') . "<br />");
+                    $html .= '<span style="font-weight: bold">'
+                             . $this->__(
+                            uc_words($_key, ' ') . '</span> : '
+                            . uc_words($_value, ' ') . '<br />'
+                        );
                 }
             }
         } else {
-            $html .= $this->__($this->escapeHtml($list)) . "<br />";
+            $html .= $this->__($this->escapeHtml($list)) . '<br />';
         }
 
         return $html;

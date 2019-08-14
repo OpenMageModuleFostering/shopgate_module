@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Shopgate GmbH
  *
@@ -20,42 +21,41 @@
  *
  * @author Shopgate GmbH <interfaces@shopgate.com>
  */
-
-/**
- * Interface Shopgate_Framework_Model_Payment_Interface
- * 
- * @author awesselburg <wesselburg@me.com>
- * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
- */
-interface Shopgate_Framework_Model_Payment_Interface
+abstract class Shopgate_Framework_Model_Modules_Affiliate_Utility
 {
-    /**
-     * @param Mage_Sales_Model_Order $order
-     *
-     * @return Mage_Sales_Model_Order
-     */
-    public function manipulateOrderWithPaymentData($order);
+    const DEFAULT_KEY = '';
+    const COUPON_TYPE = 'affiliate';
+    
+    /** @var Shopgate_Framework_Model_Modules_Validator */
+    protected $validator;
 
     /**
-     * @param Mage_Sales_Model_Quote $quote
+     * Loads validator as it needs to check that the module is active
+     * before running module specific methods
      *
-     * @return Mage_Sales_Model_Order
+     * @param array $data - array holding the injection
+     * @throws Exception
      */
-    public function createNewOrder($quote);
+    public function __construct(array $data)
+    {
+        $validator = current($data);
+        
+        if (!$validator instanceof Shopgate_Framework_Model_Interfaces_Modules_Validator) {
+            throw new Exception('Error loading validator');
+        }
+        
+        $this->validator = $validator;
+    }
 
     /**
-     * @param Mage_Sales_Model_Quote $quote
-     * @param array $data
+     * Returns a custom parameter key
      *
-     * @return Mage_Sales_Model_Quote
+     * @return string
      */
-    public function prepareQuote($quote, $data);
+    abstract public function getTrackingCodeKey();
 
     /**
-     * Used to set magento order status
-     * 
-     * @param $magentoOrder
-     * @return mixed
+     * Run sales rule validation/invalidation hook
      */
-    public function setOrderStatus($magentoOrder);
+    abstract public function salesRuleHook();
 }

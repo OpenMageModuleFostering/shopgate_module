@@ -27,7 +27,9 @@
  * @package     Shopgate_Framework_Model_Payment_Abstract
  * @author      Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
-class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
+class Shopgate_Framework_Model_Payment_Abstract
+    extends Mage_Core_Model_Abstract
+    implements Shopgate_Framework_Model_Interfaces_Modules_Validator
 {
     /**
      * Has to match the payment_method coming from API call

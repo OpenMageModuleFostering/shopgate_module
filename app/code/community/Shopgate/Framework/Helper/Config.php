@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Shopgate GmbH
  *
@@ -20,45 +21,42 @@
  *
  * @author Shopgate GmbH <interfaces@shopgate.com>
  */
-
-/**
- * User: Peter Liebig
- * Date: 22.01.14
- * Time: 15:06
- * E-Mail: p.liebig@me.com
- */
-
-/**
- * config helper
- *
- * @author      Shopgate GmbH, 35510 Butzbach, DE
- * @package     Shopgate_Framework
- */
 class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
 {
     /**
-     * const for community
+     * Const for community
      */
     const COMMUNITY_EDITION = 'Community';
 
     /**
-     * const for enterprise
+     * Const for enterprise
      */
     const ENTERPRISE_EDITION = 'Enterprise';
 
     /**
+     * @var string
+     */
+    protected $_magentoVersion19 = '';
+
+    /**
      * When native COD & Bank payments
      * were introduced
-     * 
+     *
      * @var string
      */
     protected $_magentoVersion1700 = '';
-    
+
     /**
      * When PayPal UI was updated
+     *
      * @var string
      */
     protected $_magentoVersion1701 = '';
+
+    /**
+     * @var string
+     */
+    protected $_magentoVersion16;
 
     /**
      * @var string
@@ -76,11 +74,11 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
     protected $_config = null;
 
     /**
-     * construct for helper
+     * Construct for helper
      */
     public function __construct()
     {
-        $this->_magentoVersion1922 = ($this->getEdition() == 'Enterprise') ? '1.14.2.2' : '1.9.2.2';
+        $this->_magentoVersion19   = ($this->getEdition() == 'Enterprise') ? '1.14' : '1.9';
         $this->_magentoVersion1701 = ($this->getEdition() == 'Enterprise') ? '1.12.0.2' : '1.7.0.1';
         $this->_magentoVersion1700 = ($this->getEdition() == 'Enterprise') ? '1.12.0.0' : '1.7.0.0';
         $this->_magentoVersion16   = ($this->getEdition() == 'Enterprise') ? '1.11.0.0' : '1.6.0.0';
@@ -89,7 +87,7 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
     }
 
     /**
-     * get edition of magento
+     * Get edition of magento
      *
      * @return string
      */
@@ -100,7 +98,7 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
         if (method_exists('Mage', 'getEdition')) {
             $edition = Mage::getEdition();
         } else {
-            $dir = mage::getBaseDir('code') . DS . 'core' . DS . self::ENTERPRISE_EDITION;
+            $dir = Mage::getBaseDir('code') . DS . 'core' . DS . self::ENTERPRISE_EDITION;
             if (file_exists($dir)) {
                 $edition = self::ENTERPRISE_EDITION;
             }
@@ -121,14 +119,20 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
     /**
      * @return bool
      */
+    public function getIsMagentoVersionLower19()
+    {
+        return $this->getIsMagentoVersionLower($this->_magentoVersion19);
+    }
+
+    /**
+     * @return bool
+     */
     public function getIsMagentoVersionLower1700()
     {
         return $this->getIsMagentoVersionLower($this->_magentoVersion1700);
     }
-    
+
     /**
-     * compare version if it is lower than 1.7.0.1
-     *
      * @return bool
      */
     public function getIsMagentoVersionLower1701()
@@ -137,18 +141,14 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
     }
 
     /**
-     * Compare version if it is lower than 1.6
-     *
      * @return mixed
      */
     public function getIsMagentoVersionLower16()
     {
         return $this->getIsMagentoVersionLower($this->_magentoVersion16);
     }
-    
+
     /**
-     * Compare version if it is lower than 1.5
-     *
      * @return mixed
      */
     public function getIsMagentoVersionLower15()
@@ -157,8 +157,6 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
     }
 
     /**
-     * compare version if it is lower than 1.4.1.0
-     *
      * @return mixed
      */
     public function getIsMagentoVersionLower1410()
@@ -180,7 +178,7 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
     }
 
     /**
-     * checks if a shopnumber is already registered or a storeview has already a shopnumber set explicit
+     * Checks if a shopnumber is already registered or a storeview has already a shopnumber set explicit
      *
      * @param int $shopnumber
      * @param int $storeViewId
@@ -209,26 +207,26 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
         }
 
         /* a shopnumber has a default store view set exactly like the base store view for the new shopnumber */
-        $resource = Mage::getSingleton('core/resource');
+        $resource          = Mage::getSingleton('core/resource');
         $table_config_data = $resource->getTableName('core/config_data');
-        $collection = Mage::getModel('core/config_data')->getCollection()
-                          ->addFieldToFilter(
-                              'main_table.path',
-                              Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_SHOP_NUMBER
-                          )
-                          ->addFieldToFilter('main_table.scope', 'websites')
-                          ->addFieldToFilter('main_table.value', array('nin' => array('', null)))
-                          ->addFieldToFilter(
-                              'dsv.path',
-                              Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_SHOP_DEFAULT_STORE
-                          )
-                          ->getSelect()
-                          ->joinInner(
-                              array('dsv' => $table_config_data),
-                              'dsv.scope = main_table.scope AND dsv.scope_id = main_table.scope_id',
-                              array('default_store_view' => 'value')
-                          )->query()
-                          ->fetchAll();
+        $collection        = Mage::getModel('core/config_data')->getCollection()
+                                 ->addFieldToFilter(
+                                     'main_table.path',
+                                     Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_SHOP_NUMBER
+                                 )
+                                 ->addFieldToFilter('main_table.scope', 'websites')
+                                 ->addFieldToFilter('main_table.value', array('nin' => array('', null)))
+                                 ->addFieldToFilter(
+                                     'dsv.path',
+                                     Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_SHOP_DEFAULT_STORE
+                                 )
+                                 ->getSelect()
+                                 ->joinInner(
+                                     array('dsv' => $table_config_data),
+                                     'dsv.scope = main_table.scope AND dsv.scope_id = main_table.scope_id',
+                                     array('default_store_view' => 'value')
+                                 )->query()
+                                 ->fetchAll();
 
         foreach ($collection as $item) {
             if (isset($item['default_store_view'])
@@ -242,7 +240,7 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
     }
 
     /**
-     * fetches any shopnumber definition in a given website scope
+     * Fetches any shopnumber definition in a given website scope
      *
      * @param int $websiteId
      * @param int $shopnumber
@@ -286,8 +284,7 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
      */
     public function hasShopgateConnections()
     {
-        return $this->getShopgateConnections()
-                    ->getSize();
+        return $this->getShopgateConnections()->getSize();
     }
 
     /**
@@ -335,7 +332,7 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
 
     /**
      * Retrieves store id based on store code
-     * 
+     *
      * @param $storeCode
      * @return int
      */
@@ -354,7 +351,7 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
 
     /**
      * Retrieves the oauth token of the store
-     * 
+     *
      * @param null $storeId
      * @return mixed - oauth if it exists
      */

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Shopgate GmbH
  *
@@ -20,42 +21,34 @@
  *
  * @author Shopgate GmbH <interfaces@shopgate.com>
  */
-
-/**
- * Interface Shopgate_Framework_Model_Payment_Interface
- * 
- * @author awesselburg <wesselburg@me.com>
- * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
- */
-interface Shopgate_Framework_Model_Payment_Interface
+interface Shopgate_Framework_Model_Interfaces_Modules_Validator
 {
-    /**
-     * @param Mage_Sales_Model_Order $order
-     *
-     * @return Mage_Sales_Model_Order
-     */
-    public function manipulateOrderWithPaymentData($order);
 
     /**
-     * @param Mage_Sales_Model_Quote $quote
+     * Checks isValid, isEnabled, isModuleActive & checkGenericValid
      *
-     * @return Mage_Sales_Model_Order
+     * @return bool
      */
-    public function createNewOrder($quote);
+    public function isValid();
 
     /**
-     * @param Mage_Sales_Model_Quote $quote
-     * @param array $data
+     * Checks if module is enabled based on XML_CONFIG_ENABLED constant
      *
-     * @return Mage_Sales_Model_Quote
-     */
-    public function prepareQuote($quote, $data);
-
-    /**
-     * Used to set magento order status
-     * 
-     * @param $magentoOrder
      * @return mixed
      */
-    public function setOrderStatus($magentoOrder);
+    public function isEnabled();
+
+    /**
+     * Checks if module is active based on MODULE_CONFIG constant
+     *
+     * @return bool
+     */
+    public function isModuleActive();
+
+    /**
+     * Generic validity check that can be overridden
+     *
+     * @return bool
+     */
+    public function checkGenericValid();
 }

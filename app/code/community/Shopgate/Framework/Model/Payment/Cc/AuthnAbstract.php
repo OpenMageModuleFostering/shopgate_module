@@ -79,14 +79,15 @@ class Shopgate_Framework_Model_Payment_Cc_AuthnAbstract extends Shopgate_Framewo
      */
     public function setOrderStatus($order)
     {
-        $captured = $this->_order->getBaseCurrency()->formatTxt($this->_order->getBaseTotalInvoiced());
+        $this->setOrder($order);
+        $captured = $this->getOrder()->getBaseCurrency()->formatTxt($this->getOrder()->getBaseTotalInvoiced());
         $state    = Mage_Sales_Model_Order::STATE_PROCESSING;
         $status   = $this->_getHelper()->getStatusFromState($state);
         $message  = '';
 
         switch ($this->_responseCode) {
             case self::RESPONSE_CODE_APPROVED:
-                $duePrice = $this->_order->getBaseCurrency()->formatTxt($this->_order->getTotalDue());
+                $duePrice = $this->getOrder()->getBaseCurrency()->formatTxt($this->getOrder()->getTotalDue());
                 $message  = Mage::helper('paypal')->__('Authorized amount of %s.', $duePrice);
 
                 if ($this->_transactionType == self::SHOPGATE_PAYMENT_STATUS_AUTH_CAPTURE) {
@@ -117,10 +118,10 @@ class Shopgate_Framework_Model_Payment_Cc_AuthnAbstract extends Shopgate_Framewo
                 $message = $this->_getHelper()->__('[SHOPGATE] Unrecognized response code: %s', $this->_responseCode);
                 ShopgateLogger::getInstance()->log($message, ShopgateLogger::LOGTYPE_ERROR);
         }
-        $this->_order->setState($state, $status, $message);
-        $order->setShopgateStatusSet(true);
+        $this->getOrder()->setState($state, $status, $message);
+        $this->getOrder()->setShopgateStatusSet(true);
 
-        return $order;
+        return $this->getOrder();
     }
 
     /**

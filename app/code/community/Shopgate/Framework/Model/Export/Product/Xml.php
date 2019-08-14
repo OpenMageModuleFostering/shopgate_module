@@ -385,11 +385,12 @@ class Shopgate_Framework_Model_Export_Product_Xml
     }
 
     /**
-     * set price
+     * Set price
      */
     public function setPrice()
     {
         $useParent = false;
+        $websiteId = Mage::app()->getWebsite()->getId();
 
         if (Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_EXPORT_USE_ROOT_PRICES)
             && $this->_parent != null
@@ -398,33 +399,22 @@ class Shopgate_Framework_Model_Export_Product_Xml
             $useParent = true;
         }
 
-        $price = $useParent
-            ? $this->_parent->getPrice()
-            : $this->item->getPrice();
+        $currentItem = $useParent ? $this->_parent : $this->item;
+        $price       = $currentItem->getPrice();
 
         if (Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_EXPORT_USE_PRICE_INDEX_ON_EXPORT)) {
+            /** @var Mage_Catalog_Model_Product_Indexer_Price $product */
+            $product    = Mage::getResourceModel('catalog/product_collection')
+                              ->addPriceData(null, $websiteId)
+                              ->addIdFilter($currentItem->getId())
+                              ->getFirstItem();
+            $finalPrice = ($this->item->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_BUNDLE)
+                ? $product->getMinPrice()
+                : $product->getFinalPrice();
 
-            $index = Mage::getModel('catalog/product_indexer_price');
-            if ($this->item->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_BUNDLE) {
-                $finalPrice = $useParent
-                    ? $index->load($this->_parent->getId())->getMinPrice()
-                    : $index->load($this->item->getId())->getMinPrice();
-            } else {
-                $finalPrice = $useParent
-                    ? $index->load($this->_parent->getId())->getFinalPrice()
-                    : $index->load($this->item->getId())->getFinalPrice();
-            }
         } else {
-
-            $rulePrice = Mage::helper("shopgate/export")->calcProductPriceRule(
-                $useParent
-                    ? $this->_parent
-                    : $this->item
-            );
-
-            $finalPrice = $useParent
-                ? $this->_parent->getFinalPrice()
-                : $this->item->getFinalPrice();
+            $rulePrice  = Mage::helper('shopgate/export')->calcProductPriceRule($currentItem);
+            $finalPrice = $currentItem->getFinalPrice();
 
             if ($rulePrice && $rulePrice < $finalPrice) {
                 $finalPrice = $rulePrice;
@@ -432,17 +422,14 @@ class Shopgate_Framework_Model_Export_Product_Xml
         }
 
         if ($finalPrice <= 0) {
-            $rulePrice  = Mage::helper("shopgate/export")->calcProductPriceRule($this->item);
+            $rulePrice  = Mage::helper('shopgate/export')->calcProductPriceRule($this->item);
             $finalPrice = $this->item->getFinalPrice();
             if ($rulePrice && $rulePrice < $finalPrice) {
                 $finalPrice = $rulePrice;
             }
         }
 
-        if (null != $this->_parent
-            && $this->_parent->isConfigurable()
-            && $useParent
-        ) {
+        if ($useParent) {
             $totalOffset     = 0;
             $totalPercentage = 0;
             $superAttributes = $this->_parent
@@ -456,12 +443,12 @@ class Shopgate_Framework_Model_Export_Product_Xml
 
                 if ($superAttribute->hasData('prices')) {
                     foreach ($superAttribute->getPrices() as $saPrice) {
-                        if ($index == $saPrice["value_index"]) {
-                            if ($saPrice["is_percent"]) {
-                                $totalPercentage += $saPrice["pricing_value"];
+                        if ($index == $saPrice['value_index']) {
+                            if ($saPrice['is_percent']) {
+                                $totalPercentage += $saPrice['pricing_value'];
                                 $isPercent = true;
                             } else {
-                                $totalOffset += $saPrice["pricing_value"];
+                                $totalOffset += $saPrice['pricing_value'];
                             }
                             break;
                         }
@@ -492,17 +479,18 @@ class Shopgate_Framework_Model_Export_Product_Xml
         if (Mage::getConfig()->getModuleConfig('DerModPro_BasePrice')->is('active', 'true')
             && Mage::getStoreConfig('catalog/baseprice/disable_ext') == 0
         ) {
-            $format    = "{{baseprice}} / {{reference_amount}} {{reference_unit_short}}";
+            $format           = '{{baseprice}} / {{reference_amount}} {{reference_unit_short}}';
             $basePriceSuccess = true;
             try {
-                $basePrice = Mage::helper("baseprice")->getBasePriceLabel($this->item, $format);
+                $basePrice = Mage::helper('baseprice')->getBasePriceLabel($this->item, $format);
             } catch (Exception $e) {
                 $basePriceSuccess = false;
                 $this->log('error in DerModPro_BasePrice for item uid:' . $this->item->getId());
             }
             if ($basePriceSuccess) {
+                /** @noinspection PhpUndefinedVariableInspection */
                 $basePrice = strip_tags($basePrice);
-                $basePrice = htmlentities($basePrice, null, "UTF-8");
+                $basePrice = htmlentities($basePrice, null, 'UTF-8');
                 $priceModel->setBasePrice($basePrice);
             }
         }
@@ -525,8 +513,7 @@ class Shopgate_Framework_Model_Export_Product_Xml
         $priceModel->setPrice($this->_formatPrice($price));
         $priceModel->setCost($this->_formatPrice($this->item->getCost()));
         $priceModel->setSalePrice($this->_formatPrice($finalPrice));
-        $priceModel->setMsrp(round($this->_formatPrice($this->item->getMsrp()),2));
-
+        $priceModel->setMsrp(round($this->_formatPrice($this->item->getMsrp()), 2));
 
         if ($isGross) {
             $priceModel->setType(Shopgate_Model_Catalog_Price::DEFAULT_PRICE_TYPE_GROSS);

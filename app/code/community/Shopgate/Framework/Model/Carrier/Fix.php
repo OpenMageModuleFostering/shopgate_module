@@ -18,21 +18,7 @@
  * transfer to third parties is only permitted where we previously consented thereto in writing. The provisions
  * of paragraph 69 d, sub-paragraphs 2, 3 and paragraph 69, sub-paragraph e of the German Copyright Act shall remain unaffected.
  *
- *  @author Shopgate GmbH <interfaces@shopgate.com>
- */
-
-/**
- * User: Peter Liebig
- * Date: 22.01.14
- * Time: 15:06
- * E-Mail: p.liebig@me.com
- */
-
-/**
- * carrier fix model
- *
- * @author      Shopgate GmbH, 35510 Butzbach, DE
- * @package     Shopgate_Framework
+ * @author Shopgate GmbH <interfaces@shopgate.com>
  */
 class Shopgate_Framework_Model_Carrier_Fix
     extends Mage_Shipping_Model_Carrier_Abstract
@@ -62,20 +48,19 @@ class Shopgate_Framework_Model_Carrier_Fix
     public function collectRates(Mage_Shipping_Model_Rate_Request $request)
     {
         $result = Mage::getModel('shipping/rate_result');
-
         $amount = array(
-            "shipping" => 0,
-            "payment"  => 0
+            'shipping' => 0,
+            'payment'  => 0
         );
 
         /* @var $sgOrder ShopgateOrder */
-        $sgOrder = Mage::getSingleton("core/session")->getData("shopgate_order");
+        $sgOrder = Mage::getSingleton('core/session')->getData('shopgate_order');
         if (!$sgOrder) {
             return false;
         }
 
         $shippingInfo = $sgOrder->getShippingInfos();
-        $carrierTitle = Mage::getStoreConfig("shopgate/orders/shipping_title");
+        $carrierTitle = Mage::getStoreConfig('shopgate/orders/shipping_title');
         $methodTitle  = $shippingInfo->getName();
         $displayName  = $shippingInfo->getDisplayName();
         if (!empty($displayName)) {
@@ -94,13 +79,29 @@ class Shopgate_Framework_Model_Carrier_Fix
         $method->setMethod($this->_method);
         $method->setMethodTitle($methodTitle);
 
-        $storeViewId = Mage::helper("shopgate/config")->getConfig()->getStoreViewId();
-        $shippingIncludesTax = Mage::helper("tax")->shippingPriceIncludesTax($storeViewId);
-        if (Mage::helper("tax")->getShippingTaxClass($storeViewId) == 0) {
-            $shippingIncludesTax = true;
-        };
+        $scopeId = Mage::helper('shopgate/config')->getConfig()->getStoreViewId();
 
-        $amount['shipping'] = $shippingIncludesTax ? $shippingInfo->getAmountGross() : $shippingInfo->getAmountNet();
+        $shippingIncludesTax = Mage::helper('tax')->shippingPriceIncludesTax($scopeId);
+        $shippingTaxClass    = Mage::helper('tax')->getShippingTaxClass($scopeId);
+
+        $amountNet   = $shippingInfo->getAmountNet();
+        $amountGross = $shippingInfo->getAmountGross();
+
+        if ($shippingIncludesTax) {
+            if (Mage::helper('shopgate/config')->getIsMagentoVersionLower19()
+                || !Mage::helper('tax')->isCrossBorderTradeEnabled($scopeId)
+            ) {
+                $calc        = Mage::getSingleton('tax/calculation');
+                $store       = Mage::app()->getStore($scopeId);
+                $taxRequest  = $calc->getRateOriginRequest($store)
+                                    ->setProductClassId($shippingTaxClass);
+                $rate        = $calc->getRate($taxRequest) / 100;
+                $amountGross = $amountNet * (1 + $rate);
+            }
+            $amount['shipping'] = $amountGross;
+        } else {
+            $amount['shipping'] = $amountNet;
+        }
 
         $amountShopPayment = $sgOrder->getAmountShopPayment();
         if ($amountShopPayment >= 0) {
@@ -110,7 +111,7 @@ class Shopgate_Framework_Model_Carrier_Fix
                 || (!Mage::getConfig()->getModuleConfig('Phoenix_CashOnDelivery')->is('active', 'true')
                     && !Mage::getConfig()->getModuleConfig('MSP_CashOnDelivery')->is('active', 'true'))
             ) {
-                $amount["payment"] = $this->_getNetForGrossShipping($amountShopPayment);
+                $amount['payment'] = $this->_getNetForGrossShipping($amountShopPayment);
             }
         }
 
@@ -128,24 +129,24 @@ class Shopgate_Framework_Model_Carrier_Fix
      */
     protected function _getNetForGrossShipping($amount, $amountContainsTax = true)
     {
-        $storeViewId = Mage::helper("shopgate/config")->getConfig()->getStoreViewId();
-        $taxClassId  = Mage::helper("tax")->getShippingTaxClass($storeViewId);
+        $storeViewId = Mage::helper('shopgate/config')->getConfig()->getStoreViewId();
+        $taxClassId  = Mage::helper('tax')->getShippingTaxClass($storeViewId);
 
         $pseudoProduct = new Varien_Object();
         $pseudoProduct->setTaxClassId($taxClassId);
 
-        $returnIncludesTax = Mage::helper("tax")->shippingPriceIncludesTax($storeViewId);
+        $returnIncludesTax = Mage::helper('tax')->shippingPriceIncludesTax($storeViewId);
         $customerTaxClass  = null;
 
-        $amount = Mage::helper("tax")->getPrice(
-                      $pseudoProduct,
-					  $amount,
-                      $returnIncludesTax,
-                      null,
-                      null,
-                      null,
-                      $storeViewId,
-                      $amountContainsTax
+        $amount = Mage::helper('tax')->getPrice(
+            $pseudoProduct,
+            $amount,
+            $returnIncludesTax,
+            null,
+            null,
+            null,
+            $storeViewId,
+            $amountContainsTax
         );
         return $amount;
     }
@@ -155,7 +156,7 @@ class Shopgate_Framework_Model_Carrier_Fix
      */
     public function isActive()
     {
-        return Mage::helper("shopgate")->isShopgateApiRequest();
+        return Mage::helper('shopgate')->isShopgateApiRequest();
     }
 
     /**

@@ -192,15 +192,19 @@ class Shopgate_Framework_Helper_Coupon extends Mage_Core_Helper_Abstract
     /**
      * Check coupons for validation and apply shopping cart price rules to the cart
      *
-     * @param Mage_Checkout_Model_Cart $mageCart
-     * @param ShopgateCart             $cart
-     * @param bool                     $useTaxClasses
+     * @param Mage_Checkout_Model_Cart                           $mageCart
+     * @param ShopgateCart                                       $cart
+     * @param bool                                               $useTaxClasses
+     * @param Shopgate_Framework_Model_Modules_Affiliate_Factory $factory
      *
      * @return ShopgateExternalCoupon[]
-     * @throws ShopgateLibraryException
      */
-    public function checkCouponsAndCartRules($mageCart, ShopgateCart $cart, $useTaxClasses)
-    {
+    public function checkCouponsAndCartRules(
+        $mageCart,
+        ShopgateCart $cart,
+        $useTaxClasses,
+        Shopgate_Framework_Model_Modules_Affiliate_Factory $factory
+    ) {
         /* @var $mageQuote Mage_Sales_Model_Quote */
         /* @var $mageCart Mage_Checkout_Model_Cart */
         /* @var $mageCoupon Mage_SalesRule_Model_Coupon */
@@ -364,23 +368,48 @@ class Shopgate_Framework_Helper_Coupon extends Mage_Core_Helper_Abstract
     }
 
     /**
-     * Add coupon from this system to quote
+     * Remove CartRule coupons from an array
      *
-     * @param ShopgateCartBase $order
+     * @param ShopgateExternalCoupon[] $coupons
      *
-     * @return ShopgateCartBase $order
+     * @return ShopgateExternalCoupon[] $coupons
      */
-    public function removeCartRuleCoupons(ShopgateCartBase $order)
+    public function removeCartRuleCoupons($coupons)
     {
-        $externalCoupons = array();
-        foreach ($order->getExternalCoupons() as $coupon) {
+        $code = self::CART_RULE_COUPON_CODE;
+        return $this->removeCouponsByCode($coupons, $code);
+    }
+
+    /**
+     * Remove Affiliate coupons from an array
+     *
+     * @param ShopgateExternalCoupon[] $coupons
+     *
+     * @return ShopgateExternalCoupon[] $coupons
+     */
+    public function removeAffiliateCoupons($coupons)
+    {
+        $code = Shopgate_Framework_Model_Modules_Affiliate_Utility::COUPON_TYPE;
+        return $this->removeCouponsByCode($coupons, $code);
+    }
+
+    /**
+     * Remove coupons with a specific code from an array
+     *
+     * @param ShopgateExternalCoupon[] $coupons
+     * @param string                   $code
+     *
+     * @return ShopgateExternalCoupon[] $filteredCoupons
+     */
+    public function removeCouponsByCode($coupons, $code)
+    {
+        $filteredCoupons = array();
+        foreach ($coupons as $coupon) {
             /* @var $coupon ShopgateExternalCoupon */
-            if ($coupon->getCode() !== self::CART_RULE_COUPON_CODE) {
-                $externalCoupons[] = $coupon;
+            if ($coupon->getCode() !== $code) {
+                $filteredCoupons[] = $coupon;
             }
         }
-        $order->setExternalCoupons($externalCoupons);
-
-        return $order;
+        return $filteredCoupons;
     }
 }

@@ -100,6 +100,7 @@ class Shopgate_Framework_Model_Payment_Abstract_AbstractPayol extends Shopgate_F
      */
     public function setOrderStatus($magentoOrder)
     {
+        $this->setOrder($magentoOrder);
         $status          = '';
         $amountToCapture = $this->getShopgateOrder()->getAmountComplete();
         $payment         = $this->getOrder()->getPayment();

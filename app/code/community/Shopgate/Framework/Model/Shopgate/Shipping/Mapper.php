@@ -30,9 +30,16 @@
 class Shopgate_Framework_Model_Shopgate_Shipping_Mapper extends Mage_Core_Model_Abstract
 {
     /**
-     * default carrier const
+     * Default carrier const
      */
     const DEFAULT_CARRIER = 'shopgate';
+
+    /**
+     * Plugin type returned in case of shipping methods
+     * provided
+     */
+    const SHIPPING_TYPE_PLUGINAPI = 'PLUGINAPI';
+
     /**
      * @var
      */

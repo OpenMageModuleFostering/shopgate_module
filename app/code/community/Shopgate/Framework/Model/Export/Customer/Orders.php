@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Shopgate GmbH
  *
@@ -18,27 +19,14 @@
  * transfer to third parties is only permitted where we previously consented thereto in writing. The provisions
  * of paragraph 69 d, sub-paragraphs 2, 3 and paragraph 69, sub-paragraph e of the German Copyright Act shall remain unaffected.
  *
- * @author Shopgate GmbH <interfaces@shopgate.com>
- */
-
-/**
- * User: pliebig
- * Date: 14.08.14
- * Time: 18:41
- * E-Mail: p.liebig@me.com, peter.liebig@magcorp.de
- */
-
-/**
- * Model to export get_orders for customers
- *
- * @package     Shopgate_Framework
- * @author      Peter Liebig <p.liebig@me.com, peter.liebig@magcorp.de>
+ * @author      Shopgate GmbH <interfaces@shopgate.com>
+ * @description Model to export get_orders for customers
  */
 class Shopgate_Framework_Model_Export_Customer_Orders extends Shopgate_Framework_Model_Export_Abstract
 {
     /**
-     * getting orders for the customer filtered by given data 
-     * 
+     * Getting orders for the customer filtered by given data
+     *
      * @param $customerToken
      * @param $limit
      * @param $offset
@@ -51,34 +39,34 @@ class Shopgate_Framework_Model_Export_Customer_Orders extends Shopgate_Framework
     {
         $relation = Mage::getModel('shopgate/customer')->loadByToken($customerToken);
         $response = array();
+        
         if ($relation->getId()) {
-
             $sort    = str_replace('created_', '', $sortOrder);
             $_orders = Mage::getModel('sales/order')->getCollection()->addFieldToSelect('*');
             if ($orderDateFrom) {
                 $_orders->addFieldToFilter(
-                        'created_at',
-                        array(
-                            'from' => date('Y-m-d H:i:s', strtotime($orderDateFrom))
-                        )
+                    'created_at',
+                    array(
+                        'from' => date('Y-m-d H:i:s', strtotime($orderDateFrom))
+                    )
                 );
             }
             $_orders->addFieldToFilter('customer_id', $relation->getCustomerId())
                     ->addFieldToFilter(
-                    'state',
-                    array(
-                        'in' => Mage::getSingleton('sales/order_config')->getVisibleOnFrontStates()
-                    )
-                )->setOrder('created_at', $sort);
+                        'state',
+                        array(
+                            'in' => Mage::getSingleton('sales/order_config')->getVisibleOnFrontStates()
+                        )
+                    )->setOrder('created_at', $sort);
             $_orders->getSelect()->limit($limit, $offset);
             if ($_orders->count() > 0) {
                 /** @var Mage_Sales_Model_Order $order */
                 foreach ($_orders as $order) {
-                    /** @var Shopgate_Framework_Model_Shopgate_Order $shopgateOrder */
-                    $shopgateOrder = $this->_getShopgateOrderNumber($order->getId());
-
+                    $shopgateOrder         = $this->_getShopgateOrderNumber($order->getId());
                     $shopgateExternalOrder = new ShopgateExternalOrder();
-                    $shopgateExternalOrder->setOrderNumber(($shopgateOrder) ? $shopgateOrder->getShopgateOrderNumber() : null);
+                    $shopgateExternalOrder->setOrderNumber(
+                        ($shopgateOrder) ? $shopgateOrder->getShopgateOrderNumber() : null
+                    );
                     $shopgateExternalOrder->setExternalOrderId($order->getId());
                     $shopgateExternalOrder->setExternalOrderNumber($order->getIncrementId());
                     $shopgateExternalOrder->setCreatedTime(date(DateTime::ISO8601, strtotime($order->getCreatedAt())));
@@ -88,8 +76,12 @@ class Shopgate_Framework_Model_Export_Customer_Orders extends Shopgate_Framework
                     $shopgateExternalOrder->setIsPaid(($shopgateOrder) ? $shopgateOrder->getIsPaid() : null);
                     $shopgateExternalOrder->setPaymentTransactionNumber($this->_getPaymentTransactionNumber($order));
                     $shopgateExternalOrder->setAmountComplete($order->getGrandTotal());
-                    $shopgateExternalOrder->setInvoiceAddress($this->_getShopgateAddressFromOrderAddress($order->getBillingAddress()));
-                    $shopgateExternalOrder->setDeliveryAddress($this->_getShopgateAddressFromOrderAddress($order->getShippingAddress()));
+                    $shopgateExternalOrder->setInvoiceAddress(
+                        $this->_getShopgateAddressFromOrderAddress($order->getBillingAddress())
+                    );
+                    $shopgateExternalOrder->setDeliveryAddress(
+                        $this->_getShopgateAddressFromOrderAddress($order->getShippingAddress())
+                    );
                     $shopgateExternalOrder->setItems($this->_getOrderItemsFormatted($order));
                     $shopgateExternalOrder->setOrderTaxes($this->_getOrderTaxFormatted($order));
                     $shopgateExternalOrder->setDeliveryNotes($this->_getDeliveryNotes($order));
@@ -108,12 +100,11 @@ class Shopgate_Framework_Model_Export_Customer_Orders extends Shopgate_Framework
 
     /**
      * @param $orderId
-     * @return bool|string
+     * @return false | Shopgate_Framework_Model_Shopgate_Order
      */
     protected function _getShopgateOrderNumber($orderId)
     {
-        /** @var Shopgate_Framework_Model_Shopgate_Order $shopgateOrder */
-        $shopgateOrder = Mage::getModel("shopgate/shopgate_order")->load($orderId, "order_id");
+        $shopgateOrder = Mage::getModel('shopgate/shopgate_order')->load($orderId, 'order_id');
         if ($shopgateOrder->getId()) {
             return $shopgateOrder;
         } else {
@@ -150,7 +141,7 @@ class Shopgate_Framework_Model_Export_Customer_Orders extends Shopgate_Framework
         $shopgateAddress->setFirstName($address->getFirstname());
         $shopgateAddress->setLastName($address->getLastname());
         $shopgateAddress->setGender(
-                        $this->_getCustomerHelper()->getShopgateCustomerGender($address)
+            $this->_getCustomerHelper()->getShopgateCustomerGender($address)
         );
         $shopgateAddress->setCompany($address->getCompany());
         $shopgateAddress->setPhone($address->getTelephone());
@@ -179,7 +170,7 @@ class Shopgate_Framework_Model_Export_Customer_Orders extends Shopgate_Framework
                 $shopgateItem->setItemNumber($item->getProductId());
                 $shopgateItem->setItemNumberPublic($item->getSku());
                 $shopgateItem->setQuantity((int)$item->getQtyOrdered());
-                $shopgateItem->setname($item->getName());
+                $shopgateItem->setName($item->getName());
                 $shopgateItem->setUnitAmount($item->getPrice());
                 $shopgateItem->setUnitAmountWithTax($item->getPriceInclTax());
                 $shopgateItem->setTaxPercent($item->getTaxPercent());
@@ -241,7 +232,7 @@ class Shopgate_Framework_Model_Export_Customer_Orders extends Shopgate_Framework
     {
         $result = array();
         if ($order->getCouponCode()) {
-            if (Mage::helper("shopgate/config")->getIsMagentoVersionLower1410()) {
+            if (Mage::helper('shopgate/config')->getIsMagentoVersionLower1410()) {
                 $mageRule   = Mage::getModel('salesrule/rule')->load($order->getCouponCode(), 'coupon_code');
                 $mageCoupon = $mageRule;
             } else {
@@ -251,8 +242,8 @@ class Shopgate_Framework_Model_Export_Customer_Orders extends Shopgate_Framework
 
             $externalCoupon          = new ShopgateExternalCoupon();
             $couponInfo              = array();
-            $couponInfo["coupon_id"] = $mageCoupon->getId();
-            $couponInfo["rule_id"]   = $mageRule->getId();
+            $couponInfo['coupon_id'] = $mageCoupon->getId();
+            $couponInfo['rule_id']   = $mageRule->getId();
 
             $externalCoupon->setCode($order->getCouponCode());
             $externalCoupon->setCurrency($order->getOrderCurrencyCode());
@@ -286,7 +277,8 @@ class Shopgate_Framework_Model_Export_Customer_Orders extends Shopgate_Framework
             $extraCost->setType(ShopgateExternalOrderExtraCost::TYPE_SHIPPING);
             $extraCost->setTaxPercent(
                 Mage::helper('shopgate')->calculateTaxRate(
-                    $shippingCostAmount, $order->getShippingTaxAmount()
+                    $shippingCostAmount,
+                    $order->getShippingTaxAmount()
                 )
             );
 
@@ -314,7 +306,8 @@ class Shopgate_Framework_Model_Export_Customer_Orders extends Shopgate_Framework
             $extraCost->setType(ShopgateExternalOrderExtraCost::TYPE_PAYMENT);
             $extraCost->setTaxPercent(
                 Mage::helper('shopgate')->calculateTaxRate(
-                    $codPaymentFee, $order->getCodTaxAmount()
+                    $codPaymentFee,
+                    $order->getCodTaxAmount()
                 )
             );
 

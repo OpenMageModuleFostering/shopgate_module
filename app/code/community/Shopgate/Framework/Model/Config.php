@@ -110,6 +110,11 @@ class Shopgate_Framework_Model_Config extends ShopgateConfig
     const XML_PATH_SHOPGATE_NET_MARKET_COUNTRIES                 = "shopgate/export/net_market_countries";
 
     /**
+     * @var string key - affiliate key
+     */
+    private $affiliateParameter;
+    
+    /**
      * blacklist for config keys
      */
     protected $_blacklistedConfigKeys = array("is_active");
@@ -1083,5 +1088,55 @@ class Shopgate_Framework_Model_Config extends ShopgateConfig
             Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ORDER_USE_SHOPGATE_PRICES,
             $this->getStoreViewId()
         );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRedirectableGetParams()
+    {
+        $this->addAffiliateParameterToRedirectable();
+
+        return parent::getRedirectableGetParams();
+    }
+
+    /**
+     * Adds affiliate parameter to allowed redirect parameters
+     * Cached for page load efficiency.
+     */
+    private function addAffiliateParameterToRedirectable()
+    {
+        if (is_null($this->affiliateParameter)) {
+            $params = $this->translateMagentoGetParameters(Mage::app()->getRequest()->getParams());
+            if (!empty($params)) {
+                $sgOrder = new ShopgateOrder();
+                $sgOrder->setTrackingGetParameters($params);
+                $parameter = Mage::getModel('shopgate/factory')
+                                 ->getAffiliate($sgOrder)
+                                 ->getModuleTrackingParameter();
+                if ($parameter) {
+                    $this->affiliateParameter        = $parameter['key'];
+                    $this->redirectable_get_params[] = $parameter['key'];
+                }
+            } else {
+                $this->affiliateParameter = '';
+            }
+        }
+    }
+
+    /**
+     * Helps translate magento GET parameters into Shopgate GET parameters
+     *
+     * @param array $parameters - array('get_key' => 'get_value')
+     *
+     * @return array( array('key'=>'get_key', 'value'=>'get_value'), ...)
+     */
+    private function translateMagentoGetParameters($parameters)
+    {
+        $sgGetParams = array();
+        foreach ($parameters as $key => $value) {
+            $sgGetParams[] = array('key' => $key, 'value' => $value);
+        }
+        return $sgGetParams;
     }
 }

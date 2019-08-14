@@ -71,10 +71,10 @@ class Shopgate_Framework_Helper_Billsafe_Client extends Netresearch_Billsafe_Mod
      * Retrieves the Shopgate order number, else retrieves the
      * real ID. This ensures safety of this rewrite.
      *
-     * @param Mage_Sales_Model_Order $mageOrder
+     * @param Mage_Sales_Model_Order | Varien_Object $mageOrder - comes in as Varien on import, order from ship observer
      * @return string | int
      */
-    private function getShopgateOrderNumber(Mage_Sales_Model_Order $mageOrder)
+    private function getShopgateOrderNumber(Varien_Object $mageOrder)
     {
         $sgOrder = Mage::getModel('shopgate/shopgate_order')->load($mageOrder->getId(), 'order_id');
 

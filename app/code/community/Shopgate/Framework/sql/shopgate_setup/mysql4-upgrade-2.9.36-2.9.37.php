@@ -18,44 +18,14 @@
  * transfer to third parties is only permitted where we previously consented thereto in writing. The provisions
  * of paragraph 69 d, sub-paragraphs 2, 3 and paragraph 69, sub-paragraph e of the German Copyright Act shall remain unaffected.
  *
- * @author Shopgate GmbH <interfaces@shopgate.com>
+ *  @author Shopgate GmbH <interfaces@shopgate.com>
  */
 
-/**
- * Interface Shopgate_Framework_Model_Payment_Interface
- * 
- * @author awesselburg <wesselburg@me.com>
- * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
- */
-interface Shopgate_Framework_Model_Payment_Interface
-{
-    /**
-     * @param Mage_Sales_Model_Order $order
-     *
-     * @return Mage_Sales_Model_Order
-     */
-    public function manipulateOrderWithPaymentData($order);
+$this->startSetup();
 
-    /**
-     * @param Mage_Sales_Model_Quote $quote
-     *
-     * @return Mage_Sales_Model_Order
-     */
-    public function createNewOrder($quote);
+$this->run("
+ALTER TABLE `{$this->getTable('shopgate_order')}`
+MODIFY COLUMN received_data mediumtext NOT NULL
+");
 
-    /**
-     * @param Mage_Sales_Model_Quote $quote
-     * @param array $data
-     *
-     * @return Mage_Sales_Model_Quote
-     */
-    public function prepareQuote($quote, $data);
-
-    /**
-     * Used to set magento order status
-     * 
-     * @param $magentoOrder
-     * @return mixed
-     */
-    public function setOrderStatus($magentoOrder);
-}
+$this->endSetup();

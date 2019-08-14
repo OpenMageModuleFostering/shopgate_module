@@ -1,3 +1,17 @@
+'''Version 2.9.37'''
+* Magestore Affiliate Pro discount parameter support added
+* Fixed get_categories by UID retriever
+* Fixed configurable child product weight calculation
+* Fixes for order 'shipping_method' mapping in the database
+* Orders will print even if shopgate data is not present
+* Fix for catalog price rules not honoring multi-store specific rules
+* Fixed display error for big orders
+* Fixed tax_percent calculation for shipping methods
+* Fixed issue with virtual item import + custom options
+* Fixed error in stock validation for items with backorders
+* Fixed API order shipping updates in Authorize & Payoli orders
+* Fixed BillSAFE order import no response
+
 '''Version 2.9.36'''
 * Update to library version 2.9.42
 * Added support of shopping cart price rules for mobile orders

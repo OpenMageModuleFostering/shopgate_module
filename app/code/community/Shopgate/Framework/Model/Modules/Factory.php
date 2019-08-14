@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Shopgate GmbH
  *
@@ -22,40 +23,43 @@
  */
 
 /**
- * Interface Shopgate_Framework_Model_Payment_Interface
- * 
- * @author awesselburg <wesselburg@me.com>
- * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
+ * Main factory that gets inherited by other module factories
  */
-interface Shopgate_Framework_Model_Payment_Interface
+class Shopgate_Framework_Model_Modules_Factory extends Mage_Core_Model_Abstract
 {
-    /**
-     * @param Mage_Sales_Model_Order $order
-     *
-     * @return Mage_Sales_Model_Order
-     */
-    public function manipulateOrderWithPaymentData($order);
+    /** @var ShopgateOrder | ShopgateCart */
+    private $sgOrder;
+
+    /** @var Shopgate_Framework_Model_Interfaces_Modules_Router */
+    private $routerModel;
 
     /**
-     * @param Mage_Sales_Model_Quote $quote
-     *
-     * @return Mage_Sales_Model_Order
+     * @throws Exception
      */
-    public function createNewOrder($quote);
+    public function _construct()
+    {
+        $sgOrder = current($this->_data);
+        $router  = next($this->_data);
+        if (!$sgOrder instanceof ShopgateCartBase
+            || !$router instanceof Shopgate_Framework_Model_Interfaces_Modules_Router
+        ) {
+            $error = Mage::helper('shopgate')->__('Incorrect class provided to: %s::_constructor()', get_class($this));
+            ShopgateLogger::getInstance()->log($error, ShopgateLogger::LOGTYPE_ERROR);
+            throw new Exception($error);
+        }
+        $this->sgOrder     = $sgOrder;
+        $this->routerModel = $router;
+    }
 
-    /**
-     * @param Mage_Sales_Model_Quote $quote
-     * @param array $data
-     *
-     * @return Mage_Sales_Model_Quote
-     */
-    public function prepareQuote($quote, $data);
+    /** @return Shopgate_Framework_Model_Modules_Affiliate_Router */
+    protected function getRouter()
+    {
+        return $this->routerModel;
+    }
 
-    /**
-     * Used to set magento order status
-     * 
-     * @param $magentoOrder
-     * @return mixed
-     */
-    public function setOrderStatus($magentoOrder);
+    /** @return ShopgateCart|ShopgateOrder */
+    protected function getSgOrder()
+    {
+        return $this->sgOrder;
+    }
 }

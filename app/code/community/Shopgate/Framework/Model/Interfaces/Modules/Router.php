@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Shopgate GmbH
  *
@@ -20,42 +21,12 @@
  *
  * @author Shopgate GmbH <interfaces@shopgate.com>
  */
-
-/**
- * Interface Shopgate_Framework_Model_Payment_Interface
- * 
- * @author awesselburg <wesselburg@me.com>
- * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
- */
-interface Shopgate_Framework_Model_Payment_Interface
+interface Shopgate_Framework_Model_Interfaces_Modules_Router
 {
     /**
-     * @param Mage_Sales_Model_Order $order
-     *
-     * @return Mage_Sales_Model_Order
-     */
-    public function manipulateOrderWithPaymentData($order);
-
-    /**
-     * @param Mage_Sales_Model_Quote $quote
-     *
-     * @return Mage_Sales_Model_Order
-     */
-    public function createNewOrder($quote);
-
-    /**
-     * @param Mage_Sales_Model_Quote $quote
-     * @param array $data
-     *
-     * @return Mage_Sales_Model_Quote
-     */
-    public function prepareQuote($quote, $data);
-
-    /**
-     * Used to set magento order status
+     * Retrieves the validation model of the plugin or abstract validator
      * 
-     * @param $magentoOrder
-     * @return mixed
+     * @return Shopgate_Framework_Model_Interfaces_Modules_Validator
      */
-    public function setOrderStatus($magentoOrder);
+    public function getValidator();
 }

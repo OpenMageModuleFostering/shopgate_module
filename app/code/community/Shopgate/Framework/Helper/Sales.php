@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Shopgate GmbH
  *
@@ -18,21 +19,8 @@
  * transfer to third parties is only permitted where we previously consented thereto in writing. The provisions
  * of paragraph 69 d, sub-paragraphs 2, 3 and paragraph 69, sub-paragraph e of the German Copyright Act shall remain unaffected.
  *
- * @author Shopgate GmbH <interfaces@shopgate.com>
- */
-
-/**
- * User: pliebig
- * Date: 18.03.14
- * Time: 18:15
- * E-Mail: p.liebig@me.com
- */
-
-/**
- * sales helper for everything related to sales / orders / qupte and stuff
- *
- * @author      Shopgate GmbH, 35510 Butzbach, DE
- * @package     Shopgate_Framework
+ * @author      Shopgate GmbH <interfaces@shopgate.com>
+ * @description Sales helper for everything related to sales / orders / quote and stuff
  */
 class Shopgate_Framework_Helper_Sales extends Mage_Core_Helper_Abstract
 {
@@ -51,24 +39,23 @@ class Shopgate_Framework_Helper_Sales extends Mage_Core_Helper_Abstract
             $phoneNumber = $order->getPhone();
         }
         if (empty($phoneNumber)) {
-            $phoneNumber = "n.a.";
+            $phoneNumber = 'n.a.';
         }
 
         $region = Mage::helper('shopgate/customer')->getMagentoRegionByShopgateAddress($address);
 
-        $prefix = "Mr.";
-        if ($address->getGender() == "f") {
-            $prefix = "Mrs.";
+        $prefix = 'Mr.';
+        if ($address->getGender() == 'f') {
+            $prefix = 'Mrs.';
         }
-        $prefix = $this->_getHelper()->__($prefix);
 
         $addressData = array(
-            'prefix'               => $prefix,
+            'prefix'               => $this->_getHelper()->__($prefix),
             'company'              => $address->getCompany(),
             'firstname'            => $address->getFirstName(),
             'lastname'             => $address->getLastName(),
             'street'               => $address->getStreet1()
-                                      . ($address->getStreet2() ? "\n" . $address->getStreet2() : ""),
+                                      . ($address->getStreet2() ? '\n' . $address->getStreet2() : ''),
             'city'                 => $address->getCity(),
             'postcode'             => $address->getZipcode(),
             'telephone'            => $phoneNumber,
@@ -83,7 +70,7 @@ class Shopgate_Framework_Helper_Sales extends Mage_Core_Helper_Abstract
             $customFields[] = array($field->getInternalFieldName() => $field->getValue());
         }
         $addressData = array_merge($addressData, $customFields);
-        
+
         return $addressData;
     }
 
@@ -101,6 +88,7 @@ class Shopgate_Framework_Helper_Sales extends Mage_Core_Helper_Abstract
         $methods        = array();
         $paymentMethods = Mage::helper('payment')->getStoreMethods(Mage::app()->getStore()->getId(), $quote);
 
+        /** @var Mage_Payment_Model_Method_Abstract $_paymentMethod */
         foreach ($paymentMethods as $_paymentMethod) {
 
             if (!$_paymentMethod->canUseForCountry($quote->getBillingAddress()->getCountry())
@@ -141,27 +129,33 @@ class Shopgate_Framework_Helper_Sales extends Mage_Core_Helper_Abstract
      */
     public function getShippingMethods($mageCart)
     {
-        $methods = array();
         /** @var Mage_Sales_Model_Quote_Address $shippingAddress */
-        $shippingAddress = $mageCart->getQuote()->getShippingAddress();
+        $shippingAddress    = $mageCart->getQuote()->getShippingAddress();
+        $billingAddress     = $mageCart->getQuote()->getBillingAddress();
+        $customerTaxClass   = $mageCart->getQuote()->getCustomer()->getTaxClassId();
+        $storeViewId        = Mage::helper('shopgate/config')->getConfig()->getStoreViewId();
+        $store              = Mage::app()->getStore($storeViewId);
+        $calc               = Mage::getSingleton('tax/calculation');
+        $rateRequest        = $calc->getRateRequest($shippingAddress, $billingAddress, $customerTaxClass, $store);
+        $rates              = $calc->getRatesForAllProductTaxClasses($rateRequest);
+        $taxClassIdShipping = Mage::helper('tax')->getShippingTaxClass($storeViewId);
+        $taxRateShipping    = $taxClassIdShipping ? $rates[$taxClassIdShipping] : 0;
+
         $shippingAddress->collectTotals();
         $shippingAddress->collectShippingRates();
-        $calc               = Mage::getSingleton('tax/calculation');
-        $rates              = $calc->getRatesForAllProductTaxClasses($calc->getRateOriginRequest());
-        $taxClassIdShipping = Mage::helper('tax')->getShippingTaxClass(
-                                  Mage::helper("shopgate/config")->getConfig()->getStoreViewId());
-        $taxRateShipping    = $taxClassIdShipping ? $rates[$taxClassIdShipping] : $taxClassIdShipping;
 
+
+        $methods = array();
         /** @var Mage_Sales_Model_Quote_Address_Rate $_rate */
         foreach ($shippingAddress->getShippingRatesCollection() as $_rate) {
             if ($_rate instanceof Mage_Shipping_Model_Rate_Result_Error
                 || strpos($_rate->getCode(), 'error') !== false
-				|| $_rate->getCarrierInstance() == false
+                || $_rate->getCarrierInstance() == false
             ) {
                 /* skip errors so they dont get processed as valid shipping rates without any cost */
                 ShopgateLogger::getInstance()->log(
-                              "Skipping Shipping Rate because of Error Type: '" . $_rate->getCode() . "'",
-                              ShopgateLogger::LOGTYPE_DEBUG
+                    "Skipping Shipping Rate because of Error Type: '" . $_rate->getCode() . "'",
+                    ShopgateLogger::LOGTYPE_DEBUG
                 );
                 continue;
             }
@@ -204,14 +198,14 @@ class Shopgate_Framework_Helper_Sales extends Mage_Core_Helper_Abstract
 
         /** @var Mage_Sales_Model_Quote_Item $_item */
         foreach ($quote->getAllVisibleItems() as $_item) {
-            $price = $_item->getProduct()->getFinalPrice();
+            $price            = $_item->getProduct()->getFinalPrice();
             $priceIncludesTax = Mage::helper('tax')->priceIncludesTax($quote->getStore());
-            $percent = $_item->getTaxPercent();
+            $percent          = $_item->getTaxPercent();
             if ($priceIncludesTax) {
                 $priceInclTax = $price;
-                $priceExclTax = $price / (1 + ($percent/100));
+                $priceExclTax = $price / (1 + ($percent / 100));
             } else {
-                $priceInclTax = $price * (1 + ($percent/100));
+                $priceInclTax = $price * (1 + ($percent / 100));
                 $priceExclTax = $price;
             }
             $items[] = $validator->validateStock($_item, $priceInclTax, $priceExclTax);
@@ -251,20 +245,24 @@ class Shopgate_Framework_Helper_Sales extends Mage_Core_Helper_Abstract
     protected function _getCustomerGroups(ShopgateCart $cart, $websiteId)
     {
         /** @var Mage_Customer_Model_Customer $customer */
-        $customer = Mage::getModel('customer/customer');
+        $customer           = Mage::getModel('customer/customer');
         $externalCustomerId = $cart->getExternalCustomerId();
 
         if ($externalCustomerId) {
             $customer->load($externalCustomerId);
-        } else if ($cart->getDeliveryAddress() && $cart->getDeliveryAddress()->getMail()) {
-            $customer->setWebsiteId($websiteId)->loadByEmail($cart->getDeliveryAddress()->getMail());
-        } else if ($cart->getInvoiceAddress() && $cart->getInvoiceAddress()->getMail()) {
-            $customer->setWebsiteId($websiteId)->loadByEmail($cart->getInvoiceAddress()->getMail());
+        } else {
+            if ($cart->getDeliveryAddress() && $cart->getDeliveryAddress()->getMail()) {
+                $customer->setWebsiteId($websiteId)->loadByEmail($cart->getDeliveryAddress()->getMail());
+            } else {
+                if ($cart->getInvoiceAddress() && $cart->getInvoiceAddress()->getMail()) {
+                    $customer->setWebsiteId($websiteId)->loadByEmail($cart->getInvoiceAddress()->getMail());
+                }
+            }
         }
-        if(!$externalCustomerId && $customer->getId()) {
+        if (!$externalCustomerId && $customer->getId()) {
             $cart->setExternalCustomerId($customer->getId());
         }
-        
+
         return Mage::helper('shopgate/customer')->getShopgateCustomerGroups($customer);
     }
 
@@ -278,22 +276,22 @@ class Shopgate_Framework_Helper_Sales extends Mage_Core_Helper_Abstract
      */
     public function getCustomerData(ShopgateCart $cart, $storeViewId)
     {
-        $websiteId = Mage::getModel('core/store')->load($storeViewId)->getWebsite()->getId();
+        $websiteId      = Mage::getModel('core/store')->load($storeViewId)->getWebsite()->getId();
+        $customerGroups = $this->_getCustomerGroups($cart, $websiteId);
+        $result         = array();
 
-        $result = array();
-
-        if ($customerGroups = $this->_getCustomerGroups($cart, $websiteId)) {
+        if ($customerGroups) {
             foreach ($customerGroups as $customerGroup) {
-                $result["customer_groups"][] = new ShopgateCartCustomerGroup($customerGroup);
+                $result['customer_groups'][] = new ShopgateCartCustomerGroup($customerGroup);
             }
         }
 
-        if (isset($result["customer_groups"]) && count($result["customer_groups"])) {
-            $customerGroupId = $result["customer_groups"][0]->getId();
+        if (isset($result['customer_groups']) && count($result['customer_groups'])) {
+            $customerGroupId = $result['customer_groups'][0]->getId();
             $taxClassId      = Mage::getModel('customer/group')->load($customerGroupId)->getTaxClassId();
             $taxClassModel   = Mage::getModel('tax/class')->load($taxClassId);
 
-            $result["customer_tax_class_key"] = $taxClassModel->getId() ? $taxClassModel->getClassName() : null;
+            $result['customer_tax_class_key'] = $taxClassModel->getId() ? $taxClassModel->getClassName() : null;
         }
 
         return new ShopgateCartCustomer($result);

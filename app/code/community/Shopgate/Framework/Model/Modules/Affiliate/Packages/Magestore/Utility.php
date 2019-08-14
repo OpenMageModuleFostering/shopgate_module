@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Shopgate GmbH
  *
@@ -20,42 +21,31 @@
  *
  * @author Shopgate GmbH <interfaces@shopgate.com>
  */
-
-/**
- * Interface Shopgate_Framework_Model_Payment_Interface
- * 
- * @author awesselburg <wesselburg@me.com>
- * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
- */
-interface Shopgate_Framework_Model_Payment_Interface
+class Shopgate_Framework_Model_Modules_Affiliate_Packages_Magestore_Utility
+    extends Shopgate_Framework_Model_Modules_Affiliate_Utility
 {
-    /**
-     * @param Mage_Sales_Model_Order $order
-     *
-     * @return Mage_Sales_Model_Order
-     */
-    public function manipulateOrderWithPaymentData($order);
+    const CONFIG_IGNORE_CART_RULES = 'affiliate';
 
     /**
-     * @param Mage_Sales_Model_Quote $quote
-     *
-     * @return Mage_Sales_Model_Order
+     * @inheritdoc
      */
-    public function createNewOrder($quote);
+    public function getTrackingCodeKey()
+    {
+        if (!$this->validator->isValid()) {
+            return false;
+        }
+
+        return Mage::helper('affiliateplus/url')->getPersonalUrlParameter();
+    }
 
     /**
-     * @param Mage_Sales_Model_Quote $quote
-     * @param array $data
-     *
-     * @return Mage_Sales_Model_Quote
+     * @inheritdoc
      */
-    public function prepareQuote($quote, $data);
-
-    /**
-     * Used to set magento order status
-     * 
-     * @param $magentoOrder
-     * @return mixed
-     */
-    public function setOrderStatus($magentoOrder);
+    public function salesRuleHook()
+    {
+        $allowDiscount = Mage::helper('affiliateplus/config')->getDiscountConfig('allow_discount');
+        if ($allowDiscount === self::CONFIG_IGNORE_CART_RULES) {
+            Mage::register('shopgate_disable_sales_rules', true, true);
+        }
+    }
 }

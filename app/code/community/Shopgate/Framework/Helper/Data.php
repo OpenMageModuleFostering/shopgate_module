@@ -540,8 +540,16 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
         }
 
         ShopgateLogger::getInstance()->log("# Start of setShippingMethod process", ShopgateLogger::LOGTYPE_DEBUG);
-        $mapper = Mage::getModel('shopgate/shopgate_shipping_mapper')->init($shippingAddress, $order);
-        $shippingAddress->setShippingMethod($mapper->getCarrier() . '_' . $mapper->getMethod());
+        $infos = $order->getShippingInfos();
+        if ($order->getShippingType() == Shopgate_Framework_Model_Shopgate_Shipping_Mapper::SHIPPING_TYPE_PLUGINAPI
+            && $infos->getName()
+        ) {
+            $shippingMethod = $infos->getName();
+        } else {
+            $mapper = Mage::getModel('shopgate/shopgate_shipping_mapper')->init($shippingAddress, $order);
+            $shippingMethod = $mapper->getCarrier() . '_' . $mapper->getMethod();
+        }
+        $shippingAddress->setShippingMethod($shippingMethod);
 
         ShopgateLogger::getInstance()->log(
             "  Shipping method set: '" . $shippingAddress->getShippingMethod() . "'",
