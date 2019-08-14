@@ -1,3 +1,9 @@
+'''Version 2.9.33'''
+* improved detection of redirect exclusions
+* Redirect script cleanup
+* Improved error handling for the mobile redirect
+* Mobile script maintenance
+
 '''Version 2.9.32'''
 * Shopgate dropdown is now visible with proper permissions set
 * Shopgate menu moved under the Systems dropdown

@@ -288,6 +288,7 @@ class Shopgate_Framework_Model_Config extends ShopgateConfig
             "cname"                        => self::XML_PATH_SHOPGATE_CNAME,
             "redirect_type"                => self::XML_PATH_SHOPGATE_REDIRECT_TYPE,
             "enable_default_redirect"      => self::XML_PATH_SHOPGATE_ENABLE_DEFAULT_REDIRECT,
+            "disable_redirect_routes"      => self::XML_PATH_SHOPGATE_DISABLE_REDIRECT_ROUTES,
             "disable_redirect_controllers" => self::XML_PATH_SHOPGATE_DISABLE_REDIRECT_CONTROLLERS,
             "disable_redirect_products"    => self::XML_PATH_SHOPGATE_DISABLE_REDIRECT_PRODUCTS,
             "disable_redirect_categories"  => self::XML_PATH_SHOPGATE_DISABLE_REDIRECT_CATEGORIES,

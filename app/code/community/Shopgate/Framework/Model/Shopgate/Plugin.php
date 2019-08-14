@@ -1078,6 +1078,12 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                         'Field "internal_info" is empty.'
                     );
                 }
+                if (!isset($couponInfos["coupon_id"])) {
+                    throw new ShopgateLibraryException(
+                        ShopgateLibraryException::COUPON_NOT_VALID,
+                        'Field "coupon_id" in "internal_info" is empty.'
+                    );
+                }
                 /** @var Mage_SalesRule_Model_Coupon $mageCoupon */
                 if ($this->_getConfigHelper()->getIsMagentoVersionLower1410()) {
                     $mageCoupon = Mage::getModel('salesrule/rule')->load($couponInfos["coupon_id"]);

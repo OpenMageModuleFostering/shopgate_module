@@ -48,9 +48,14 @@ class Shopgate_Framework_Model_System_Config_Source_Validation_Config extends Ma
     public function save()
     {
         $storeName = Mage::app()->getRequest()->getParam('store');
+        $devParam  = Mage::app()->getRequest()->getParam('dev');
+
         $storeId   = $this->_getStoreIdByName($storeName);
         $oauth     = $this->_getHelper()->getOauthToken($storeId);
 
+        if ($devParam) {
+            return parent::save();
+        }
         //when saving config on website level
         if (!$storeName && !$oauth) {
             $this->setValue(0);
