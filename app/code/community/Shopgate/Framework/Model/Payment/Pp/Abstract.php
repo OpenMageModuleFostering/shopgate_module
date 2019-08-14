@@ -37,14 +37,16 @@ class Shopgate_Framework_Model_Payment_Pp_Abstract
      * Depends on Shopgate paymentInfos() to be passed
      * into the TransactionAdditionalInfo of $order.
      *
-     * @param $paymentStatus String
-     * @param $order         Mage_Sales_Model_Order
+     * @param null | string          $paymentStatus
+     * @param Mage_Sales_Model_Order $order
+     *
      * @return Mage_Sales_Model_Order
      */
     public function orderStatusManager(Mage_Sales_Model_Order $order, $paymentStatus = null)
     {
         $this->_getPaymentHelper()->orderStatusManager($order, $paymentStatus);
         $order->setShopgateStatusSet(true);
+
         return $order;
     }
 
@@ -54,5 +56,25 @@ class Shopgate_Framework_Model_Payment_Pp_Abstract
     protected function _getPaymentHelper()
     {
         return Mage::helper('shopgate/payment_wspp');
+    }
+
+    /**
+     * Helps retrieve IPN data from the payment info
+     *
+     * @param string|array $ipnData - IPN data that can come as an array or JSON
+     *
+     * @return array
+     */
+    protected function translateIpnData($ipnData)
+    {
+        if (empty($ipnData)) {
+            $ipnData = array();
+        } elseif (is_string($ipnData) && strpos($ipnData, '{') !== false) {
+            $ipnData = Zend_Json::decode($ipnData);
+        } elseif (is_string($ipnData)){
+            $ipnData = array($ipnData);
+        }
+
+        return $ipnData;
     }
 }

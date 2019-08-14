@@ -21,13 +21,7 @@
  * @author Shopgate GmbH <interfaces@shopgate.com>
  */
 
-/**
- * User: pliebig
- * Date: 06.03.14
- * Time: 15:57
- * E-Mail: p.liebig@me.com
- */
-
+include_once(Mage::getBaseDir('lib') . '/Shopgate/shopgate.php');
 /**
  * observer for events
  *
@@ -705,46 +699,6 @@ class Shopgate_Framework_Model_Observer
     {
         $model = Mage::getModel('shopgate/feed');
         $model->checkUpdate();
-    }
-
-    /**
-     * @param Varien_Event_Observer $observer
-     *
-     * @return $this
-     */
-    public function manipulateShipmentForBillsafe(Varien_Event_Observer $observer)
-    {
-        if (Mage::getConfig()->getModuleConfig('Netresearch_Billsafe')->is('active', 'true')) {
-
-            $shipment = $observer->getShipment();
-            $code     = $shipment->getOrder()->getPayment()->getMethodInstance()->getCode();
-
-            if ($code != Netresearch_Billsafe_Model_Payment::CODE) {
-                return $this;
-            }
-
-            $magentoShopgateOrder = Mage::getModel('shopgate/shopgate_order')->load(
-                $shipment->getOrder()->getId(),
-                'order_id'
-            );
-
-            if ($magentoShopgateOrder->getId() == null) {
-                return $this;
-            }
-
-            /**
-             * manipulate order number
-             */
-            $shipment->getOrder()->setIncrementId($magentoShopgateOrder->getShopgateOrderNumber());
-
-            /** @var Mage_Sales_Model_Order $order */
-            $order = $shipment->getOrder();
-            $order->setIsShopgateOrder(true);
-
-            return $this;
-        }
-
-        return $this;
     }
 
     /**

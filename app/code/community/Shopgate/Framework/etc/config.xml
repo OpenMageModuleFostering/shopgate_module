@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Shopgate_Framework>
-            <version>2.9.34</version>
+            <version>2.9.35</version>
         </Shopgate_Framework>
     </modules>
     <phpunit>
@@ -40,6 +40,11 @@
                     <process>Shopgate_Framework_Model_Compiler_Process</process>
                 </rewrite>
             </compiler>
+            <billsafe>
+                <rewrite>
+                    <client>Shopgate_Framework_Helper_Billsafe_Client</client>
+                </rewrite>
+            </billsafe>
         </models>
         <helpers>
             <shopgate>
@@ -206,16 +211,6 @@
                     </remove_virtual_products_of_shopgate_coupons>
                 </observers>
             </sales_order_place_after>
-
-            <sales_order_shipment_save_before>
-                <observers>
-                    <shopgate>
-                        <type>singleton</type>
-                        <class>shopgate/observer</class>
-                        <method>manipulateShipmentForBillsafe</method>
-                    </shopgate>
-                </observers>
-            </sales_order_shipment_save_before>
 
             <adminhtml_init_system_config>
                 <observers>

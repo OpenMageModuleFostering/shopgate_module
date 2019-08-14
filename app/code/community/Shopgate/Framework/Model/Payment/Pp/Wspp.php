@@ -25,7 +25,8 @@ class Shopgate_Framework_Model_Payment_Pp_Wspp
     /**
      * Create new order for amazon payment
      *
-     * @param $quote            Mage_Sales_Model_Quote
+     * @param $quote Mage_Sales_Model_Quote
+     *
      * @return Mage_Sales_Model_Order
      * @throws Exception
      */
@@ -113,7 +114,7 @@ class Shopgate_Framework_Model_Payment_Pp_Wspp
     public function manipulateOrderWithPaymentData($order)
     {
         $paymentInfos  = $this->getShopgateOrder()->getPaymentInfos();
-        $paypalIpnData = $paymentInfos['paypal_ipn_data'];
+        $paypalIpnData = $this->translateIpnData($paymentInfos['paypal_ipn_data']);
         $paypalIpnData = array_merge($paymentInfos['credit_card'], $paypalIpnData);
         $paymentStatus = $this->_getPaymentHelper()->filterPaymentStatus($paypalIpnData['payment_status']);
 
@@ -175,12 +176,14 @@ class Shopgate_Framework_Model_Payment_Pp_Wspp
             $comment->save();
             Mage::logException($x);
         }
+
         return $order;
     }
 
     /**
      * @param $quote            Mage_Sales_Model_Quote
      * @param $data             array
+     *
      * @return Mage_Sales_Model_Quote
      */
     public function prepareQuote($quote, $data)
@@ -196,6 +199,7 @@ class Shopgate_Framework_Model_Payment_Pp_Wspp
         $quote->getPayment()->setCcNumberEnc($data['credit_card']['masked_number']);
         $quote->setData('paypal_ipn_data', $data['paypal_ipn_data']);
         $quote->getPayment()->setLastTransId($data['paypal_txn_id']);
+
         return $quote;
     }
 
@@ -203,6 +207,7 @@ class Shopgate_Framework_Model_Payment_Pp_Wspp
      * Set order status
      *
      * @param Mage_Sales_Model_Order $magentoOrder
+     *
      * @return Mage_Sales_Model_Order
      */
     public function setOrderStatus($magentoOrder)
@@ -237,6 +242,7 @@ class Shopgate_Framework_Model_Payment_Pp_Wspp
             $debug = $this->_getHelper()->__('Neither WSPP or WSPP Payflow are enabled');
             ShopgateLogger::getInstance()->log($debug, ShopgateLogger::LOGTYPE_DEBUG);
         }
+
         return $result;
     }
 
