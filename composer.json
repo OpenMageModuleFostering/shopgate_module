@@ -1,0 +1,16 @@
+{
+    "name": "OpenMageModuleFostering/shopgate_module",
+    "type": "magento-module",
+    "license": "Shopgate-Plugin",
+    "homepage": "",
+    "description": "Shopgate Plugin",
+    "authors": [
+    {
+        "name": "Peter Liebig",
+        "email": "p.liebig@me.com"
+    }
+],
+    "suggest": {
+        "magento-hackathon/magento-composer-installer": "*"
+    }
+}

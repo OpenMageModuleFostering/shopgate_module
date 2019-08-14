@@ -1,0 +1,53 @@
+<?php
+/**
+ * User: Peter Liebig
+ * Date: 27.01.14
+ * Time: 15:58
+ * E-Mail: p.liebig@me.com
+ */
+
+/**
+ * mobile payment template
+ *
+ * @author      Shopgate GmbH, 35510 Butzbach, DE
+ * @package     Shopgate_Framework
+ * @author      Shopgate GmbH Butzbach
+ */
+/**
+ * @var $this Shopgate_Framework_Block_Payment_MobilePayment
+ */
+
+if ($this->getShopgateOrder()->getShopgateOrderObject()->getIsTest()):?>
+    <strong style="color: red; font-size: 1.2em;">
+        <?php echo $this->__("## This order is a TEST by Shopgate - DO NOT SHIP!") ?>
+    </strong><br />
+<?php endif; ?>
+
+<?php if ($this->hasDifferentPrices()): ?>
+    <strong style="color: red; font-size: 1.2em;">
+        <?php echo $this->__("!! The total amount in Magento differs from the total amount at Shopgate. Please check your tax settings.") ?>
+    </strong><br /><br />
+<?php endif; ?>
+
+<?php if ($this->getShopgateOrder()->getIsShippingBlocked()): ?>
+    <strong style="color: red; font-size: 1.2em;">
+        <?php echo $this->__("## Note: Shipping of this order is blocked by Shopgate!") ?></strong><br />
+<?php endif; ?>
+
+<?php if($this->getShopgateOrder()->getIsCustomerInvoiceBlocked()):?>
+    <strong style="color: red; font-size: 1.2em;"><?php echo $this->__("## Note: For this order you must not create an invoice!")?></strong><br />
+<?php endif; ?>
+
+<?php echo $this->__('Shopgate order number: %s', $this->getShopgateOrderNumber()); ?>
+<p style="margin-top: 1em;">
+    <?php foreach($this->getPaymentInfos() as $key => $value ): ?>
+    <div style="text-decoration: underline; font-weight: bold"><?php echo $this->__(uc_words($key, ' ') . ":"); ?></div>
+<?php if (is_array($value)) {
+    foreach ($value as $_key => $_value) {
+        echo $this->__(uc_words($_key, ' ') . ": ".uc_words($_value, ' ')."<br />");
+    }
+} else {
+    echo $this->__($this->htmlEscape($value)) . "<br />";
+} ?>
+<?php endforeach; ?>
+</p>

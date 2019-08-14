@@ -1,0 +1,6 @@
+<?php
+$mobileHeader = Mage::getSingleton("core/session")->getData("shopgate_header");
+if($mobileHeader) {
+	echo $mobileHeader;
+}
+?>

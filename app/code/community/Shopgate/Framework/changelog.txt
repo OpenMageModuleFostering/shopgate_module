@@ -1,0 +1,1789 @@
+'''Deutsch'''
+
+'''Version 2.9.17'''
+* Fehler bei kostenlosen Produkten behoben
+* get_settings um payment_methods erweitert
+
+'''Version 2.9.16'''
+* Fehler beim Export des Steuersatzes behoben
+* Eigene Zahlungsabrechnung für Zahlungskosten
+* OAuth Anbindung ompimiert
+* Update auf Library Version 2.9.19
+
+'''Version 2.9.15'''
+* Bezahlmethode Paymentnetwork_Pnsofortueberweisung wird nun ab Version 1.1.8 unterstützt
+* Bezahlmethode Mage_BankPayment wird nun unterstützt
+* Verhindert die automatische Rechnungserstellung für Authorize.net Bestellungen und auth_only Konfiguration
+* Behebt Probleme bei der Übermittlung von Stornierung, Erstattungen werden nichtmehr als Storno an Shopgate übermittelt
+* Behebt Probleme mit fehlenden/falschen Produktgewichten bei der Berechnung von Versandkosten
+* Behebt Probleme mit falschen Bestellstatus bei Vorkasse Bestellungen und der Bezahlmethode Magento Banktransfer
+* Behebt Probleme mit falschen Preisen bei Eltern-/Kindprodukten
+
+'''Version 2.9.14'''
+* Behebt Probleme in der Preisberechnung von Kindprodukten
+* Behebt Probleme mit den Bundeloptionen
+* Behebt Probleme mit dem Magento Compiler
+* Behebt Probleme mit dem Status von Billsafebestellungen
+
+'''Version 2.9.13'''
+* Behebt Probleme mit falschen Status bei SofortÜberweisungs Bestellungen
+* Behebt Problem mit falschen Steuerklassen während des Produkt Exports bei Kindprodukten
+* Verbessert den Export von Individualisierungsoptionen
+* Verbessert das Bestellstatus-Mapping während des addOrders, die Option "Nicht blockierte Bestellunge als bezahlt markieren" greift jetzt auch bei Vorkasse
+* Upsell Produkte von Elternprodukten werden nun an die Kinder vererbt
+* Behebt Probleme bei abweichenden Variantenpreisen
+* Neue Konfigurationsmöglichkeit zum Export von niedrig aufgelösten Produktbildern
+* Behebt Problem mit fehlenden Bestellstatus bei PayPal Bestellungen
+
+'''Version 2.9.12'''
+* Individualisierungsoptionen werden nun beim Export von Bundle Produkten berücksichtigt
+* Behebt Probleme beim Synchronisieren von Billsafe Bestellungen
+* Behebt Probleme bei fehlenden Versandmethoden
+* Behebt Probleme mit falsch gesetzten Status bei Nachname Bestellungen
+* Behebt Probleme mit falschen Preisen bei Bundle Produkten
+* Lagerbestände werden nun auch bei Nachbestellungen mit exportiert
+* Behebt Probleme beim Export von Produktrelationen
+
+'''Version 2.9.11'''
+* Behebt Problem beim Bestellungen die blockiert und nicht bezahlt sind
+* Behebt Fehler mit Versandkosten und Paypal Express
+* Behebt Probleme mit dem Anlegen dem Standard Rechnungs- und Lieferadressen
+* Behebt Probleme mit der Anzeige der Artikelverfügbarkeit
+* Behebt Probleme mit der Produktsortierung
+* Behebt Probleme mit den Zusatzkosten für Optionen
+* Optimiert Übergabe der Trennzeichen beim Gewicht
+* Behebt Probleme mit der Übergabe des Lagerbestandes
+
+'''Version 2.9.10'''
+* Behebt Problem beim importieren von Bestellungen
+* Behebt Fehler bei deaktivierten Magento Benachrichtigungsmodul
+
+'''Version 2.9.9'''
+* zusätzliches Feld für UPC Export in der Konfiguration eingefügt
+* Caching Problem für die Headerdateien behoben
+* Verbindungsaufbau abgesichert durch zusätzliche Checks
+* verbesserter Preisexport für Bundle Produktoptionen ohne Pflichtfelder
+* natives Paypal Mapping wenn Website Payments Pro aktiv ist auf Express
+* Bildexport für XML Kindprodukte angepasst unter Berücksichtigung der Konfigurationsoptionen
+
+'''Version 2.9.8'''
+* Java Script Dateien für Oauth angepasst
+* verbesserte Unterstützung für native Zahlungsmethoden bis 1.4.0.1
+* Msp_CashOnDelivery Unterstützung hinzugefügt
+* Firegento Unterstützung hinzugefügt (MageSetup and GermanSetup)
+* Amasty_Rules Unterstützung hinzugefügt
+
+'''Version 2.9.7'''
+* Verbesserte Bundle Optionen
+* Lieferzeit Attribut angepasst für ältere Versionen
+* UPC Bug behoben
+* verbesserte Unterstützung für native Zahlungsmethoden bis 1.4.0.1
+* Fehler in der Lagerverwaltung behoben
+* Phoenix_Banktransfer als native Zahlungsmethode
+* Doppelte Bestellung als Fehler trotz fehlender Bestellung minimiert
+* Kindproduktdaten Export verbessert
+* Performance bei mobiler Weiterleitung deutlich verbessert
+* Gruppenpreise von 1.4.x bis 1.6.x unterstützt
+* Benachrichtigungssystem von Magento genutzt um auf Plugin Updates hinzuweisen
+
+'''Version 2.9.6'''
+* Steuerberechnung für Coupons behoben
+* hinzufügen von Eltern-Kind Kombination zur Bestellung gefixed
+* Preisberechnung von Zusatzkosten auf Optionen angepasst
+* Billsafe als native Zahlungsmethode implementiert
+* Sofortüberweisung als native Zahlungsmehtode implementiert
+* Standard Überschrift für Bundleoptionen
+* Bestellstatus fix für Paypal Website Payments Pro
+* Bestellstatus Standard Mapping für > 1.6
+* Unterstützung für Virtuelle Produkte 
+
+'''Version 2.9.5'''
+* Fehler bei rabattierten Artikelpreisen in der Bestellung behoben
+* Bestandsproblem bei Elternprodukten in check_cart behoben(CSV)
+* verbesserter Bündelartikel Export, Bestandsberechnung und Preisberechnung
+* verhindert den Export deaktivierter Gruppenproduktkinder
+* register_customer Fehlerausgabe behoben
+* verbesserte mobile Weiterleitung bei speziellen Produktsetup
+* Fehler beim Caching der Attribute im Produktexport behoben
+* verbesserter Export der Staffelpreise
+* Verbesserung der nativen ePay und Amazon Integration
+* Unterstützung für virtuelle Produkte hinzugefügt
+* verbesserte Statuszuordnung bei Bestellgenerierung
+
+'''Version 2.9.4'''
+* Bestandsproblem bei Elternprodukten in check_cart behoben(XML)
+* Update der Library auf Version 2.9.3
+* Fehler in Attributsetcaching bei Produktexport behoben
+* Basispreis von Erweiterung "DerModPro Base Price" in XML und CSV Export hinzugefügt
+* die Konfiguration exportiere Name des Elternproduktes wird nun auch im XML Export beachtet
+* native Authorize.net Implementierung
+* native epay Implementierung
+* Verbesserung der Paypal Website Payments Pro Integration
+* Kompatibilität für Magento Versionen < 1.5 verbessert
+
+'''Version 2.9.3'''
+* Caching beim Export an Magento Cache angebunden
+* Unterstützung von OrganicInternet SimpleConfigurableProducts
+* Installationsschwierigkeiten < 1.4.1.x behoben
+* verbesserte Lagerverwaltung
+* verbesserte Kompatibilität zu Katalogpreisregeln beim Bestellimport
+* Paypal Website Payments Pro als native Zahlungsmethode integriert
+* verbesserte Steuerhandhabe für Versandkosten bei steuerfreien Ländern
+* Mobile Weiterleitung überarbeitet und natives Magento Caching eingebaut
+
+'''Version 2.9.2'''
+* Problem mit fehlgeschlagenem add_order und Shopgate Coupons behoben
+* Erweiterte Bezahlinformation bei PayPal Bestellungen
+* Fehler beim Produktbilder Export in XML behoben
+* Überflüssigen Observer entfernt
+* Verbesserung der Kompatibilität zu Magento <= 1.4.1.0
+* Unterstützung von PayPal Website Payments Pro für Magento 1.4.x.x und 1.5.x.x
+* Fehler mit falschen Preisen bei add_order und Bestellungen mit Katalog Preisregelen behoben
+
+'''Version 2.9.1'''
+* XML export beachtet nun die Konfiguration für den priorisierten Thumbnail Bild export
+* verbesserter XML Export von Produktbeschreibungen
+* Kompatibilität mit USPS Fremdmodul hinzugefügt
+* exportiert Kategorien welche nicht sichtbar im Menü sind als inaktiv
+* Speicherproblem mit Varien_Image_Adapter_Gd2 behoben
+* Fehler für fehlende Versandmethoden bei Bundle Produkten behoben
+* Fehler bei check_cart für Artikel die nicht auf Lager aber Nachbestellbar sind
+* Staffelpreise für die Option alle Kundengruppen werden nun für jede Gruppe einzeln in XML exportiert
+* Neue Konfiguration für das erste Produktbild
+* Produkte mit Individualisierungsoptionen vom Typ File werden nun vom XML Export ausgeschlossen
+* Neue Konfiguration ob der Preis Indexer während des Exportes genutzt werden soll oder nicht
+
+'''Version 2.9.0'''
+* Fehler in der Ping Action bei Magento Versionen < 1.6 behoben
+* verbesserte Leistung beim Produktexport
+* verbesserte Echtzeit-Lagererkennung
+* Fehler für falsche Preise von Gruppenprodukten im XML Export behoben
+* Fehler für falsche Preise von Kindprodukten wenn zusätzlich ein Preisoffset im Elternprodukt definiert ist
+* Couponwert beachtet nun auch Optionspreise
+* verbesserter Warenbestandsexport für XML
+* Update der Library auf Version 2.9.1
+* Produktrezensionen als XML
+
+'''Version 2.8.4'''
+* Update der Library auf Version 2.8.10
+
+'''Version 2.8.3'''
+* Erweiterung der Sortieroptionen von Produkten in Kategorien
+* verbesserter export des Verfügbarkeitstextes für Bundle Produkte
+* Versandkosten bei Shopgate werden nun erst erstattet, wenn der volle Versandkostenbetrag in Magento erstattet wird
+* Einbinden einer neuen Konfigurations Option um den Export von Produktattributen als Eigenschaft selektiv zu erzwingen
+* XML Support für Bundleoptionen
+
+'''Version 2.8.2'''
+* Verbesserter Support für 1.4.x bis 1.5.x
+
+'''Version 2.8.1'''
+* Anpassung vom Codestil
+* Integration von Amazon Payments nativ
+* Update der Library auf Version 2.8.6
+* Code cleanup
+* Zusätzliche Option um eigene Felder als Kommentar in die Bestellhistorie zu schreiben
+
+'''Version 2.8.0'''
+* Update der Library auf Version 2.8.5
+* Angepasster Gruppenproduktexport
+* Synchronisation von Bestellungen (Umsetzung von get_orders)
+* Säuberung von legacy code
+* Bundle Produkt Export Verbesserung
+* verbessertes Logging von Fehlern
+* sicherstellen das Produkte storeview abhängig geladen werden
+
+'''Version 2.7.5'''
+* Falls vorhanden werden nun Coupon Labels anstelle der Coupon Titel übertragen
+* Update der Library auf Version 2.7.4
+
+'''Version 2.7.4'''
+* Bugfix zurücksetzen der Standard Versandmethode shopgate_fix falls keine Plugin API Versandmethoden benutzt werden
+
+'''Version 2.7.3'''
+* Neue Konfiguration für den exklusiven Export der Kategorien welche in der Hauptnavigation angezeigt werden 
+* Bugfix für Gruppenprodukte ohne Kinder
+* Bugfix für Fedex API Versandkosten Fehler
+
+'''Version 2.7.2'''
+* Bugfix für Oauth
+
+'''Version 2.7.1'''
+* Bugfix für den Aufruf einer nicht mehr verwendeten Klassen Konstante
+
+'''Version 2.7.0'''
+* Implementieren eines Verbindungs-Managers
+* Umstellung der Authentifizierung über OAuth
+* Aktualiseren der Shopgate Library auf die Version 2.7.2
+* Optimierte Verarbeitung der Versandmethoden bei checkCart
+* Bugfix für den Export des Standard Verfügbarkeits Texts
+* Setzen der Anrede beim Verarbeiten von Bestellungen
+* Bugfix Anzeigename Versandmethode in Transaktions Mails
+* exportiert Kategorie Thumbnail vor Kategoriebild
+* verbesserter Export der Produkte für die Nachbestellungen aktiviert sind
+* verbesserter Produkt Export von Eltern<->Kind Beziehungen in Verbindung mit der Sichtbarkeit der Kindprodukte
+
+'''Version 2.6.16'''
+* Bugfix für fehlerhafte Besteuerung der Versandkosten
+* Verarbeitung der Rabatt Besteuerungs Konfiguration
+* Bugfix für das Extrahieren der StoreViewId nach ShopNumber
+* erlaube Gruppenprodukte in mehreren Kategorien
+* Bugfix Anzeigename der Versandmethode
+* Implementieren von Erweiterten Ausgaben für get_settings
+
+'''Version 2.6.15'''
+* Update der Library auf die Version 2.6.10
+* Möglichkeit für die Auswahl des zu exportierenden Produkttitels geschaffen
+* Bugfix für Preisrundungen bei Bundle Optionen
+* Export von nicht verfügbaren Bundle Optionen
+* Bugfix für fehlende Attribute bei Kindprodukten im XML Export
+* Bugfix für fehlerhafte Katalog Preisregeln bei konfigurierbaren Produkten
+* Bugfix ignoriere Kindprodukt Steuerklassen, falls auch die Preise der Kindprodukte ignoriert werden(Einstellung)
+
+'''Version 2.6.14'''
+* Erweiterung der redirect Unterdrückung für Modul Routen
+* Neue Option um Thumbnail Produktbilder an erster Stelle zu exportieren
+* Kunden/Gast Bestellzuordnung optimiert
+* Bugfix für teilweise doppelte Besteuerung von Versandkosten
+
+'''Version 2.6.13'''
+* Update der library auf Version 2.6.8
+* Erweitern von set_settings für die Behandlung von Array's als Konfigurations Elemente
+* Bufix für das entfernen von Shopgate-Coupon Produkten in Verbindung mit Flat Tables
+* Einbetten eines Selektor um die Steuerregeln für Netto Märkte zu aktivieren
+* Bugfix für die Behandlung von Variationsaufschlägen bei konfigurierbaren Produkten
+
+'''Version 2.6.12'''
+* Bugfix für die Verarbeitung der Lagerhaltung nach einem addOrder Request
+
+'''Version 2.6.11'''
+* Unterbindung von mobilen redirects kann jetzt konkret vom modul gesteuert werden
+* Aktualisieren der library auf Version 2.6.7
+* Bugfix für Übermittlung von Lieferungen über Plugin Funktion _cronSetShippingCompleted
+* Bugfix für die Berechnung der Produktpreise von Bundle Optionen
+
+'''Version 2.6.10'''
+* Auflösen von availableText Angaben durch Attribute die Optionsfelder haben
+* Bugfix für fehlende Produkte während des CSV Exportes
+* Bugfix für doppelte Stornoanzahl bei konfigurierbaren Produkten
+* Bugfix für den mobilen redirect durch Http Header
+
+'''Version 2.6.9'''
+* ermöglicht kundenbezogene Warenkorbpreisregeln
+* Kompatibilität alter PHP Versionen verbessert
+
+'''Version 2.6.8'''
+* Fehler bei Versandkosten und Lieferadressen ohne Steuer behoben
+* Versandmethoden aus der Plugin API werden nun mit korrektem Namen in der Bestellung angezeigt
+
+'''Version 2.6.7'''
+* Bugfix Kompatibilität zu Phoenix_CashOnDelivery (fehlende Auflistung der Gebühr)
+* Bugfix XML Produktexport (SalesPrice und UID Kindprodukt)
+
+'''Version 2.6.6'''
+* Nutzung von store basierten Attributetiteln
+* Bilder die "Nicht in der Gallerie" markiert sind und exportiert werden schließen Vorschaubilder aus
+* Redundanzbefreiung für CSV und XML Export
+* Bugfix für falschen Preis bei Produkten mit Katalogpreisregeln und Sonderpreisen
+
+'''Version 2.6.5'''
+* Genauere Versandmethoden in Detailansichten und Emails
+
+'''Version 2.6.4'''
+* Kategorie XML Export hinzugefügt
+* Kategorie CSV Export angepasst
+
+'''Version 2.6.3'''
+* Bugfix für das Auflösen von Shopgate Coupons bei aktiviertem MSRP
+* Gruppenproduktbilder vom Export entfernt wenn das Produkt deaktiviert wurde
+* Shopgate Library auf Version 2.6.6 aktualisiert
+* Bugfix Übermittlung von Stornierungen zu Shopgate
+* CMS Seite werden standardmäßig von der mobilen Weiterleitung ausgeschlossen
+
+'''Version 2.6.2'''
+* Produkt XML Export hinzugefügt
+* Produkt CSV Export angepasst
+* Shopgate Library auf Version 2.6.3 aktualisiert
+
+'''Version 2.6.1'''
+* Shopgate Library auf Version 2.6.2 aktualisiert
+* Kindprodukte welche nur in der Suche sichtbar sind werden nun mit exportiert
+
+'''Version 2.6.0'''
+* Fehler bei Bestellungen und Lieferadressen ohne Steuer behoben
+* Shopgate Library auf Version 2.6.1 aktualisiert
+* ermöglicht einen splitted Kategory Export
+* Verbessertes Label für die Verfügbarkeit von Nachbestellungen
+* Bugfix für das Auflösen von mobilen redirects für storeview Aufrufe ohne gültige Shopgate Konfiguration
+
+'''Version 2.5.14'''
+* Möglichkeit Bilder zu exportieren die "Nicht in der Gallerie" markiert sind
+* Alte Dateistruktueren wurden entfernt
+* Möglichkeit Produkte beim Export pro Kategorie nach neuestem Datum zu sortieren
+* Gutscheincode pro Adresse um Validierung zu sichern 
+
+'''Version 2.5.13'''
+* Erweiterung von get_settings um CustomerGroups
+* Erweiterung von check_cart um CustomerGroups
+* Erweiterung von get_customer um CustomerGroups
+* Setzen des Vary Header für Seiten die weitergeleitet werden können
+* Entfernen eines nicht mehr notwendigen Klassen Rewrites
+
+'''Version 2.5.12'''
+* Support von Versandmethoden auf Plugin Basis und dadruch vereinfachte Integration
+* Korrekter Export des Herstellerpreises
+
+'''Version 2.5.11'''
+* Fix für die Anzeige der Zahlungsdetails in der Bestellübersicht
+* Optimierung und Redundanzoptimierung für Preiskalkulation
+
+'''Version 2.5.10'''
+* Bugfix für den Export der Reviews als Model um das VoteRating zu unterstützen
+
+'''Version 2.5.9'''
+* Bugfix für das fälschlicherweise Übertragen von Optionen auf Folgeprodukte beim Export
+* Bugfix für den Export von Eltern-Kind Beziehungen bei Produkten
+* Standardmäßige Aktivierung der mobilen Weiterleitung nur für begrenzte Controller
+
+'''Version 2.5.8'''
+* Performance Optimierung für Kategorie und Review Export
+* Bugfix für den Export von Steuerklassen und Eltern Kind Beziehungen im US Modul
+
+'''Version 2.5.7'''
+* Erweiterte Shop Informationen beim ping an das Modul
+* Update Shopgate Library auf Version 2.5.4
+* Bugfix für den StoreView bezogenen Export von Reviews
+* Bugfix für den Export von Ratings bei Reviews
+
+'''Version 2.5.6'''
+* Bugfix für das Anlegen von ShopgateCoupons beim Bestellungsimport
+* Bugfix für die Übermittlung von Stornierungen an Shopgate
+* Bugfix für die Übermittlung von Versandstatus an Shopgate
+* verbesserte Preisberechnung für Versandkosten in check_cart
+
+'''Version 2.5.5'''
+* Aufheben eines Performance leaks beim CSV Export
+* Bugfix für einen semantischen Fehler
+
+'''Version 2.5.4'''
+* Update Shopgate Library auf Version 2.5.1
+* Erweiterung der beschreibbaren Eigenschaften über set_settings (e.g. enable_check_stock)
+* Einfügen von license header Texten für php Dokumente
+* Beim Exportieren von Gruppenartikel wird geprüft ob die Elternkategorie sichtbar ist
+
+'''Version 2.5.3'''
+* Bugfix: Doppelte Steuer bei Gebühren für Bezahlmethoden
+* Attribute welche als filterbar aber nicht sichtbar im Shop konfiguriert sind, können nun exportiert werden(neue Einstellung) und stehen Mobil zum Filtern zur Verfügung 
+
+'''Version 2.5.2'''
+* Verfügbarkeits-Text kann jetzt auf beliebige Produktattribute gemappt werden
+
+'''Version 2.5.1'''
+* Attribute der Elternprodukte werden nun bei den Kindprodukten mit ausgegeben
+
+'''Version 2.5.0'''
+* Update Shopgate Library auf Version 2.5.0
+* Warenbestandsabfrage in Echtzeit
+* Gewichtsbasierte Versandmethoden werden nun korrekt berechnet
+* Validierung der Textlänge bei Individualisierungsoptionen
+
+'''Version 2.4.33'''
+* Weitere Schritte für vereinfachte Installation
+
+'''Version 2.4.32'''
+* Bugfix für die ganzheitliche Lagerverwaltung bei checkCart und Integration von qtyIncrements
+* Bugfix für vertauschte Preise bei der checkCart Response 
+* Bugfix Kompatibilität zu Phoenix_CashOnDelivery
+* Lokalisierung für de_CH und de_AT hinzugefügt
+* Bugfix für nicht korrekt implementierte ShopgateConfig Eigenschaften
+
+'''Version 2.4.31'''
+* Feature Implementierung für erleichterte Installation 
+
+'''Version 2.4.30'''
+* Bugfix für die korrekte Umsetzung der Weiterleitungs-Konfigurations-Einstellung
+* Feature für das Abschalten des mobilen redirects für spezifische Controller, Kategorien oder Produkte
+* Bugfix Export EAN Code
+* Bugfix für das Verarbeiten des korrekten Stockitems bei CheckCart in Verbindung mit Configurables
+* Feature implementiert um eine automatische Anbindung an Shopgate bei Module Installation zu ermöglichen
+
+'''Version 2.4.29'''
+* Schreiben von payment informationen in das Payment-Model zur weiteren Verarbeitung von Magento
+* Bugfix mobile Validierung des Lagerbestands bei Configurable Produkten
+
+'''Version 2.4.28'''
+* Bugfix mobile Validierung des Lagerbestands bei Bundle Produkten
+
+'''Version 2.4.27'''
+* Bugfix Mapping für USPS Versand ab Version 1.8.0.0
+* Bugfix für den Export von AvailableText für ein Produkt
+* Coupon Fehlerhandling verbessert
+* Exportiert nun auch Anker Kategorie Ids vom Produkt
+* Update Shopgate Library auf Version 2.4.14
+* Bugfix für addOrder von Bundle Produkten die in falschen Preisen resultieren
+* Bugfix für das Ermitteln der maximalen wenn gar keine Optionen im Shop vorhanden sind
+
+'''Version 2.4.26'''
+* Titel für Versand- und Zahlmethoden von Shopgate sind jetzt konfigurierbar
+
+'''Version 2.4.25'''
+* Korrigierter Export von Lagerbeständen bei Bundles
+* Bugfix für das Exportieren der Verfügbarkeitsnachricht
+* Einbeziehen von Nachbestellungen beim Exportieren von Lagerbeständen für Bundles
+* Bugfix für das Prüfen der Verfügbarkeit
+* Wiederaufnehmen der Bundles als festen Produkttyp für den Export
+* Bugfix für das Ausschliessen von Optionen die nicht verfügbar sind beim Export
+
+'''Version 2.4.24'''
+* Verbessertes Fehlerhandling falls Produkte nicht verfügbar sind
+
+'''Version 2.4.23'''
+* Bugfix für den Export von Bundle-Produkten mit dynamischem Preis
+* Verbesserungen und Fehler Handling in der check_cart Methode
+* Automatisiertes Ermitteln der maximalen Optionanzahl für den Export
+* Systemkonfiguration für 'default_item_row_option_count' entfernt
+
+'''Version 2.4.22'''
+* Bugfix doppelte Nachname Gebühr im Zusammenspiel mit Phönix CashOnDelivery
+* Feature custom_fields für Bestellungen und Versand-/Rechnungsadressen werden nun übermittelt und gespeichert
+* Update Shopgate Library auf Version 2.4.13
+
+'''Version 2.4.21'''
+* Update Shopgate Library auf Version 2.4.12
+
+'''Version 2.4.20'''
+* Update Shopgate Library auf Version 2.4.10
+
+'''Version 2.4.19'''
+* Berücksichtigung der Steuereinstellungen beim Export von Individualisierungsoptionen
+* Export von Gruppen Produkten verbessert
+* Kompatibilität zu anderen Modulen durch Entfernung nicht notwendiger Model rewrites verbessert
+* Erstattete Produkte werden nun an Shopgate übertragen
+
+'''Version 2.4.18'''
+* Update Shopgate Library auf Version 2.4.9
+* Die Methode check_cart gibt nun neben den Coupons auch Warenkorbprodukte mit Lagerinformationen sowie Versand- und Zahlmethoden zurück, welche für gegebene Adresse verfügbar sind
+
+'''Version 2.4.17'''
+* Unterstützung von Backorders
+* Unterstützung von Phönix CashOnDelivery
+* Unterstützung von Individuellen Optionen bei konfigurierbaren Produkten
+
+'''Version 2.4.16'''
+* Bugfix ungültiger Klassenkonstantenaufruf für ältere PHP Versionen
+
+'''Version 2.4.15'''
+* Bugfix Steuerberechnung für Magento 1.4.x.x
+
+'''Version 2.4.14'''
+* verbessertes Fehlerhandhabung der getCustomer Methode und Library Update auf 2.4.8
+
+'''Version 2.4.13'''
+* Kunden welche sich Mobil registrieren werden nun zum Shop übertragen.
+
+'''Version 2.4.12'''
+* Bugfix Übersetzungen im Backend fehlerhaft
+
+'''Version 2.4.11'''
+* Produktsortierung innerhalb einer Kategorie für den Produktexport nun über das Magento Backend konfigurierbar
+
+'''Version 2.4.10'''
+* EVP/UVP Preise werden nun mit exportiert
+
+'''Version 2.4.9'''
+* Beim Produktexport werden nun die Upsell und Crossell Produkte berücksichtigt und mit exportiert
+* Unterstüzung von konfigurierbaren Produkten auf >=1.4.0.1 erweitert
+
+'''Version 2.4.8'''
+* Update Shopgate Library auf Version 2.4.3
+
+'''Version 2.4.7'''
+* Bugfix setQuoteItems im FrameworkController erweitert um konfigurierbare Produkte mit gewählter Option in Quote und Order korrekt abzubilden
+
+'''Version 2.4.6'''
+* Bugfix falsches Ansprechen einer Klassenkonstante im FrameworkController
+* Library update zur Speicherreduzierung und Performancesteigerung
+* Bugfix für erneutes Erfassen von Rechnungsanteilen und daraus resultierendem Betrugsverdacht
+* Bugfix für den Test ob ein Payment Update erfasst werden darf
+
+'''Version 2.4.5'''
+* Erweitern des Loggings für das Ermitteln der Versandmethode aus der ShopgateOrder
+* Bugfix für den mobilen Redirect von sichtbaren Kindprodukten von Konfigurierbaren auf das Elternprodukt
+* Bugfix für fehlerhaft aufgerufene Helper Methoden getParentIdsConfigurable and getParentIdsGrouped
+* Bugfix falsches Typhinting für USPS Mapper
+
+'''Version 2.4.4'''
+* Fehler beim Export des Aufpreises für Individualisierungsoptionen behoben
+
+'''Version 2.4.3'''
+* Anpassen der Modul Abhängigkeiten für die kürzlich implementierte Erweiterung des Shippings
+* Erweitern des Loggings für setSettings
+* Bugfix leeren des Konfigurations Cache nach dem Speichern durch setSettings
+
+'''Version 2.4.2'''
+* Rückgabewert von getAvailableMethods für Shopgate angepasst
+* Produkte mit Individualisierungsoptionen vom Typ File werden nun vom Export ausgeschlossen
+
+'''Version 2.4.1'''
+* Anpassen der Log-Statements für mehr Übersicht
+* Erweitern der load() und save() Methoden für die scope sensitive Speicherung in der Datenbank
+* Bugfix für das speichern von Leerwerten auf stores scope Ebene
+* Optimierung für das Cleanup der scope sensitiven Speicherung
+* Einbinden von versteckten settings variablen in die Verarbeitung von setSettings
+* Kalkulation von Coupons verbessert
+
+'''Version 2.4.0'''
+* Debug Funktionalität
+* Bugfix für Shopgate Coupons im US Plugin 
+* Bugfix für die nativen USPS Versandmethoden (präziserer Abgleich der Methoden)
+* Bugfix für die nativen USPS Versandmethoden ('Default' Carrier Mapping hinzugefügt)
+* Export nicht aktive Kategorien
+* Implementierung der load() und save() Methoden für ShopgatePluginApi->setSettings()
+* Bugfix für nicht in der Klasse registrierte Klassenvariablen mit Getter und Setter
+* Implementierung von Log Einträgen zum Debuggen in die Verarbeitungskette angestossen von helper('shopgate/data')->setShippingMethod()
+* Entfernen der Möglichkeit das Modul über setSettings zu deaktivieren
+
+'''Version 2.3.17'''
+* Bugfix für die Verarbeitung von USPS Shipping methoden in denen ein Array Index falsch angesprochen wurde
+
+'''Version 2.3.16'''
+* Filter für Eigneschaften beim Export
+* Beim OrderImport von nicht USPS Shipping Methoden kam es zu Fehlern weil Array falsch definiert war
+
+'''Version 2.3.15'''
+* Benutzerdefinierte Beschreibung Attributcode
+* Die Überprüfung der Coupon Codes in Magento 1.4.x.x hat teilweise zu Problem geführt
+* Beim OrderImport werden für USPS jetzt die nativen Shipping Models verwendet anstatt einem generischen (shopgate_fix) 
+
+'''Version 2.3.14'''
+* Konfiguration für Gewicht Einheit (kg,g,lb,oz) und automatische Vorkonfiguration
+* Neue Version der Library. Unterstützung von bis zu 100 Optionen beim Artikelexport
+* EAN Export, 'attribute code' für EAN kann auf Konfigurationseite definiert werden
+
+'''Version 2.3.13'''
+* Stornierung Bug Fix (Virtual Produkt)
+
+'''Version 2.3.12'''
+* Option (Ja/Nein) für Export sichtbare Unterproducts in Konfiguration
+* Zuordnung Original-Ids zu Shopgate Ids funktioniert auch für konfigurable Produkte
+* Varien_Autoloader Schwierigkeit mit Magento 1.4 (COD) überarbeitet
+
+'''Version 2.3.11'''
+* Die Zahlart wird nur noch als virtueller Artikel in die Bestellung eingetragen wenn die Kosten negativ sind
+* Bundles aus der Liste der exportierbaren Produkttypen entfernt. Export von Bundles bis auf weiteres "experimentell" 
+* Im US Plugin wird als Ausgangsgröße zur Gewichtsberechnung die Einheit Pfund (lbs) genommen
+* Gewichtsangabe wird nicht mehr grundet
+
+'''Version 2.3.10'''
+* Schwierigkeit mit Version 2.3.9. Erweiterung kann nichtg über Magento Connect geladen werden
+
+'''Version 2.3.9'''
+* Stornierung von VirtualProdukten wird ignoriert.
+* Beim Aufruf von get_settings wird als Standard die Steuerklasse für die Kundengruppe "NOT_LOGGED_IN" übergeben
+
+'''Version 2.3.8'''
+* Fehler beim Export des Aufpreises für Eingabefelder behoben
+* Fehler beim Export des Gewichts für Produkte mit Verpackungseinheiten
+* Magento EE unter 1.9.1.0 wird jetzt aufgrund der gleichen Codebasis wie Magento CE unter 1.5.0.0 behandelt
+
+'''Version 2.3.7'''
+* Bugfix für die Auswahl der Bezahlarten bei Modulen von Drittanbietern
+
+'''Version 2.3.6'''
+* Bugfix für Magento 1.4. Schnittstellen können nicht angelegt werden und Bestellungen mit Zahlart COD können nicht importiert werden
+
+'''Version 2.3.5'''
+* Geschenkverpackung für Magento Enterprise ab Version 1.10
+
+'''Version 2.3.4'''
+* Verbesserter Umgang bei Aufpreisen für Artikeloptionen, die im Elternprodukt hinterlegt sind
+
+'''Version 2.3.3'''
+* Fehler beim Einlösen von Gutscheinen behoben
+* Die Zahlart wird jetzt als virtueller Artikel in die Bestellung eingetragen
+
+'''Version 2.3.2'''
+* Shopgate Gutscheine gelten nicht mehr als Produkte, die verschickt werden müssen. Sie haben dadurch keinen Einfluss mehr auf den "completed" Status einer Bestellung
+* Bugfix für Magento 1.4 (Schwierigkeit mit Autoloader, wenn ein Model nicht existiert)
+* Bugfix für US, wenn der Country Code in der Adresse fehlt
+* Liste der Region-Codes erweitert
+
+'''Version 2.3.1'''
+* Wenn für ein Produkt ein Sonderpreis und eine Katalogregel definiert ist, wird der jeweils niedrigere Preis exportiert
+* Verbesserung beim Export der Steuerklasse, wenn keine Regel definiert ist
+* Bugfix für Magento 1.4, Mobile Weiterleitung
+
+'''Version 2.3.0'''
+* Update der ShopgateLibrary auf Version 2.3.2
+* Art der Weiterleitung einstellbar. Entweder immer oder nur auf Produktdetailseite, Kategorielisting und Startseite
+* Anzeigen der bei Shopgate ausgewählten Versandart
+* Der Text für die verfügbarkeit eines Artikels kann jetzt optional aus einem Attribute ausgelesen weren
+* Der Gutscheinbetrag eines Shopgate Artikels wird im Feld "Originalpreis" eingetragen
+
+'''Version 2.2.7'''
+* Fehler im ShopgateConnect behoben
+* Der Lagerbestand kann jetzt auch negativ werden je nachdem wie das Produkt/System eingestellt ist
+ 
+'''Version 2.2.6'''
+* Englische Bezeichnung von "child products" zu "subproducts" geändert
+* Bestellstatus wird jetzt immer gesetzt
+* Der Produkt-Export exportiert jetzt nur noch die Produkte aus dem ausgewählten Store
+* Warenkorb Preisregeln werden beim Hinzufügen von Bestellungen nicht mehr berücksichtigt
+* Die Magento internen Zahlungsarten werden jetzt unterstützt
+
+'''Version 2.2.5'''
+* Update der ShopgateLibrary auf Version 2.2.1
+* USA- und EU-Plugin wurden zu einem Modul zusammengefügt
+* API zugangsdaten können in der config jetzt auch leer sein
+* Wenn keine API-Daten eingegeben wurden, werden keine API aufrufe an Shopgate versucht
+* Beim versuch den Lagerbestand zu aktualisieren wurde ein Fehler behoben, wenn der Artikel keinen Lagerbestandseintrag hat
+* Der Lagerbstand wird nicht aktualisiert, wenn der Bestand kleiner als 0 sein wird
+* Die Zahlungsart "CheckMo" wird jetzt bei Vorkasse benutzt 
+
+'''Version 2.2.4'''
+* überarbeiteter Export von konfigurierbaren Produkten für bessere Performance
+* Fehler bei der Berechnung von Gutscheinen behoben
+* Fehler beim Export von Store Labels behoben
+
+'''Version 2.2.3'''
+* Fehler behoben, bei dem das Bearbeiten von Nicht-Shopgate-Bestellungen u.U. nicht mehr bearbeitet werden konnten
+
+'''Version 2.2.2'''
+* Bestellbestätigungsmail kann jetzt aus dem Magento Shop aktiviert werden
+* Der Bestellstatus von PayPal-Bestellungen wird jetzt auf "processing" gesetzt
+* Optional kann der Versand jetzt auch an Shopgate übermittelt werden, wenn der Status "completed" ist, auch wenn kein Versandauftrag vorhanden ist
+* Fehler im Gutscheinsystem wurden behoben
+* Ein Bug in der Berechnung der Nachnahmegebühren wurde behoben. Diese werden jetzt nicht mehr Doppelt aufgelistet
+* Beim Zugriff auf eine Shopnummer über mehrere Domains wurde ein Fehler behoben
+* Fehler beim Hinzufügen von Bestellungen mit Checkbox-Optionen wurde behoben
+
+'''Version 2.2.1'''
+* Template für die Zahlungsarten für den Kunden und die eMails hinzugefügt
+* Street2 wird jetzt bei Adressen eingetragen
+
+'''Version 2.2.0'''
+* Update der ShopgateLibrary auf Version 2.2.0
+* Die Funktionen check_cart und redeem_coupons werden unterstützt. Damit ist die Live-Abfrage von Gutscheinen im Shopsystem möglich
+* Die Zahlungsart 'shopgate_generic' ist jetzt 'mobile_payment'
+* Der Status in neuen Bestellungen für die Zahlungsarten 'shopgate' und 'mobile_payment' kann jetzt eingestellt werden
+* Fehler beim hinzufügen von Shopgate Gutscheinen in Magento 1.4 behoben
+* Fehler im erstellen der Liefer- und Rechnungsadresse beim hinzufügen einer Bestellung 
+
+'''Version 2.1.51'''
+* Fehler beim updateOrder behoben
+
+'''Version 2.1.50'''
+* Export optionen zum auswählen der Beschreibung und der Bilder (Eltern, Variationen, Beide) 
+
+'''Version 2.1.49'''
+* Update der ShopgateLibrary auf Version 2.1.26
+* Fehler beim updateOrder behoben - Freigabe von Bestellungen durch Shopgate
+* nicht mehr verwendete Funktionen entfernt
+
+'''Version 2.1.48'''
+* Anzeigen der Mobilen Version einer CMS-Seite
+* Support für das Modul "CashOnDelivery" hinzugefügt
+* Das eintragen des Zahlungsstatus wurde überarbeitet
+* BugFix für das Hinzufügen von Adressen wenn kein Staat übergeben wurde
+* Reduzierung des Lagerbestandes nach einer Bestellung
+
+'''Version 2.1.47'''
+* Update der ShopgateLibrary auf Version 2.1.25
+* Katalog Preis Regeln werden jetzt beim export mit berücksichtigt
+* Unterstützung des "DreamRobot_Checkout" Moduls um Bestellungen von Magento an DreamRoboto zu senden
+* neues SQL Installationsskript welches ab dieser plugin Version genutzt wird
+* Berechnungsfehler beim Hinzufügen von Bestellungen behoben, wenn die Proukte exklusive Steuern im Backend eingetragen werden 
+
+'''Version 2.1.46'''
+* Kompatibilität mit Magento EE 1.13.0 hergestellt
+* Fehler im SQL upgrade skript behoben
+
+'''Version 2.1.45'''
+* Teilstornierungen werden jetzt auch an Shopgate gemeldet
+* Teilbesetllungen werden jetzt besser an Shopgate übertragen
+* Im Backend kann jetzt auch global nach Shopgate Bestellnummern gesucht werden 
+
+'''Version 2.1.44'''
+* BugFixes
+
+'''Version 2.1.43'''
+* Update der ShopgateLibrary auf Version 2.1.24
+* Shopgate Gutscheine werden jetzt separat behandelt
+* Preisfehler beim hinzufügen von bestellungen behoben. Die Bestellung enthält jetzt die Preise, die bei Shopgate angegeben wurde. 
+* Update der Bestellungen überarbeitet
+ 
+'''Version 2.1.42'''
+* Gestapelte Produkte werden nun in die jeweiligen Produktanzahlen aufgetrennt
+
+'''Version 2.1.41'''
+* Produkte, die Qty Inkremente nutzen, werden nun als gestapelte Produkte exportiert
+
+'''Version 2.1.40'''
+* Fehler auf den Produkt-Detailseiten behoben wenn die Kompilierung aktiviert ist
+* Magento Edition wird jetzt auch in der PluginInfo gelistet
+* Mobile Weiterleitung kann jetzt auch ausschließlich mittels JavaScript ausgeführt werden
+
+'''Version 2.1.39'''
+* Update der ShopgateLibrary auf Version 2.1.23
+* Fehler in der Mobilen Weiterleitung behoben
+
+'''Version 2.1.38'''
+* Update der ShopgateLibrary auf Version 2.1.22
+* Option zum Exportieren von mehreren Stores
+* Zahlungsarten gruppiert
+* Fehler beim hinzufügen von Coupons behoben
+
+'''Version 2.1.37'''
+* Update der ShopgateLibrary auf Version 2.1.19
+* Verwenden der neuen Weiterleitung
+* BugFixes for Magento 1.4
+
+'''Version 2.1.36'''
+* BugFixes
+
+'''Version 2.1.35'''
+* Beim import der Bestellungen wird jetzt sicher gestellt, das die Preise aus Shopgate genommen werden
+* Steuer der Versandkosten werden jetzt berechnet
+* kleinere Fehler behoben
+* vor und nach add_order und update_order wird ein eventdispatcher aufgerufen
+
+'''Version 2.1.34'''
+* Encoding problem mit dem euro-zeichen behoben
+* Berechnunug der Steuern für Händler außerhalb Deutschland gefixt
+* Version des Plugins wird jetzt in allen einstellungen sichtbar
+* Gewicht wird jetzt als ganzzahl exportiert 
+
+'''Version 2.1.33'''
+* Update der Library auf 2.1.18
+* Die Einstellungen wurden auf die Webseite erweitert und stehen jetzt für alle Views zu verfügung
+* Unterstützung des Grundpreis-Moduls von 'DerModPro' (http://www.magentocommerce.com/magento-connect/grundpreis-modul-pangv.html)
+* Diverse Verbesserungen des Paymentsystems
+
+'''Version 2.1.32'''
+* Problem beim Verwenden json-Funktionen behoben
+* Einstellungen angepasst
+* Zeilenumbrüche am Anfang und Ende von Optionsnamen werden jetzt entfernt
+* Problem beim Erstellen von Gutschriften behoben
+
+'''Version 2.1.31'''
+* "Debug-Einstellungen" heißt jetzt "Verbindungseinstellungen"
+* unterstützt wieder Magento 1.4.x
+
+'''Version 2.1.30'''
+* Lagerbestände werden jetzt immer als ganze Zahlen exportiert, Nachkommastellen werden abgeschnitten
+* Beschreibungstexte in Modulkonfiguration und Bestellungskommentaren überarbeitet
+
+'''Version 2.1.29'''
+* Bestellungen wieder auf on-hold setzen, wenn diese nicht zum Versand freigegeben sind
+
+'''Version 2.1.28'''
+* Bei Shopgate reduzierte Preise werden im Bestellungsimport mit übernommen
+* Update Library auf 2.1.17
+
+'''Version 2.1.27'''
+* Fix url_deep für produkte, welche einzeln nicht sichtbar sind
+
+'''Version 2.1.26'''
+* Prüfe beim Export von Bildern, ob das Bild an sich auch gesetzt ist
+* Zietliche Verzögerung beim Speichern der Status Historie
+* Problem mit dem StoreCode in der URL beim Aufruf der Plugin-API umgangen
+* htaccess Informationen für Bilder im Export
+
+'''Version 2.1.25'''
+* Funktionalitäten in Observer ausgelagert
+* Option um freigegebene Bestellungen direkt als bezahlt zu markieren
+* Option "Ist Ihr Shop bei Shopgate frei geschaltet" hinzugefügt
+
+'''Version 2.1.24'''
+* Produkte exportieren, welche nur in der Suche verfügbar sind
+
+'''Version 2.1.23'''
+* BugFix beim Importieren der Optionen
+* Ignoriere den Warenbestand beim Bestellungsimport
+
+'''Version 2.1.22'''
+* Export / Import von eingabefeldern
+* Exportiere Bilder von Konfigurierbaren Produkten für die verknüpften Artikel
+
+'''Version 2.1.21'''
+* BugFix
+
+'''Version 2.1.20'''
+* BugFix
+
+'''Version 2.1.19'''
+* Ignoriere Platzhalter-Bilder bei Kind-Produkten
+* Bestellstatus korrigiert
+* Nutze Beschreibung der Gruppen-Produkte
+* Exportiere Bilder der Gruppen-Produkte
+* Stornierung von Bestellungen (Beta) 
+
+'''Version 2.1.18'''
+* BugFixes
+ 
+'''Version 2.1.17'''
+* Export Reviews-CSV Fix
+* Problem mit Konfigurierbaren produkten behoben
+
+'''Version 2.1.16'''
+* Fix Export Optionen für Downloads
+
+'''Version 2.1.15'''
+* Aktualisiere Library auf 2.1.12
+
+'''Version 2.1.14'''
+* Aktualisiere Library auf 2.1.11
+* Export Download Produkte
+* Export-Filter
+
+'''Version 2.1.13'''
+* Probleme mit dem Magento-Compiler behoben
+
+'''Version 2.1.12'''
+* Exportfehler von "Kurzbeschreibung + Beschreibung" behoben
+
+'''Version 2.1.11'''
+* Aktualisierung der Library auf 2.1.9
+
+'''Version 2.1.10'''
+* Fehler im Checkout für Magento 1.4 behoben  
+
+'''Version 2.1.9'''
+* bei den Produktbildern wird das Basis-Bild des Produkts jetzt als erstes Bild und auch dann exportiert, wenn es für die Produktbildergalerie deaktiviert wurde
+
+'''Version 2.1.8'''
+* Exportiere Grouped-Product ohne SKU korrekt mittels id
+
+'''Version 2.1.7'''
+* Allgemeinen Fehler behoben
+* Fehler beim erstellen der redirect-keywords behoben
+
+'''Version 2.1.6'''
+* Bugfix in den Einstellungen. Im Export wird die eingestellte Wäheung wieder übernommen
+* nutzt die Shopgate Library 2.1.8
+
+'''Version 2.1.5'''
+* Erweitertes Logging bei addOrder/updateOrder
+* Option um die Preise der Eltern-Produkte zu ignorieren
+
+'''Version 2.1.4'''
+* Aktualisierung der Library auf 2.1.6
+* active_status im export
+* min/max Bestellmenge bei Bestelllungen ignorieren
+ 
+'''Version 2.1.3'''
+* Option um Zeilenumbrüche in Kurzbeschreibung und Beschreibung zu konvertieren
+
+'''Version 2.1.2'''
+* Fehler beim Export der Bilder von Kind-Elementen behoben
+* Option zum Ignorieren der Beschreibungen von Varianten
+
+'''Version 2.1.1'''
+* Aktualisierung der Library auf 2.1.4 um einen Internen Fehler zu beheben
+
+'''Version 2.1.0'''
+* Neue Library 2.1.0
+
+
+'''English'''
+
+'''Version 2.9.17'''
+* solved issue with free products
+* get_settings was extended to export payment_methods
+
+'''Version 2.9.16'''
+* Fixed bug with export tax classes
+* implement own payment fee
+* optimize OAuth connection
+* Update to library version 2.9.19
+
+'''Version 2.9.15'''
+* Added payment mapping support to v1.1.8+ for Paymentnetwork_Pnsofortueberweisung plugin, tested on magento 1.4.1.1+
+* Added support to Mage_BankPayment (lower versions of Phoenix_BankPayment)
+* Removed invoice creation from auth_only Authorize.net orders
+* Fixed issue with cancellations, refund will not ba captured as full cancellation anymore
+* Fixed issue with missing/wrong product weights in shipping rate calculation process
+* Fixed issue with wrong order states for Magento Banktransfer payment method
+* Added fix for wrong prices of child products in case the price was modified after the child product was created
+
+'''Version 2.9.14'''
+* Fixes problems in price calculation for child products
+* Fixes problems bundle options
+* Fixes problems whit the magento compiler
+* Fixes problems with the status from bilsafe orders
+
+'''Version 2.9.13'''
+* Fixes problems with wrong order status in combination with payment method sofortueberweisung
+* Fixes wrong tax classes on child products during product export
+* Improves export of custom options
+* Improves mapping of order status/state during addOrder, orders placed with prepayment will now also take care of the "mark unblocked orders as paid" configuration
+* Upsell products of parent products will now also be exported on related childproducts
+* Fixes problem with differing prices of variants
+* Adds new configuration option for also exporting low resolution product images
+* Fixes problems with missing order status on paypal orders
+
+'''Version 2.9.12'''
+* Custom options on bundle products are now supported
+* Fixed problems on synchronising billsafe orders
+* Fixed problems with missing shipping methods in check_cart
+* Fixed problems with wrong status of cod orders after import
+* Fixed problems with wrong prices of bundle products
+* Fixed problems with product relation export
+* Stock information of backordered products will now be exported too
+
+'''Version 2.9.11'''
+* Fixed problems with blocked or unpaid orders
+* Fixed problems with differing shipping costs and Paypal Express orders
+* Fixed problems on create default shipping and billing addresses
+* Fixed problems with wrong available text
+* Fixed problems with product sorting
+* Fixed problems additional cost for options
+* Fixed separator for weight
+* Fixed stock availability
+
+'''Version 2.9.10'''
+* fixed problem when importing orders into magento
+* fixed problem when magento adminnotification module is disabled
+
+'''Version 2.9.9'''
+* additional configuration field for export of UPC 
+* fixed caching problem with header files
+* additional checks for oauth connection 
+* improved price export for bundle products without required elements
+* native paypal mapping if webiste payments pro is active to paypal express
+* adjusted xml image export of child products according to config settings 
+
+'''Version 2.9.8'''
+* missing js for oauth and redirects
+* improved native support for payment methods to 1.4.0.1
+* Msp_CashOnDelivery support
+* Firegento support (MageSetup and GermanSetup)
+* Amasty_Rules support
+
+'''Version 2.9.7'''
+* improved Bundle Options
+* adjusted delivery time attribute for older versions
+* fixed UPC bug
+* improved native support for payment methods to 1.4.0.1
+* fixed bug in warehouse management
+* Phoenix_Banktransfer as native payment method
+* minimized double order as error despite the lack of order
+* improved child product data export
+* Performance improved significantly in mobile forwarding
+* support of group prices from 1.4.x to 1.6.x
+* notification system  of Magento used to indicate plugin updates
+
+'''Version 2.9.6'''
+* tax calculation for coupons
+* fix for relations of child and parent products on import
+* price calculation for additional costs on custom options fixed
+* native implementation of billsafe payment
+* native implementation of sofort payment
+* default title for bundle product relations fixed
+* fix for missing order status and total due on paypal website payments pro
+* mapping for order status > 1.6
+* support of virtual products
+
+'''Version 2.9.5'''
+* fixed bug for catalog price rules in orders
+* stock issue with parent products fixed(CSV)
+* improved bundle product export, stock and price handling
+* prevent export of inactive grouped product children
+* fixed register_customer error message
+* improved mobile redirect for special product setup
+* fixed caching issue of attributes in product export
+* improved export of tier prices
+* native integration of Amazon and ePay improved
+* support for virtual products added
+* status mapping on order import improved
+
+'''Version 2.9.4'''
+* stock issue with parent products fixed(XML)
+* library update to 2.9.3
+* fixed attribute set caching in product export
+* support "DerModPro Base Price" extension added
+* honor export parent name configuration for product XML export
+* native Authorize.net implementation
+* native epay implementation
+* improved Paypal Website Payments Pro integration
+* improved compatibility with Magento version < 1.5
+
+'''Version 2.9.3'''
+* added caching on export to work with magento cache 
+* Support for Organic Internet SimpleConfigurableProducts 
+* Fixed installation problems < 1.4.1.x 
+* Improved inventory management 
+* Improved compatibility with catalog price rules on order import 
+* Paypal Website Payments Pro integrated as native payment method 
+* Improved tax handling for shipping costs for tax-free countries 
+* refactored Mobile Redirect to work with native Magento Caching
+
+'''Version 2.9.2'''
+* fixed problem with errors in add_order in combination with shopgate_coupons
+* Extended payment information in magentofor PayPal orders
+* fixed error product image export for XML
+* removed unneeded observer
+* improved compatibility to magento <= 1.4.1.0
+* added support for PayPal Website Payments Pro in magento 1.4.x.x and 1.5.x.x
+* fixed error with wrong prices in add_order when catalog pricerules were used
+
+'''Version 2.9.1'''
+* honor thumbnail image first setting in XML export
+* improve product description XML export
+* compatibility to usps 3rd party extension added
+* exports categories that are excluded from main menu as inactive
+* memory issue with Varien_Image_Adapter_Gd2 fixed
+* bugfix for missing shipping method in combination with bundle products
+* fixed buyable state in check_cart when product is out of stock but backorderable
+* tier prices for all groups will be exported for every customergroup separately
+* new configuration for first product image
+* excluded products with required custom option of type file from csv export
+* add configuration to switch between prices form index and from product during item export
+
+'''Version 2.9.0'''
+* bugfix in ping action for magento version < 1.6
+* performance improvement on product export
+* improved real time stock check
+* bugfix for wrong group product prices in XML
+* bugfix for wrong child product prices in case price offset is used in parent product in CSV
+* coupon value also honors option prices
+* improved stock export for XML
+* library update to 2.9.1
+* reviews as XML
+
+'''Version 2.8.4'''
+* Update der Library auf Version 2.8.10
+
+'''Version 2.8.3'''
+* extended the sort options of products in categories
+* improved export of available text for bundle products
+* shipping costs at shopgate now gets refunded only, when full shipping amount is refunded at Magento
+* implementation of a new configuration option to force the export of selected product attributes as properties
+* XML support for bundle options
+
+'''Version 2.8.2'''
+* better support for 1.4.x to 1.5.x
+
+'''Version 2.8.1'''
+* code style adjustments
+* native integration of amazon payments
+* library update to 2.8.6
+* code cleanup
+* additional option to write custom fields into the order status history as comment
+
+'''Version 2.8.0'''
+* library update to 2.8.5
+* adjusted grouped product export
+* order synchronisation added (new library function get_orders)
+* clean up for old code parts
+* improved bundle product export
+* improved exception handling
+* ensure that products get loaded storeview sensitive
+
+'''Version 2.7.5'''
+* if available coupon labels get transferred instead of coupon titles
+* updated library to version 2.7.4
+
+'''Version 2.7.4'''
+* bugfix for fallback shipping method shopgate_fix
+
+'''Version 2.7.3'''
+* new configuration to export categories included to navigation menu only 
+* bugfix for group products without children
+* bugfix for fedex api shipping error 
+
+'''Version 2.7.2'''
+* Bugfix for Oauth
+
+'''Version 2.7.1'''
+* bugfix for the usage of a not anymore existent class constant
+
+'''Version 2.7.0'''
+* implementation of a connection-manager
+* changed the authentication to oauth
+* update of the Shopgate library to version 2.7.2
+* bugfix for the export of the default available text
+* optimized processing of shipping methods on checkCart
+* setting the customer prefix on order processing
+* bugfix display name of shipping method in transactional mails
+* exports category thumbnail before image
+* improved export of backorderable products
+* improved product export of parent<->child relations with uncommon child visibility settings
+
+'''Version 2.6.16'''
+* bugfix wrong tax calculation of shipping costs
+* processing of the discount tax configuration
+* bugfix for the extraction of storeviewid for given shopnumber
+* allow grouped products to be in more than one category
+* bugfix display name of shipping method
+* implemented extended output on get_settings
+
+'''Version 2.6.15'''
+* update of library to version 2.6.10
+* added possibility to choose which product name should be exported (child or parent)
+* bugfix for rounding issues with bundle options
+* export of unavailable bundle options
+* bugfix for missing attributes in child products in the xml export
+* bugfix for wrong calculated catalog price rules of configurable products
+* bugfix in case of child product price is ignored, ignore child products tax class too
+
+'''Version 2.6.14'''
+* extended the redirect suppression for module routes
+* new option to export thumbnail product images at first
+* improved customer/guest order mapping
+* bugfix for taxes on shipping costs being applied twice in some cases
+
+'''Version 2.6.13'''
+* updated library to version 2.6.8
+* extended set_settings for treatment of array's as core_config_data elements
+* bugfix for the removal of shopgate-coupon products in relation to flat tables
+* implemented a selector to trigger the tax processing for net markets
+* bugfix for processing the variatoin surcharges of confgurable products
+
+'''Version 2.6.12'''
+* bugfix for the processing of the inventory after an addOrder request
+
+'''Version 2.6.11'''
+* suppression of mobile redirects is no explicit controllable through the module
+* update of the library to version 2.6.7
+* bugfix for synchronisation of shippings via plugin method  _cronSetShippingCompleted
+* bugfix for the calculation of product prices of bundle options
+
+'''Version 2.6.10'''
+* support of availableText export with attributes containing options
+* bugfix for missing products in item csv export
+* bugfix for double amount of cancellation items in case of configurable products
+* bugfix for mobile redirecting through http header
+
+'''Version 2.6.9'''
+* allows customer related shopping cart price rules
+* improved compatibility of old PHP versions
+
+'''Version 2.6.8'''
+* fixed error with shipping costs and delivery addresses without taxrates
+* plugin api shipping methods get imported to orders with correct display name  
+
+'''Version 2.6.7'''
+* fixed compatibility to phoenix_cashondelivery (missing cod fee in order view)
+* Bugfix XML product export (SalesPrice and UID child product)
+
+'''Version 2.6.6'''
+* using attribute label store based on export
+* removed thumbnail images for export of excluded gallery images
+* removed redundancy for xml and csv export
+* bugfix for wrong product prices in combination with catalog price rules and special prices
+
+'''Version 2.6.5'''
+* detailed information for shipping in detail view and mails
+
+'''Version 2.6.4'''
+* added category XML export
+* modified category CSV export
+
+'''Version 2.6.3'''
+* bugfix for processing Shopgate Coupons on activated msrp
+* removed group product images if produkt is disabled
+* update shopgate library to version 2.6.6
+* bugfix in synchronization of order cancellations to shopgate
+* excluded cms pages from mobile redirect on default
+
+'''Version 2.6.2'''
+* added product XML export
+* modified product CSV export
+* update shopgate library to version 2.6.3
+
+'''Version 2.6.1'''
+* update shopgate library to version 2.6.2
+* export of only in search visible child products
+
+'''Version 2.6.0'''
+* fixed error with orders and delivery addresses without taxrates
+* update shopgate library to version 2.6.1
+* allow splitted category export
+* improved backorder label
+* bugfix for handling of mobile redirects of storeview calls without a valid shopgate configuration
+
+'''Version 2.5.14'''
+* possibility to export images which are marked as excluded in gallery
+* clean up of old file structure
+* possibility to export products in categories sorted by newest to oldest
+* added address coupon add to ensure validation
+
+'''Version 2.5.13'''
+* extended get_settings with customergroups
+* extended check_cart with customergroups
+* extended get_customer with customergroups
+* setting of vary header for possibly redirectable pages on dependency of user-agent
+* removal of an not needed class rewrite
+
+'''Version 2.5.12'''
+* supporting shipping methods via plugin down to 1.4.x
+* correct export of manufacturer suggested retail price
+
+'''Version 2.5.11'''
+* proper displaying of payment data in order details
+* code optimization to remove redundancy in price calculation 
+
+'''Version 2.5.10'''
+* bugfix for exporting reviews as model to support VoteRating
+
+'''Version 2.5.9'''
+* bugfix for the not properly transmitting options to following products on export
+* bugfix for exporting parent-child relations on products
+* activating the mobile_redirect only for limited controllers on default
+
+'''Version 2.5.8'''
+* Performance boost on reviews and categories
+* Bugfix for tax class export und parent child relations in us module
+
+'''Version 2.5.7'''
+* extended shop information on pinging the module
+* update shopgate library to version 2.5.4
+* bugfix for storeView filtered review export
+* bugfix for exporting vote ratings on review export
+
+'''Version 2.5.6'''
+* bugfix for orderimport including ShopgateCoupons
+* bugfix for transmitting order cancelations to shopgate
+* bugfix for transmitting shipping updates to shopgate
+* improved cost calculation of shipping methods in check_cart
+
+'''Version 2.5.5'''
+* remove of a performance leak on csv export
+* bugfix for a semantic error
+
+'''Version 2.5.4'''
+* update Shopgate Library to version 2.5.1
+* extended the writeable properties through set_settings (e.g. enable_check_stock)
+* inserted license header texts for php documents
+* the visibility of the parent category on export of grouped products will be validated
+
+'''Version 2.5.3'''
+* bugfix for wrong taxes on payment method fees
+* filterable attributes that are not visible in frontend can be exported now(configurable in shop settings) and are available as filter mobile too 
+
+'''Version 2.5.2'''
+* availalbeText can now be mapped onto any product attribute
+
+'''Version 2.5.1'''
+* attributes of parent products are also added to the simples
+
+'''Version 2.5.0'''
+* update Shopgate Library to version 2.5.0
+* check stock in realtime
+* allow weight based table rate or api shipping methods
+* add text length validation of individual product options
+
+'''Version 2.4.33'''
+* A few more steps for easier integration and installation
+
+'''Version 2.4.32'''
+* bugfix for overall stock handling in checkCart and integration of qtyIncrements
+* bugfix for switched unit_amount prices in checkCart response
+* fixed compatibility to phoenix_cashondelivery
+* added localisation for de_CH and de_AT
+* bugfix for not properly implemented ShopgateConfig properties
+
+'''Version 2.4.31'''
+* Feature implementation for easier setup and integration 
+
+'''Version 2.4.30'''
+* bugfix for the proper realization of the redirect configuration flag
+* feature for deactivation the mobile redirect for specific controllers, categories or products
+* bugfix export of ean code
+* bugfix for processing of the correct stockitem on checkCart in conjunction with configurables
+* feature implemented to offer automated integration into shopgate after module installation
+
+'''Version 2.4.29'''
+* writing payment information into payment-model for further processing in magento
+* bugfix for mobile validation of stock inventory on configureable products
+
+'''Version 2.4.28'''
+* bugfix mobile validation of stock inventory on bundle products
+
+'''Version 2.4.27'''
+* bugfix mapping of USPS shipping method for magento 1.8.0.0
+* bugfix for the export of products AvailableText
+* improved error handling for coupons
+* add support export of category anchor products
+* update shopgate library to version 2.4.14
+* bugfix for addOrder of bundle products which did result in different prices
+* bugfix for checking max option count when there are no options in the shop at all
+
+'''Version 2.4.26'''
+* title for shipping and payment methods from shopgate are configurable now
+
+'''Version 2.4.25'''
+* Corrected the exported inventory for bundle products
+* Bugfix for exporting the availability messages
+* Including backorders while exporting inventory for bundles
+* Bugfix for the test of product availability
+* Reintegrate bundles as common produkttype for the export
+* Bugfix for exclusion of not available options while exporting
+
+'''Version 2.4.24'''
+* improved error handling if product is out of stock
+
+'''Version 2.4.23'''
+* Bugfix for the export of bundles with dynamic price
+* Optimisations and error handling in method check_cart
+* Automated retrieval of the maximum optioncount for product export
+* removed system configuration 'default_item_row_option_count'
+
+'''Version 2.4.22'''
+* Bugfix for wrong payment fee in combination with Phoenix CashOnDelivery
+* Feature custom_fields for orders billing- and shipping addresses now gets transferred and saved to related entity as well
+* update Shopgate library to version 2.4.13
+
+'''Version 2.4.21'''
+* update Shopgate library to version 2.4.12
+
+'''Version 2.4.20'''
+* update Shopgate library to version 2.4.10
+
+'''Version 2.4.19'''
+* Add support of tax settings during export of product custom options
+* Improved export of grouped products
+* Improved compatibility to other modules by removing unneeded model rewrites
+* Refunded articles now get transferred to shopgate
+
+'''Version 2.4.18'''
+* update Shopgate library to version 2.4.9
+* method check_cart now also returns cart item stock information and shipping and payment methods which are available for cart address
+
+'''Version 2.4.17'''
+* Added support for backorders in items csv
+* Added support for Phönix CashOnDelivery
+* Added support for individual options at configurable products
+
+'''Version 2.4.16'''
+* Bugfix invalid class constance call in old php versions
+
+'''Version 2.4.15'''
+* Bugfix tax calculation for magento 1.4.x.x
+
+'''Version 2.4.14'''
+* improved error handling of getCustomer method and update library to 2.4.8
+
+'''Version 2.4.13'''
+* customer which register mobile will be transferred to the shop
+
+'''Version 2.4.12'''
+* Bugfix translations in backend incorrect
+
+'''Version 2.4.11'''
+* Product sorting within categories for export now configurable through magento backend
+
+'''Version 2.4.10'''
+* support msrp(merchant suggested retail price) for product export
+
+'''Version 2.4.9'''
+* Added support for crossell and upsell products on item export
+* extend support for configurable products to magento version >= 1.4.0.1
+
+'''Version 2.4.8'''
+* Update shopgate library to version 2.4.3
+
+'''Version 2.4.7'''
+* Bugfix setQuoteItems in FrameworkController extended to support configurable products with selected option in quote and order
+
+'''Version 2.4.6'''
+* Bugfix incorrect call of class constant in FrameworkController
+* Library update to increase performance and decrease memory allocation
+* Bugfix for capturing already invoiced parts and the upcoming fraud suspection
+* Bugfix for the check if a payment update is allowed to be captured
+
+'''Version 2.4.5'''
+* Extended the logging for considering the proper shipping methode from ShopgateOrder
+* Bugfix for the mobile redirect of visible child products of configurables to the super product
+* Bugfix for wrong called helper methods getParentIdsConfigurable and getParentIdsGrouped
+* Bugfix wrong typehinting for USPS mapper
+
+'''Version 2.4.4'''
+* fixed error on exporting the additional amount of input fields (custom options)
+
+'''Version 2.4.3'''
+* Adjustment of the module dependencies for the newly implemented extension of the shippment
+* Extended the logging for setSettings
+* Bugfix clearing the config cache after saving through setSettings
+
+'''Version 2.4.2'''
+* corrected return value of getAvailableMethods at Shopgate shipping method
+* excluded products with required custom option of type file from csv export
+
+'''Version 2.4.1'''
+* alteration of the log-statements for a better usability
+* extending the load() and save() methods for scope sensitive persistence
+* bugfix for saving emtpystrings to the database on stores scope level
+* optimization of the cleanup method for scope sensitive persistence
+* include of hidden setting values into the processing of setSettings
+* calculation of Coupons improved
+
+'''Version 2.4.0'''
+* debug functionality
+* bugfix for shopgate coupons at the us plugin
+* bugfix for the native USPS shipping methods (more precise method comparison)
+* bugfix for the native USPS shipping methods ('Default' carrier mapping added)
+* export hidden categories
+* implementation of the load() and save() methods for ShopgatePluginApi->setSettings()
+* bugfix for not in the class registered class variables with getter and setter methods
+* implementation of logging for debugging into the processing triggered by helper('shopgate/data')->setShippingMethod()
+* removed the possibility to deactivate the module through the setSettings method of the api
+
+'''Version 2.3.17'''
+* bugfix for the processing of USPS shipping models where an array index is read the wrong way
+
+'''Version 2.3.16'''
+* filter for Properties by Export
+* while importing orders with non-usps shipping methods, there was an exception caused by an malformed array definition
+
+'''Version 2.3.15'''
+* custom attribute code for description.
+* fixed issue with verfication of coupon codes in Magento 1.4.x.x
+* order import will use now the native shipping models for USPS shipping instead of the generic (shopgate_fix) 
+
+'''Version 2.3.14'''
+* configuration for weight unit (kg,g,lb,oz) and automatic configuration
+* new library version. Support of up to 100 options at item export
+* EAN Export, attribute code can be defined at configuration page
+
+'''Version 2.3.13'''
+* cancel bug fix (virtual product)
+
+'''Version 2.3.12'''
+* option (Yes/No) for export visible subproducts in configuration
+* assignment Original-Ids to Shopgate Ids work now for configurable Products
+* Varien_Autoloader issue with magento 1.4 (cod)
+
+'''Version 2.3.11'''
+* payment becomes an virtual item only if payment fee is negative
+* removed bundles from the list of exportable product types. Set export of bundles to beta state
+* pound (lbs) is considered to be the output parameter for weight export
+* weight is not rounded any longer
+
+'''Version 2.3.10'''
+* problem with version 2.3.9. Extension cannot be loaded from magento connect 
+
+'''Version 2.3.9'''
+* cancelation of VirtualProduct will be ignored
+* get_settings uses the tax class id of the customer group "NOT_LOGGED_IN" as default tax class id 
+
+'''Version 2.3.8'''
+* fixed error on exporting the additional amount of input fields (custom options)
+* fixed error on exporting the weight of products that have quantity increments enabled
+* Magento EE below 1.9.1.0 is now treated like Magento CE below 1.5.0.0 because they share the same code basis
+
+'''Version 2.3.7'''
+* bugfix for 3rd party payment methods
+
+'''Version 2.3.6'''
+* bugfix for magento 1.4. Interfaces cannot be created in merchant area and orders may not be imported (payment cod).
+
+'''Version 2.3.5'''
+* gift wrapping for magento enterprise, version 1.10 and higher
+
+'''Version 2.3.4'''
+* improved handling of additional costs for article options set at parent item
+
+'''Version 2.3.3'''
+* bugfix for redeem_coupon
+* payment becomes an virtual item in the orderlist, now
+
+'''Version 2.3.2'''
+* shopgate coupons are no longer items that need to be shipped, thus they don't affect the shipping completed state
+* bugfix for Magento 1.4 (issue with autoloader, if model class does not exists)
+* bugfix for US, if country code is missing at address
+* extended mapping of region codes
+
+'''Version 2.3.1'''
+* if a catalog price rule and a special price is defined for one product the cheaper price is exported
+* improvement at tax export, if no tax rule is applied
+* bugfix for magento 1.4, mobile redirect
+
+'''Version 2.3.0'''
+* update ShopgateLibrary to version 2.3.2
+* optional setting "Always redirect". either redircet always or only if on product detail, category listing and index
+* display on shopgate selected shipping method in order
+* available text for products can export from a attribute now
+* "original price" is set for a shopgate coupon in article
+
+'''Version 2.2.7'''
+* fix error in shopgate connect
+* inventory stock can be negative if product or system is configured so
+
+'''Version 2.2.6'''
+* change english descriptions from "child products" to "subproducts"
+* order status will always set now
+* export of products is now filtered by the selected store
+* ignore salesrule on add new order
+* use of magento internal payment method
+
+'''Version 2.2.5'''
+* update ShopgateLibrary to version 2.2.1
+* plugin for USA and EU is merged to one modul
+* API credentials can be empty now
+* if API credentials are empty then no requests will sent to shopgate
+* bug fix on update stock quantity if article has no stock object
+* stock quantity will not update if new stock is less than 0
+* use payment method "checkmo" on prepay 
+
+'''Version 2.2.4'''
+* reworked export of configurable products for better performance
+* fixed a bug in calculating coupons
+* fixed a bug in exporting store labels
+
+'''Version 2.2.3'''
+* fixed a bug that in certain conditions rendered the processing of non-Shopgate orders impossible
+
+'''Version 2.2.2'''
+* new setting to activate sending order confirmations via email by Magento
+* order status for PayPal orders will now be set to status "processing"
+* optionally order confirmation will send to Shopgate on order status is "completed" and no shipping order exists
+* order shipping confirmations can now optionally be sent to Shopgate on order status "completed" even without shipping orders existing
+* fixed bug in coupons system
+* fixed bug on calculating cash on delivery fees. Double calculation of fees have been fixed
+* accessing stores by shop number on different domains has been fixed
+* adding of orders with checkbox options has been fixed
+
+'''Version 2.2.1'''
+* added template for payment method for frontend and emails
+* set street2 in address entries
+
+'''Version 2.2.0'''
+* update ShopgateLibrary to version 2.2.0
+* added actions check_cart and redeem_coupons. Live synchronization of shop coupons is supported now
+* change payment type 'shopgate_generic' to 'mobile_payment' 
+* payment setting for payment types 'shopgate' and 'mobile_payment' 
+* fix error in adding shopgate coupons in magento 1.4
+* Fix error in adding shipping and invoice address on add order
+
+'''Version 2.1.51'''
+* bugfixes for update order
+
+'''Version 2.1.50'''
+* options for export of descriptions and images (parent, child, both)
+
+'''Version 2.1.49'''
+* update ShopgateLibrary to version 2.1.26
+* fix error on updateOrder - unhold orders by Shopgate
+* removed unused functions
+
+'''Version 2.1.48'''
+* show mobile cms page if exists
+* better status handling on adding new order from shopgate
+* adding support for Module "CashOnDelivery"
+* bugfix on adding addresses without a state
+* reduce stock of product an new order
+
+'''Version 2.1.47'''
+* update ShopgateLibrary to version 2.1.24
+* support for catalog prices on export
+* support for "DreamRobot_Checkout" modul
+* new sql install script which will execute on installation
+* fix bug in calculating product prices if products managed without tax in backend
+
+'''Version 2.1.46'''
+* check compatibility to magento ee 1.13.0
+* fix error on mysql upgrade script
+
+'''Version 2.1.45'''
+* partial cancelations are reported to shopgate
+* fix report partial shipping to shopgate
+* global search for shopgate order number in backend 
+
+'''Version 2.1.44'''
+* BugFixes
+
+'''Version 2.1.43'''
+* update ShopgateLibrary to version 2.1.24
+* handle shopgate coupons separately
+* fix price error on add order
+* change update order process
+
+'''Version 2.1.42'''
+* stacked products are now splitted into separate product quantities
+
+'''Version 2.1.41'''
+* products, that have qty increments enabled and an increment value greater than one set are now exported as stacked products
+
+'''Version 2.1.40'''
+* fix bug on product detail page in compiled mode 
+* show magento endition in plugin info
+* mobile redirect can now also be performed exclusively using javascript
+
+'''Version 2.1.39'''
+* update ShopgateLibrary to version 2.1.23
+* fix errors in mobile redirect
+
+'''Version 2.1.38'''
+* update ShopgateLibrary to version 2.1.22
+* option to export multiple stores
+* group payment methods
+* fix bug with coupon handling
+
+'''Version 2.1.37'''
+* update ShopgateLibrary to version 2.1.19
+* use new redirect logic
+* BugFixes for Magento 1.4
+
+'''Version 2.1.36'''
+* BugFixes
+
+'''Version 2.1.35'''
+* import checkout prices to magento order from shopgate 
+* calculate tax for shipping costs
+* bugfixes
+* call event dispatcher in add_order and update_order
+
+'''Version 2.1.34'''
+* fix encoding problem with euro sign
+* fix calculating tax fur merchants outside germany
+* version of plugin is showing in all setting views
+* weight is export as integer value
+
+'''Version 2.1.33'''
+* update library to 2.1.18
+* settings are expandet to website and are available for all views
+* support for external modul for german base prices (http://www.magentocommerce.com/magento-connect/grundpreis-modul-pangv.html)
+* some improvements in payment system
+
+'''Version 2.1.32'''
+* fixed problem on using json functions 
+* change order of some settings 
+* line breaks at the beginning or end of option names now get cut off
+* fixed problem on creating refunds
+
+'''Version 2.1.31'''
+* changed "Debug Settings" to "Connection Settings"
+* re-integrated support for Magento 1.4.x
+
+'''Version 2.1.30'''
+* stock quantities are now always exported as whole numbers; decimal places get cut off
+* revised descriptions in module configuration and comments for orders
+
+'''Version 2.1.29'''
+* set orders to on-hold if shipping is not approved
+
+'''Version 2.1.28'''
+* reduced prices from shopgate will apply in orders
+* update library to 2.1.17
+
+'''Version 2.1.27'''
+* Fix url_deep for products whicht are not visible
+
+'''Version 2.1.26'''
+* check image in export if image gallery value ist set
+* delay in add status history to sort them by time correctly 
+* workaround on including storecode in url on caling shopgate plugin api
+* added option to insert htaccess information for images
+
+'''Version 2.1.25'''
+* seperate some functions to observer
+* added option to mark orders as paid which are not blocked any more
+* added option "is your shop released on shopgate"
+
+'''Version 2.1.24'''
+* Export of products only visible in search
+
+'''Version 2.1.23'''
+* BugFix on import with options is null
+* ignore stock on shopgate orders
+
+'''Version 2.1.22'''
+* Export / Import of input fields
+* export configurable images to linked child products
+
+'''Version 2.1.21'''
+* BugFix
+
+'''Version 2.1.20'''
+* BugFix
+
+'''Version 2.1.19'''
+* ignore placeholder images on child products
+* fix order status
+* user description of grouped products
+* export images of group products
+* cancle order at shopgate (beta) 
+
+'''Version 2.1.18'''
+* BugFixes
+
+'''Version 2.1.17'''
+* export reviews csv fix
+* fix bug for configureable products
+
+'''Version 2.1.16'''
+* fix export options for downloads
+
+'''Version 2.1.15'''
+* update library to 2.1.12
+
+'''Version 2.1.14'''
+* Update Library to 2.1.11
+* Export Downloadable Products
+* Export filter
+
+'''Version 2.1.13'''
+* fixed bug for magento compiler 
+
+'''Version 2.1.12'''
+* Bugfix on export "Short description + description"
+
+'''Version 2.1.11'''
+* Update Library to 2.1.9
+
+'''Version 2.1.10'''
+* Fix Bug an Checkout for Magento 1.4  
+
+'''Version 2.1.9'''
+* the base image of a product will now be exported as the first image even if it's excluded from the product images gallery
+
+'''Version 2.1.8'''
+* Export GroupedProduct without SKU correctly with id
+
+'''Version 2.1.7'''
+* Fix generell error
+* Fix Bug on generate redirect-keywords
+
+'''Version 2.1.6'''
+* Settings Bugfix. The saved currency will be export 
+* uses Shopgate Library 2.1.8
+
+'''Version 2.1.5'''
+* extendet log on addOrder/updateOrder
+* Option to ignore prices of root-products
+
+'''Version 2.1.4'''
+* Update Library to 2.1.2.1.6
+* active_status in csv export
+* ignore min/max on import orders 
+
+'''Version 2.1.3'''
+* Option to convert linebreaks in short and long description
+
+'''Version 2.1.2'''
+* Fix Bug on Export child product images
+* Option to ignore child description
+
+'''Version 2.1.1'''
+* Update Library to 2.1.4 to fix an internal error
+
+'''Version 2.1.0'''
+* New Library 2.1.0
+ 
+'''Version 1.0.11'''
+* Ignore item stock on add_order
+
+'''Version 1.0.8'''
+* Fix upload for Connect1.0 and Connect2.0
+
+'''Version 1.0.7'''
+* update library to Version 2.0.29
+* export grouped products as category
+
+'''Version 1.0.6'''
+* update Library to Version 2.0.26
+* include cron-action for automated services
+* add delivery notes with carrier to shopgate
+* bug-fixes
