@@ -73,6 +73,11 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
     protected $_defaultCategoryRow = null;
 
     /**
+     * @var null | Shopgate_Framework_Model_Payment_Factory
+     */
+    protected $_factory = null;
+    
+    /**
      * Callback function for initialization by plugin implementations.
      * This method gets called on instantiation of a ShopgatePlugin child class and serves as __construct() replacement.
      * Important: Initialize $this->_config here if you have your own config class.
@@ -89,6 +94,31 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
         return true;
     }
 
+    /**
+     * Simple setter
+     * 
+     * @param $factory Shopgate_Framework_Model_Payment_Factory
+     */
+    protected function _setFactory(Shopgate_Framework_Model_Payment_Factory $factory)
+    {
+        $this->_factory = $factory;
+    }
+
+    /**
+     * Factory getter
+     * 
+     * @return null|Shopgate_Framework_Model_Payment_Factory
+     */
+    protected function _getFactory()
+    {
+        if(!$this->_factory){
+            $shopgateOrder  = Mage::getModel('core/session')->getShopgateOrder();
+            $factory        = Mage::getModel('shopgate/payment_factory', $shopgateOrder);
+            $this->_setFactory($factory);
+        }
+        return $this->_factory;
+    }
+    
     /**
      *
      * @param string $action
@@ -355,31 +385,14 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             $title = $title ? $title : $order->getShippingInfos()->getDisplayName();
             $quote->getShippingAddress()->setShippingDescription($title);
             $quote->save();
-
-            // due to compatibility with 3rd party modules which fetches the quote from the session (like phoenix_cod)
+            
+            // due to compatibility with 3rd party modules which fetches the quote from the session (like phoenix_cod, SUE)
+            // needed before $service->submitAll() is called
             Mage::getSingleton('checkout/session')->replaceQuote($quote);
+            
+            $magentoOrder = $this->_getFactory()->createNewOrder($quote);
+
             $this->log("# Create order from quote", ShopgateLogger::LOGTYPE_DEBUG);
-            
-            if ($order->getPaymentMethod() == ShopgateOrder::AMAZON_PAYMENT
-                && Mage::getConfig()->getModuleConfig('Creativestyle_AmazonPayments')->is('active', 'true')) {
-                $magentoOrder = Mage::getModel('shopgate/payment_amazon')->createNewOrder($quote);
-            } elseif ($order->getPaymentMethod() == ShopgateOrder::PP_WSPP_CC
-                      && Mage::getConfig()->getModuleConfig('Mage_Paypal')->is('active', 'true')) {
-                $magentoOrder = Mage::getModel('shopgate/payment_wspp')->createNewOrder($quote);
-            } elseif ($order->getPaymentMethod() == ShopgateOrder::PAYPAL
-                      && Mage::getConfig()->getModuleConfig('Mage_Paypal')->is('active', 'true')
-                      && $quote->getPayment()->getMethodInstance()->getCode() == "paypal_express") {
-                $magentoOrder = Mage::getModel('shopgate/payment_express')->createNewOrder($quote);
-            } else {
-                $service = Mage::getModel('sales/service_quote', $quote);
-                if (!Mage::helper("shopgate/config")->getIsMagentoVersionLower15()) {
-                    $service->submitAll();
-                    $magentoOrder = $service->getOrder();
-                } else {
-                    $magentoOrder = $service->submit();
-                }
-            }
-            
             $this->log("# Modify order", ShopgateLogger::LOGTYPE_DEBUG);
             $magentoOrder->setCanEdit(false);
             $magentoOrder->setCanShipPartially(true);
@@ -387,23 +400,17 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             $magentoOrder = $this->executeLoaders($this->_getCreateOrderLoaders(), $magentoOrder, $order);
             $magentoOrder->setShippingDescription($title);
             $magentoOrder->setShippingMethod($method);
-            if ($magentoOrder->getTotalDue() > 0
+            
+            //todo: move this out, intentionally here after executeLoaders?
+            if ($magentoOrder->getTotalDue() > 0 
                 && $order->getPaymentMethod() == ShopgateOrder::PP_WSPP_CC
             ) {
-                $state = Mage_Sales_Model_Order::STATE_PROCESSING;
-                $status = true;
-                if ($magentoOrder->getPayment()->getIsTransactionPending()) {
-                    $state  = Mage_Sales_Model_Order::STATE_PAYMENT_REVIEW;
-                    if ($magentoOrder->getPayment()->getIsFraudDetected()) {
-                        $status = Mage_Sales_Model_Order::STATUS_FRAUD;
-                    }
-                } else {
+                if (!$magentoOrder->getPayment()->getIsTransactionPending()) {
                     $magentoOrder->setTotalPaid($magentoOrder->getGrandTotal());
                     $magentoOrder->setBaseTotalPaid($magentoOrder->getBaseGrandTotal());
                     $magentoOrder->setTotalDue(0);
                     $magentoOrder->setBaseTotalDue(0);
                 }
-                $magentoOrder->setState($state,$status);
             }
             $magentoOrder->save();
 
@@ -510,6 +517,12 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             $product       = Mage::getModel('catalog/product')->setStoreId($this->_getConfig()->getStoreViewId())
                                  ->load($pId);
 
+            if (!$product->getId()) {
+                throw new ShopgateLibraryException(
+                    ShopgateLibraryException::CART_ITEM_PRODUCT_NOT_FOUND, 'product ID: ' . $pId, true
+                );
+            }
+            
             $itemNumber    = $item->getItemNumber();
             $productWeight = NULL;
 
@@ -768,7 +781,12 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
      */
     protected function _setQuotePayment($quote, $order)
     {
-        $payment     = $this->_getOrderHelper()->getMagentoPaymentMethod($order->getPaymentMethod());
+        $payment = $this->_getFactory()->getPaymentModel();
+
+        if (!$payment) {
+            $payment = $this->_getOrderHelper()->getMagentoPaymentMethod($order->getPaymentMethod());
+        }
+
         $paymentInfo = array();
         $info        = $order->getPaymentInfos();
 
@@ -778,10 +796,10 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                 $checkoutSession->replaceQuote($quote);
             }
         }
-        
+
         if ($payment instanceof Shopgate_Framework_Model_Payment_MobilePayment) {
             $this->log("payment is shopgate", ShopgateLogger::LOGTYPE_DEBUG);
-            $payment->setShopgateOrder($order);
+            $payment->setShopgateOrder($order); //allows printing of order details
         }
 
         if ($payment->getCode() == Mage::getModel("shopgate/payment_mobilePayment")->getCode()) {
@@ -799,31 +817,13 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
         $paymentInfo['is_test']                     = $order->getIsTest();
         $paymentInfo['is_paid']                     = $order->getIsPaid();
 
-        $quote->getPayment()->setMethod($payment->getCode());        
-
+        $quote->getPayment()->setMethod($payment->getCode());
         $quote->getPayment()->setAdditionalData(serialize($paymentInfo));
         $quote->getPayment()->setAdditionalInformation($paymentInfo);
         $quote->getPayment()->setLastTransId($order->getPaymentTransactionNumber());
 
-        if ($order->getPaymentMethod() == ShopgateOrder::AMAZON_PAYMENT
-	        && Mage::getConfig()->getModuleConfig('Creativestyle_AmazonPayments')->is('active', 'true')) {
-            $amazonPaymentModel = Mage::getModel('shopgate/payment_amazon');
-            $quote = $amazonPaymentModel->prepareQuote($quote, $payment, $info);
-        }
+        $quote = $this->_getFactory()->prepareQuote($quote, $info);
 
-        if ($order->getPaymentMethod() == ShopgateOrder::PP_WSPP_CC
-            && Mage::getConfig()->getModuleConfig('Mage_Paypal')->is('active', 'true')) {
-            $paypalWsppModel = Mage::getModel('shopgate/payment_wspp');
-            $quote = $paypalWsppModel->prepareQuote($quote, $info);
-        }
-
-        if ($order->getPaymentMethod() == ShopgateOrder::PAYPAL
-            && Mage::getConfig()->getModuleConfig('Mage_Paypal')->is('active', 'true')
-            && $payment->getCode() == "paypal_express") {
-            $paypalExpressModel = Mage::getModel('shopgate/payment_express');
-            $quote = $paypalExpressModel->prepareQuote($quote, $info);
-        }
-        
         return $quote;
     }
 
@@ -1367,73 +1367,59 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
      */
     protected function _setOrderState($magentoOrder, $shopgateOrder)
     {
-        if ($shopgateOrder->getPaymentMethod() == ShopgateOrder::PREPAY && !$shopgateOrder->getIsPaid()) {
+        $magentoOrder = $this->_getFactory()->setOrderStatus($magentoOrder);
+        if ($magentoOrder->getShopgateStatusSet()) {
+            //do nothing, but we will need to pull this whole thing inside factory
+        } elseif ($shopgateOrder->getPaymentMethod() == ShopgateOrder::PREPAY && !$shopgateOrder->getIsPaid()) {
             $classExists = mageFindClassFile("Mage_Payment_Model_Method_Banktransfer");
 
-            if ($classExists !== false
-                && Mage::getStoreConfigFlag("payment/banktransfer/active")
-            ) {
+            if ($classExists !== false && Mage::getStoreConfigFlag("payment/banktransfer/active")) {
                 return $magentoOrder;
-            } else if ((Mage::getConfig()->getModuleConfig("Phoenix_BankPayment")->is('active', 'true')
-                        || Mage::getConfig()->getModuleConfig('Mage_BankPayment')->is('active', 'true'))
-                       && Mage::getStoreConfig('payment/bankpayment/order_status')
-            ) {
-                $status = Mage::getStoreConfig('payment/bankpayment/order_status');
-                $state = $this->_getHelper()->getStateForStatus($status);
-                $magentoOrder->setState($state, $status);
-            } else if (!Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ORDER_MARK_UNBLOCKED_AS_PAID)) {
-                if ($magentoOrder->getState() != Mage_Sales_Model_Order::STATE_HOLDED) {
-                    $magentoOrder->setHoldBeforeState($magentoOrder->getState());
-                    $magentoOrder->setHoldBeforeStatus($magentoOrder->getStatus());
-                }
-                $magentoOrder->setState(Mage_Sales_Model_Order::STATE_HOLDED, Mage_Sales_Model_Order::STATE_HOLDED);
             } else {
-                $oldStatus = $shopgateOrder->getIsPaid();
-                $shopgateOrder->setIsPaid(true);
+                if ((Mage::getConfig()->getModuleConfig("Phoenix_BankPayment")->is('active', 'true')
+                     || Mage::getConfig()->getModuleConfig('Mage_BankPayment')->is('active', 'true'))
+                    && Mage::getStoreConfig('payment/bankpayment/order_status')
+                ) {
+                    $status = Mage::getStoreConfig('payment/bankpayment/order_status');
+                    $state  = $this->_getHelper()->getStateForStatus($status);
+                    $magentoOrder->setState($state, $status);
+                } else {
+                    if (!Mage::getStoreConfig(
+                        Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ORDER_MARK_UNBLOCKED_AS_PAID
+                    )
+                    ) {
+                        if ($magentoOrder->getState() != Mage_Sales_Model_Order::STATE_HOLDED) {
+                            $magentoOrder->setHoldBeforeState($magentoOrder->getState());
+                            $magentoOrder->setHoldBeforeStatus($magentoOrder->getStatus());
+                        }
+                        $magentoOrder->setState(
+                            Mage_Sales_Model_Order::STATE_HOLDED,
+                            Mage_Sales_Model_Order::STATE_HOLDED
+                        );
+                    } else {
+                        $oldStatus = $shopgateOrder->getIsPaid();
+                        $shopgateOrder->setIsPaid(true);
 
-                $magentoOrder->addStatusHistoryComment(
-                             $this->_getHelper()->__(
-                                  "[SHOPGATE] Set order as paid because shipping is not blocked and config is set to 'mark unblocked orders as paid'!"
-                             ),
-                             false
-                )->setIsCustomerNotified(false);
+                        $magentoOrder->addStatusHistoryComment(
+                            $this->_getHelper()->__(
+                                "[SHOPGATE] Set order as paid because shipping is not blocked and config is set to 'mark unblocked orders as paid'!"
+                            ),
+                            false
+                        )->setIsCustomerNotified(false);
 
-                $magentoOrder = $this->_setOrderPayment($magentoOrder, $shopgateOrder);
-                $shopgateOrder->setIsPaid($oldStatus);
+                        $magentoOrder = $this->_setOrderPayment($magentoOrder, $shopgateOrder);
+                        $shopgateOrder->setIsPaid($oldStatus);
+                    }
+                }
             }
         } else {
-            $stateObject    = new Varien_Object();
+            $stateObject = new Varien_Object();
             $methodInstance = $magentoOrder->getPayment()->getMethodInstance();
-            if ($shopgateOrder->getPaymentMethod() != ShopgateOrder::AMAZON_PAYMENT) {
+            if ($shopgateOrder->getPaymentMethod() != ShopgateOrder::AMAZON_PAYMENT
+                && strpos($shopgateOrder->getPaymentMethod(), 'PAYONE') === false
+            ) {
                 // avoid calling order on amazon payment again 
                 $methodInstance->initialize($methodInstance->getConfigData('payment_action'), $stateObject);
-            }
-
-            if ($shopgateOrder->getPaymentMethod() == ShopgateOrder::PP_WSPP_CC
-                || $shopgateOrder->getPaymentMethod() == ShopgateOrder::AMAZON_PAYMENT) {
-                $stateObject->setState($magentoOrder->getState());
-                $stateObject->setStatus($magentoOrder->getStatus());
-            }
-
-            if ($shopgateOrder->getPaymentMethod() == ShopgateOrder::SUE) {
-                if ($shopgateOrder->getIsPaid()) {
-                    $status = $methodInstance->getConfigData("order_status_received_credited");
-                    $stateObject->setState($this->_getHelper()->getStateForStatus($status));
-                    $stateObject->setStatus($status);    
-                } else {
-                    $status = $methodInstance->getConfigData("order_status_pending_not_credited_yet");
-                    $stateObject->setState($this->_getHelper()->getStateForStatus($status));
-                    $stateObject->setStatus($status);
-                }
-                if(!$status) {
-                    //above statuses are not there below v.3.0.0
-                    $status = $methodInstance->getConfigData("order_status");
-                    if(!$status) { 
-                        $status = Mage_Sales_Model_Order::STATE_PENDING_PAYMENT; //mage 1.4.1.1 empty status fix
-                    }
-                    $stateObject->setState($this->_getHelper()->getStateForStatus($status));
-                    $stateObject->setStatus($status);
-                }
             }
 
             if (!$stateObject->getState()) {
@@ -1459,23 +1445,15 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                 $shopgateOrder->setIsPaid(true);
 
                 $magentoOrder->addStatusHistoryComment(
-                             $this->_getHelper()->__(
-                                  "[SHOPGATE] Set order as paid because shipping is not blocked and config is set to 'mark unblocked orders as paid'!"
-                             ),
-                             false
+                    $this->_getHelper()->__(
+                        "[SHOPGATE] Set order as paid because shipping is not blocked and config is set to 'mark unblocked orders as paid'!"
+                    ),
+                    false
                 )->setIsCustomerNotified(false);
 
                 $magentoOrder = $this->_setOrderPayment($magentoOrder, $shopgateOrder);
 
                 $shopgateOrder->setIsPaid($oldStatus);
-            }
-
-            if ($shopgateOrder->getIsPaid() && ($shopgateOrder->getPaymentMethod() === ShopgateOrder::PAYPAL
-                || $shopgateOrder->getPaymentMethod() == ShopgateOrder::AMAZON_PAYMENT)) {
-                $magentoOrder->setState(
-                             Mage_Sales_Model_Order::STATE_PROCESSING,
-                             Mage_Sales_Model_Order::STATE_PROCESSING
-                );
             }
         }
 
@@ -1493,43 +1471,13 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
      */
     protected function _setOrderPayment($magentoOrder, $shopgateOrder)
     {
-        if ($shopgateOrder->getPaymentMethod() == ShopgateOrder::AMAZON_PAYMENT
-            && Mage::getConfig()->getModuleConfig("Creativestyle_AmazonPayments")->is('active', 'true')) {
-            return Mage::getModel('shopgate/payment_amazon')->manipulateOrderWithPaymentData($magentoOrder,$shopgateOrder);
+        /** @var Shopgate_Framework_Model_Payment_Factory $factory */
+        $factory = $this->_getFactory();
+        if ($factory->validatePaymentClass()) {
+            return $factory->manipulateOrderWithPaymentData($magentoOrder);
         }
 
-        if ($shopgateOrder->getPaymentMethod() == ShopgateOrder::USAEPAY_CC
-            && Mage::getConfig()->getModuleConfig("Mage_Usaepay")->is('active', 'true')) {
-            return Mage::getModel('shopgate/payment_usaepay')->manipulateOrderWithPaymentData($magentoOrder,$shopgateOrder);
-        }
-
-        if ($shopgateOrder->getPaymentMethod() == ShopgateOrder::AUTHN_CC
-            && Mage::getConfig()->getModuleConfig("Mage_Paygate")->is('active', 'true')
-            && (bool)Mage::getModel('paygate/authorizenet')->getConfigData('active')) {
-            return Mage::getModel('shopgate/payment_authorize')->manipulateOrderWithPaymentData(
-                       $magentoOrder,
-                       $shopgateOrder
-            );
-        }
-
-        if ($shopgateOrder->getPaymentMethod() == ShopgateOrder::PP_WSPP_CC
-            && Mage::getConfig()->getModuleConfig("Mage_Paypal")->is('active', 'true')) {
-            return Mage::getModel('shopgate/payment_wspp')->manipulateOrderWithPaymentData($magentoOrder,$shopgateOrder);
-        }
-
-        if ($shopgateOrder->getPaymentMethod() == ShopgateOrder::PAYPAL
-            && Mage::getConfig()->getModuleConfig("Mage_Paypal")->is('active', 'true')
-            && $magentoOrder->getPayment()->getMethodInstance()->getCode() == "paypal_express") {
-            return Mage::getModel('shopgate/payment_express')->manipulateOrderWithPaymentData($magentoOrder,$shopgateOrder);
-        }
-
-        if ($shopgateOrder->getPaymentMethod() == ShopgateOrder::BILLSAFE
-            && Mage::getConfig()->getModuleConfig("Netresearch_Billsafe")->is('active', 'true')) {
-            /** @var Shopgate_Framework_Model_Payment_Billsafe $billsafePaymentModel */
-            return Mage::getModel('shopgate/payment_billsafe')->manipulateOrderWithPaymentData($magentoOrder,$shopgateOrder);
-        }
-
-
+        // Abstract will handle anything that doesn't have a manipulateOrder function
         if ($shopgateOrder->getIsPaid() && $magentoOrder->getBaseTotalDue()) {
             $magentoOrder->getPayment()->setShouldCloseParentTransaction(true);
             $magentoOrder->getPayment()->registerCaptureNotification($shopgateOrder->getAmountComplete());
@@ -1544,7 +1492,6 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                     $transaction->setIsClosed(false);
                     $transaction->setTxnId($shopgateOrder->getPaymentTransactionNumber());
                     $transaction->setTxnType(Mage_Sales_Model_Order_Payment_Transaction::TYPE_CAPTURE);
-
                     $transaction->save();
 
                     $magentoOrder->getPayment()->importTransactionInfo($transaction);
@@ -1553,18 +1500,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                 }
             }
         }
-        
-        if ($shopgateOrder->getPaymentMethod() == ShopgateOrder::SUE
-            && Mage::getConfig()->getModuleConfig('Paymentnetwork_Pnsofortueberweisung')->is('active', 'true')) {
-            if ($shopgateOrder->getIsPaid()) {
-                $invoice = $this->_getPaymentHelper()->createOrderInvoice($magentoOrder);
-                $invoice->setIsPaid(true);
-                $invoice->pay();
-                $invoice->save();
-                $magentoOrder->addRelatedObject($invoice);    
-            }
-        }
-        
+
         $magentoOrder->getPayment()->setLastTransId($shopgateOrder->getPaymentTransactionNumber());
 
         return $magentoOrder;

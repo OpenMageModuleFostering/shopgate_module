@@ -18,7 +18,7 @@
  * transfer to third parties is only permitted where we previously consented thereto in writing. The provisions
  * of paragraph 69 d, sub-paragraphs 2, 3 and paragraph 69, sub-paragraph e of the German Copyright Act shall remain unaffected.
  *
- *  @author Shopgate GmbH <interfaces@shopgate.com>
+ * @author Shopgate GmbH <interfaces@shopgate.com>
  */
 
 /**
@@ -88,7 +88,7 @@ class Shopgate_Framework_Model_Payment_MobilePayment extends Mage_Payment_Model_
      * @var ShopgateOrder
      */
     protected $_shopgateOrder = null;
-	
+
     /**
      * Payment code name
      *

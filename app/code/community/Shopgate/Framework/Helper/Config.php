@@ -42,9 +42,15 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
     const COMMUNITY_EDITION = 'Community';
 
     /**
-     * const for community
+     * const for enterprise
      */
     const ENTERPRISE_EDITION = 'Enterprise';
+
+    /**
+     * When PayPal UI was updated
+     * @var string
+     */
+    protected $_magentoVersion1701 = '';
 
     /**
      * @var string
@@ -66,6 +72,7 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
      */
     public function __construct()
     {
+        $this->_magentoVersion1701 = ($this->getEdition() == 'Enterprise') ? '1.12.0.2' : '1.7.0.1';
         $this->_magentoVersion15   = ($this->getEdition() == 'Enterprise') ? '1.9.1.0' : '1.5';
         $this->_magentoVersion1410 = ($this->getEdition() == 'Enterprise') ? '1.9.0.0' : '1.4.1.0';
     }
@@ -92,7 +99,7 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
     }
 
     /**
-     * Checks if current magento ver. is lower than param
+     * TODO: redo comparison check to be scalable 
      *
      * @param string $version - magento version e.g "1.9.1.1"
      * @return bool
@@ -103,7 +110,17 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
     }
 
     /**
-     * compare version if it is lower than 1.5
+     * compare version if it is lower than 1.7.0.1
+     *
+     * @return bool
+     */
+    public function getIsMagentoVersionLower1701()
+    {
+        return $this->getIsMagentoVersionLower($this->_magentoVersion1701);
+    }
+
+    /**
+     * Compare version if it is lower than 1.5
      *
      * @return mixed
      */
@@ -165,6 +182,8 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
         }
 
         /* a shopnumber has a default store view set exactly like the base store view for the new shopnumber */
+        $resource = Mage::getSingleton('core/resource');
+        $table_config_data = $resource->getTableName('core/config_data');
         $collection = Mage::getModel('core/config_data')->getCollection()
                           ->addFieldToFilter(
                               '`main_table`.`path`',
@@ -178,7 +197,7 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
                           )
                           ->getSelect()
                           ->joinInner(
-                              array('dsv' => 'core_config_data'),
+                              array('dsv' => $table_config_data),
                               '`dsv`.`scope` = `main_table`.`scope` AND `dsv`.`scope_id` = `main_table`.`scope_id`',
                               array('default_store_view' => 'value')
                           )->query()

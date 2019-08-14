@@ -22,23 +22,10 @@
  */
 
 /**
- * Used to be a native implementation of Authorize
+ * Forwarder to PayPal, let paypal folder handle these poor payment_method naming edge cases!
  *
- * @deprecated  2.9.18 - use Shopgate_Framework_Model_Payment_Cc_Authn instead
- * @package     Shopgate_Framework_Model_Payment_Authorize
- * @author      Peter Liebig <p.liebig@me.com, peter.liebig@magcorp.de>
- * @author      Konstantin Kiritsenko <konstantin@kiritsenko.com>
+ * Class Shopgate_Framework_Model_Payment_Simple_Paypal
+ *
+ * @author  Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
-class Shopgate_Framework_Model_Payment_Authorize
-{
-    /**
-     * @deprecated 2.9.18
-     * @param $order         Mage_Sales_Model_Order
-     * @param $shopgateOrder ShopgateOrder
-     * @return Mage_Sales_Model_Order
-     */
-    public function manipulateOrderWithPaymentData($order, $shopgateOrder)
-    {
-        return Mage::getModel('shopgate/payment_cc_authn', $shopgateOrder)->manipulateOrderWithPaymentData($order);
-    }
-}
+class Shopgate_Framework_Model_Payment_Simple_Paypal extends Shopgate_Framework_Model_Payment_Pp_Paypal {}

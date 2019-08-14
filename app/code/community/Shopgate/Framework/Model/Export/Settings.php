@@ -161,8 +161,8 @@ class Shopgate_Framework_Model_Export_Settings extends Shopgate_Framework_Model_
             }
             $methodInstance->setStore($store);
             $shopgatePaymentMethod              = array();
-			$shopgatePaymentMethod['id']        = $methodInstance->getCode();
-			$shopgatePaymentMethod['title']     = $methodInstance->getTitle();
+			$shopgatePaymentMethod['id']        = $code;
+            $shopgatePaymentMethod['title']     = $methodConfig['title'];
 			$shopgatePaymentMethod['is_active'] = (int)$methodInstance->isAvailable();
             $shopgatePaymentMethods[]           = $shopgatePaymentMethod;
         }

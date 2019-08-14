@@ -22,23 +22,30 @@
  */
 
 /**
- * Used to be a native implementation of Authorize
+ * Sofortuebreweisung version router
  *
- * @deprecated  2.9.18 - use Shopgate_Framework_Model_Payment_Cc_Authn instead
- * @package     Shopgate_Framework_Model_Payment_Authorize
- * @author      Peter Liebig <p.liebig@me.com, peter.liebig@magcorp.de>
- * @author      Konstantin Kiritsenko <konstantin@kiritsenko.com>
+ * Class Shopgate_Framework_Model_Payment_Simple_Sue
+ *
+ * @author  Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
-class Shopgate_Framework_Model_Payment_Authorize
+class Shopgate_Framework_Model_Payment_Simple_Sue extends Shopgate_Framework_Model_Payment_Simple
 {
+    const MODULE_CONFIG = 'Paymentnetwork_Pnsofortueberweisung';
+
     /**
-     * @deprecated 2.9.18
-     * @param $order         Mage_Sales_Model_Order
-     * @param $shopgateOrder ShopgateOrder
-     * @return Mage_Sales_Model_Order
+     * Route to appropriate file based on version
+     *
+     * @return false|Shopgate_Framework_Model_Payment_Abstract
      */
-    public function manipulateOrderWithPaymentData($order, $shopgateOrder)
+    public function getModelByPaymentMethod()
     {
-        return Mage::getModel('shopgate/payment_cc_authn', $shopgateOrder)->manipulateOrderWithPaymentData($order);
+        if (version_compare($this->_getVersion(), '3.0.0', '>=')) {
+            $this->setPaymentMethod('SUE300');
+        } else {
+            $this->setPaymentMethod('SUE118');
+        }
+
+        return parent::getModelByPaymentMethod();
     }
+
 }

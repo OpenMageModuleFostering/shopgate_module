@@ -22,23 +22,33 @@
  */
 
 /**
- * Used to be a native implementation of Authorize
+ * Class Shopgate_Framework_Model_Payment_Cc_AuthnAbstract
  *
- * @deprecated  2.9.18 - use Shopgate_Framework_Model_Payment_Cc_Authn instead
- * @package     Shopgate_Framework_Model_Payment_Authorize
- * @author      Peter Liebig <p.liebig@me.com, peter.liebig@magcorp.de>
- * @author      Konstantin Kiritsenko <konstantin@kiritsenko.com>
+ * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
-class Shopgate_Framework_Model_Payment_Authorize
+class Shopgate_Framework_Model_Payment_Cc_AuthnAbstract extends Shopgate_Framework_Model_Payment_Cc_Abstract
 {
+    const PAYMENT_IDENTIFIER = ShopgateOrder::AUTHN_CC;
+
     /**
-     * @deprecated 2.9.18
-     * @param $order         Mage_Sales_Model_Order
-     * @param $shopgateOrder ShopgateOrder
-     * @return Mage_Sales_Model_Order
+     * const for transaction types of shopgate
      */
-    public function manipulateOrderWithPaymentData($order, $shopgateOrder)
-    {
-        return Mage::getModel('shopgate/payment_cc_authn', $shopgateOrder)->manipulateOrderWithPaymentData($order);
-    }
+    const SHOPGATE_PAYMENT_STATUS_AUTH_ONLY    = 'auth_only';
+    const SHOPGATE_PAYMENT_STATUS_AUTH_CAPTURE = 'auth_capture';
+
+    /**
+     * const for response codes
+     */
+    const RESPONSE_CODE_APPROVED = 1;
+    const RESPONSE_CODE_DECLINED = 2;
+    const RESPONSE_CODE_ERROR    = 3;
+    const RESPONSE_CODE_HELD     = 4;
+
+    const RESPONSE_REASON_CODE_APPROVED                  = 1;
+    const RESPONSE_REASON_CODE_NOT_FOUND                 = 16;
+    const RESPONSE_REASON_CODE_PARTIAL_APPROVE           = 295;
+    const RESPONSE_REASON_CODE_PENDING_REVIEW_AUTHORIZED = 252;
+    const RESPONSE_REASON_CODE_PENDING_REVIEW            = 253;
+    const RESPONSE_REASON_CODE_PENDING_REVIEW_DECLINED   = 254;
+
 }

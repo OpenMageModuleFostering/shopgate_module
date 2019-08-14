@@ -43,6 +43,17 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
      */
     protected $_config;
 
+    protected $_mage14xStates = array(
+        Mage_Sales_Model_Order::STATE_NEW             => "pending",
+        Mage_Sales_Model_Order::STATE_PENDING_PAYMENT => "pending",
+        Mage_Sales_Model_Order::STATE_PAYMENT_REVIEW  => "payment_review",
+        Mage_Sales_Model_Order::STATE_PROCESSING      => "processing",
+        Mage_Sales_Model_Order::STATE_COMPLETE        => "complete",
+        Mage_Sales_Model_Order::STATE_CLOSED          => "closed",
+        Mage_Sales_Model_Order::STATE_CANCELED        => "canceled",
+        Mage_Sales_Model_Order::STATE_HOLDED          => "holded",
+    );
+
     /**
      * get QR Code directory
      *
@@ -373,9 +384,10 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
     public function getStateForStatus($status)
     {
         if (Mage::helper("shopgate/config")->getIsMagentoVersionLower15() ||
-            (Mage::helper("shopgate/config")->getEdition() == 'Enterprise' && 
-             version_compare(Mage::getVersion(),'1.9.1.2','<'))) {
-            return $this->_getStateForStatusMagento14x($status);
+            (Mage::helper("shopgate/config")->getEdition() == 'Enterprise' &&
+             version_compare(Mage::getVersion(), '1.9.1.2', '<'))
+        ) {
+            return $this->_getStateFromStatusMagento14x($status);
         }
 
         $resource = Mage::getSingleton('core/resource');
@@ -389,6 +401,35 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
     }
 
     /**
+     * Returns status from state
+     *
+     * @param string $state
+     *
+     * @return string
+     */
+    public function getStatusFromState($state)
+    {
+        if (Mage::helper("shopgate/config")->getIsMagentoVersionLower15() ||
+            (Mage::helper("shopgate/config")->getEdition() == 'Enterprise' &&
+             version_compare(Mage::getVersion(), '1.9.1.2', '<'))
+        ) {
+            return $this->_getStatusFromStateMagento14x($state);
+        }
+
+        $resource = Mage::getSingleton('core/resource');
+        $db       = $resource->getConnection('core_read');
+        $table    = $resource->getTableName('sales/order_status_state');
+        $result   = $db->fetchOne("SELECT state FROM {$table} WHERE state = '{$state}' AND is_default = 1");
+        if (!$result) {
+            $result = $db->fetchOne("SELECT state FROM {$table} WHERE state = '{$state}'");
+        }
+        if(!$result) {
+            $result = $this->_getStatusFromStateMagento14x($state);
+        }
+        return $result;
+    }
+
+    /**
      * return the sate of status for magento 1.4
      * if status not in mapping-array state will set to status!
      *
@@ -396,14 +437,22 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
      *
      * @return string
      */
-    protected function _getStateForStatusMagento14x($status)
+    protected function _getStateFromStatusMagento14x($status)
     {
-        $map = array(
-            "pending" => "new",
-            "fraud"   => "payment_review"
-        );
+        $state = array_search($status, $this->_mage14xStates);
+        return $state !== false ? $state : Mage_Sales_Model_Order::STATE_PROCESSING;
+    }
 
-        return in_array($status, $map) ? $map[$status] : $status;
+    /**
+     * Mage 1.4 non DB support for all states
+     *
+     * @param $state - status returned
+     *               
+     * @return string
+     */
+    protected function _getStatusFromStateMagento14x($state)
+    {
+        return isset($this->_mage14xStates[$state]) ? $this->_mage14xStates[$state] : Mage_Sales_Model_Order::STATE_PROCESSING;
     }
 
     /**

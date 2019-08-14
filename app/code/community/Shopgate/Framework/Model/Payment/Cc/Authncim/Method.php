@@ -22,23 +22,33 @@
  */
 
 /**
- * Used to be a native implementation of Authorize
+ * Extending method class for gateway initialization
  *
- * @deprecated  2.9.18 - use Shopgate_Framework_Model_Payment_Cc_Authn instead
- * @package     Shopgate_Framework_Model_Payment_Authorize
- * @author      Peter Liebig <p.liebig@me.com, peter.liebig@magcorp.de>
- * @author      Konstantin Kiritsenko <konstantin@kiritsenko.com>
+ * Class Shopgate_Framework_Model_Payment_Cc_Authncim_Method
+ *
+ * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
-class Shopgate_Framework_Model_Payment_Authorize
+class Shopgate_Framework_Model_Payment_Cc_Authncim_Method extends ParadoxLabs_AuthorizeNetCim_Model_Method
 {
     /**
-     * @deprecated 2.9.18
-     * @param $order         Mage_Sales_Model_Order
-     * @param $shopgateOrder ShopgateOrder
-     * @return Mage_Sales_Model_Order
+     * Call our rewritten Gateway and initialize login credentials
+     *
+     * @return null|Shopgate_Framework_Model_Payment_Cc_Authncim_Gateway
      */
-    public function manipulateOrderWithPaymentData($order, $shopgateOrder)
+    public function gateway()
     {
-        return Mage::getModel('shopgate/payment_cc_authn', $shopgateOrder)->manipulateOrderWithPaymentData($order);
+        if (is_null($this->_gateway)) {
+            $this->_gateway = Mage::getModel('shopgate/payment_cc_authncim_gateway');
+            $this->_gateway->init(
+                array(
+                    'login'      => $this->getConfigData('login'),
+                    'password'   => $this->getConfigData('trans_key'),
+                    'secret_key' => $this->getConfigData('secrey_key'),
+                    'test_mode'  => $this->getConfigData('test')
+                )
+            );
+        }
+
+        return $this->_gateway;
     }
 }

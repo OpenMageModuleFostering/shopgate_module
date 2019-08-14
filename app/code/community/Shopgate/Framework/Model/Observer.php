@@ -843,4 +843,41 @@ class Shopgate_Framework_Model_Observer
 
         return $this;
     }
+
+    /**
+     * Triggers when order becomes paid.
+     * Main purpose is to set a different sequence number
+     * after we capture an invoice. Else we cannot refund
+     * because PayOne plugin is not setting it correctly.
+     * 
+     * @param Varien_Event_Observer $event
+     * @return $this
+     * @throws Exception
+     */
+    public function preparePayoneOrderForRefund(Varien_Event_Observer $event)
+    {
+        $factory = Mage::getModel('payone_core/factory');
+        if(!$factory) return $this;
+        /** @var Mage_Sales_Model_Order_Invoice $invoice */
+        $invoice = $event['invoice'];
+        $transaction = $factory->getModelTransaction();
+        $transStatus = $factory->getModelApi();
+        if($transaction->load($invoice->getTransactionId(), 'txid')->hasData()) {
+            $collection = $transStatus
+                ->getCollection()
+                ->addFieldToFilter('order_id', $transaction->getOrderId())
+                ->addFieldToFilter('response', 'APPROVED')
+                ->addFieldToFilter('request', 'capture');
+            /**
+             * If we have an approval on capture in API
+             * call database, set next sequence as refund
+             */
+            if($collection->getSize() > 0) {
+                $transaction->setLastSequencenumber(1);
+                $transaction->save();
+            }
+        }
+        
+        return $this;
+    }
 }

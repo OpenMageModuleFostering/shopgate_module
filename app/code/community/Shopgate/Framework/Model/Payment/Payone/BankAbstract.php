@@ -21,24 +21,31 @@
  * @author Shopgate GmbH <interfaces@shopgate.com>
  */
 
+
 /**
- * Used to be a native implementation of Authorize
+ * Handler for all online bank transfer payment interfaces
  *
- * @deprecated  2.9.18 - use Shopgate_Framework_Model_Payment_Cc_Authn instead
- * @package     Shopgate_Framework_Model_Payment_Authorize
- * @author      Peter Liebig <p.liebig@me.com, peter.liebig@magcorp.de>
- * @author      Konstantin Kiritsenko <konstantin@kiritsenko.com>
+ * Note: any online bank transfer config needs to be enabled for
+ * Giro, Ideal, SUE to work, they don't actually need to be selected.
+ *
+ * @package Class Shopgate_Framework_Model_Payment_Payone_BankAbstract
+ * @author  Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
-class Shopgate_Framework_Model_Payment_Authorize
+class Shopgate_Framework_Model_Payment_Payone_BankAbstract extends Shopgate_Framework_Model_Payment_Payone_Abstract
 {
+    const PAYONE_CORE_MODEL_CONFIG_IDENTIFIER = 'payone_online_bank_transfer';
+    const PAYMENT_MODEL                       = 'payone_core/payment_method_onlineBankTransfer';
+
     /**
-     * @deprecated 2.9.18
-     * @param $order         Mage_Sales_Model_Order
-     * @param $shopgateOrder ShopgateOrder
+     * @param Mage_Sales_Model_Order $order
      * @return Mage_Sales_Model_Order
+     * @throws Exception
      */
-    public function manipulateOrderWithPaymentData($order, $shopgateOrder)
+    public function manipulateOrderWithPaymentData($order)
     {
-        return Mage::getModel('shopgate/payment_cc_authn', $shopgateOrder)->manipulateOrderWithPaymentData($order);
+        $this->getOrder()->getPayment()->setPayoneOnlinebanktransferType($this->_getConfigCode());
+
+        return parent::manipulateOrderWithPaymentData();
     }
+
 }

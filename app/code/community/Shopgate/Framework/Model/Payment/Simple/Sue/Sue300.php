@@ -22,23 +22,17 @@
  */
 
 /**
- * Used to be a native implementation of Authorize
+ * Handler for SUE versions 3.0.0+
  *
- * @deprecated  2.9.18 - use Shopgate_Framework_Model_Payment_Cc_Authn instead
- * @package     Shopgate_Framework_Model_Payment_Authorize
- * @author      Peter Liebig <p.liebig@me.com, peter.liebig@magcorp.de>
- * @author      Konstantin Kiritsenko <konstantin@kiritsenko.com>
+ * Class Shopgate_Framework_Model_Payment_Simple_Sue_Sue300
+ *
+ * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
-class Shopgate_Framework_Model_Payment_Authorize
+class Shopgate_Framework_Model_Payment_Simple_Sue_Sue300
+    extends Shopgate_Framework_Model_Payment_Simple_Sue_Abstract
+    implements Shopgate_Framework_Model_Payment_Interface
 {
-    /**
-     * @deprecated 2.9.18
-     * @param $order         Mage_Sales_Model_Order
-     * @param $shopgateOrder ShopgateOrder
-     * @return Mage_Sales_Model_Order
-     */
-    public function manipulateOrderWithPaymentData($order, $shopgateOrder)
-    {
-        return Mage::getModel('shopgate/payment_cc_authn', $shopgateOrder)->manipulateOrderWithPaymentData($order);
-    }
+    const XML_CONFIG_ENABLED         = 'payment/paymentnetwork_pnsofortueberweisung/active';
+    const XML_CONFIG_STATUS_PAID     = 'payment/paymentnetwork_pnsofortueberweisung/order_status_received_credited';
+    const XML_CONFIG_STATUS_NOT_PAID = 'payment/paymentnetwork_pnsofortueberweisung/order_status_pending_not_credited_yet';
 }

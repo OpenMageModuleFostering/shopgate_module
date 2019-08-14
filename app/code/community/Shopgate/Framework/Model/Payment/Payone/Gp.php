@@ -22,23 +22,23 @@
  */
 
 /**
- * Used to be a native implementation of Authorize
+ * Class Shopgate_Framework_Model_Payment_Payone_Gp
  *
- * @deprecated  2.9.18 - use Shopgate_Framework_Model_Payment_Cc_Authn instead
- * @package     Shopgate_Framework_Model_Payment_Authorize
- * @author      Peter Liebig <p.liebig@me.com, peter.liebig@magcorp.de>
- * @author      Konstantin Kiritsenko <konstantin@kiritsenko.com>
+ * @author awesselburg <wesselburg@me.com>
+ * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
-class Shopgate_Framework_Model_Payment_Authorize
+class Shopgate_Framework_Model_Payment_Payone_Gp
+    extends Shopgate_Framework_Model_Payment_Payone_BankAbstract
+    implements Shopgate_Framework_Model_Payment_Interface
 {
+    const PAYMENT_IDENTIFIER = ShopgateOrder::PAYONE_GP;
+
     /**
-     * @deprecated 2.9.18
-     * @param $order         Mage_Sales_Model_Order
-     * @param $shopgateOrder ShopgateOrder
-     * @return Mage_Sales_Model_Order
+     * @return string
      */
-    public function manipulateOrderWithPaymentData($order, $shopgateOrder)
+    protected function _getConfigCode()
     {
-        return Mage::getModel('shopgate/payment_cc_authn', $shopgateOrder)->manipulateOrderWithPaymentData($order);
+        return Payone_Api_Enum_OnlinebanktransferType::GIROPAY;
     }
+
 }

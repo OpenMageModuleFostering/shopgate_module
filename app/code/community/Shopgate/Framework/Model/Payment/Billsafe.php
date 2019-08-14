@@ -22,73 +22,25 @@
  */
 
 /**
- * User: pliebig
- * Date: 14.11.14
- * Time: 10:25
- * E-Mail: p.liebig@me.com, peter.liebig@magcorp.de
+ * @deprecated v2.9.18 - use Shopgate_Framework_Model_Payment_Simple_Billsafe instead
+ * @package    Shopgate_Framework_Model_Payment_Billsafe
+ * @author     Peter Liebig <p.liebig@me.com>
+ * @author     Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
-
-/**
- * class to manipulate the order payment data with billsafe payment data
- *
- * @package     Shopgate_Framework_Model_Payment_Billsafe
- * @author      Peter Liebig <p.liebig@me.com, peter.liebig@magcorp.de>
- */
-class Shopgate_Framework_Model_Payment_Billsafe extends Shopgate_Framework_Model_Payment_Abstract
+class Shopgate_Framework_Model_Payment_Billsafe extends Shopgate_Framework_Model_Payment_Simple
 {
     /**
-     * @param $order            Mage_Sales_Model_Order
-     * @param $shopgateOrder    ShopgateOrder
-     * 
+     * Backward compatible forwarder to new systmem
+     *
+     * @deprecated v2.9.18
+     * @param Mage_Sales_Model_Order $order
+     * @param ShopgateOrder          $shopgateOrder
+     *
      * @return Mage_Sales_Model_Order
      */
     public function manipulateOrderWithPaymentData($order, $shopgateOrder)
     {
-        $paymentBillsafe = Mage::getModel('billsafe/payment');
-        $order->getPayment()->setMethod($paymentBillsafe->getCode());
-        $paymentBillsafe->setInfoInstance($order->getPayment());
-        $order->getPayment()->setMethodInstance($paymentBillsafe);
-        $order->save();
-        $orderObject = new Varien_Object(array('increment_id' => $shopgateOrder->getOrderNumber()));
-        $data = Mage::getSingleton('billsafe/client')->getPaymentInstruction($orderObject);
-        if ($data) {
-            $order->getPayment()->setAdditionalInformation(
-                    'BillsafeStatus', Netresearch_Billsafe_Model_Payment::BILLSAFE_STATUS_ACTIVE
-            );
-            $order->getPayment()->setAdditionalInformation('Recipient', $data->recipient);
-            $order->getPayment()->setAdditionalInformation('BankCode', $data->bankCode);
-            $order->getPayment()->setAdditionalInformation('AccountNumber', $data->accountNumber);
-            $order->getPayment()->setAdditionalInformation('BankName', $data->bankName);
-            $order->getPayment()->setAdditionalInformation('Bic', $data->bic);
-            $order->getPayment()->setAdditionalInformation('Iban', $data->iban);
-            $order->getPayment()->setAdditionalInformation('Reference', $data->reference);
-            $order->getPayment()->setAdditionalInformation('Amount', $data->amount);
-            $order->getPayment()->setAdditionalInformation('CurrencyCode', $data->currencyCode);
-            $order->getPayment()->setAdditionalInformation('Note', $data->note);
-            $order->getPayment()->setAdditionalInformation('legalNote', $data->legalNote);
-        } else {
-            $order->getPayment()->setAdditionalInformation(
-                    'BillsafeStatus', Netresearch_Billsafe_Model_Payment::BILLSAFE_STATUS_CANCELLED
-            );
-        }
-        $paymentInfos = $shopgateOrder->getPaymentInfos();
-        $orderTrans = Mage::getModel('sales/order_payment_transaction');
-        $orderTrans->setOrderPaymentObject($order->getPayment());
-        $orderTrans->setIsClosed(false);
-        $orderTrans->setTxnId($paymentInfos['billsafe_transaction_id']);
-        $orderTrans->setTxnType(Mage_Sales_Model_Order_Payment_Transaction::TYPE_AUTH);
-        $orderTrans->save();
-        $order->getPayment()->importTransactionInfo($orderTrans);
-        $order->getPayment()->setDataChanges(true);   
-        
-        $status = Mage::getModel('billsafe/config')->getBillSafeOrderStatus($order->getStoreId());
-        if ('pending' == $status) {
-            $status = Mage_Sales_Model_Order::STATE_PENDING_PAYMENT;
-        }
-        $text = 'Successful BillSAFE payment.<br/>Transaction ID: %d.<br/>BillSAFE Transaction Status: ACCEPTED.';
-        $notice = $this->_getPaymentHelper()->__($text, $paymentInfos['billsafe_transaction_id']);
-        $state = Mage::helper('shopgate')->getStateForStatus($status);
-        $order->setState($state, $status, $notice);
-        return $order;
+        return Mage::getModel('shopgate/payment_simple_billsafe', $shopgateOrder)
+                   ->manipulateOrderWithPaymentData($order);
     }
 }

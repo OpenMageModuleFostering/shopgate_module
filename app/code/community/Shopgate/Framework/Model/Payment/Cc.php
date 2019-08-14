@@ -22,23 +22,29 @@
  */
 
 /**
- * Used to be a native implementation of Authorize
+ * Forwarder for all Credit Card payment methods that contain CC in payment_method
+ * Inherits from Simple class to use the first part of payment_method.
+ * Meaning use Authn in Authn_CC to make Cc/Auth.php call
  *
- * @deprecated  2.9.18 - use Shopgate_Framework_Model_Payment_Cc_Authn instead
- * @package     Shopgate_Framework_Model_Payment_Authorize
- * @author      Peter Liebig <p.liebig@me.com, peter.liebig@magcorp.de>
- * @author      Konstantin Kiritsenko <konstantin@kiritsenko.com>
+ * Class Shopgate_Framework_Model_Payment_Cc
+ *
+ * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
-class Shopgate_Framework_Model_Payment_Authorize
+class Shopgate_Framework_Model_Payment_Cc extends Shopgate_Framework_Model_Payment_Simple
 {
     /**
-     * @deprecated 2.9.18
-     * @param $order         Mage_Sales_Model_Order
-     * @param $shopgateOrder ShopgateOrder
-     * @return Mage_Sales_Model_Order
+     * Temp rewrite for edge case where AUTHN_CC needs to be
+     * handled by AuthorizeCIM.
+     *
+     * @return false|Shopgate_Framework_Model_Payment_Abstract
+     * @throws Exception
      */
-    public function manipulateOrderWithPaymentData($order, $shopgateOrder)
+    public function getModelByPaymentMethod()
     {
-        return Mage::getModel('shopgate/payment_cc_authn', $shopgateOrder)->manipulateOrderWithPaymentData($order);
+        if (Mage::getModel('shopgate/payment_cc_authncim', $this->getShopgateOrder())->isValid()) {
+            $this->setPaymentMethod('AUTHNCIM_CC');
+        }
+
+        return parent::getModelByPaymentMethod();
     }
 }
