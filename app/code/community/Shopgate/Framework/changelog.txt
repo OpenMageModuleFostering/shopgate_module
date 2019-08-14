@@ -1,3 +1,10 @@
+'''Version 2.9.41'''
+* Improved error printing for configurable products in checkCart
+* Removed coupon title from displaying in shopgate mobile site
+* added support for catalog price rule customer group pricing for simple & config. products
+* Removed coupon descriptions from appearing on mobile site
+* Fixed collector total exception for quotes without shopgate object
+
 '''Version 2.9.40'''
 * Fixed mage cart page exception for collector calls without a Shopgate object in session
 

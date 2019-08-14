@@ -192,18 +192,16 @@ class Shopgate_Framework_Helper_Coupon extends Mage_Core_Helper_Abstract
     /**
      * Check coupons for validation and apply shopping cart price rules to the cart
      *
-     * @param Mage_Checkout_Model_Cart                           $mageCart
-     * @param ShopgateCart                                       $cart
-     * @param bool                                               $useTaxClasses
-     * @param Shopgate_Framework_Model_Modules_Affiliate_Factory $factory
+     * @param Mage_Checkout_Model_Cart $mageCart
+     * @param ShopgateCart             $cart
+     * @param bool                     $useTaxClasses
      *
      * @return ShopgateExternalCoupon[]
      */
     public function checkCouponsAndCartRules(
         $mageCart,
         ShopgateCart $cart,
-        $useTaxClasses,
-        Shopgate_Framework_Model_Modules_Affiliate_Factory $factory
+        $useTaxClasses
     ) {
         /* @var $mageQuote Mage_Sales_Model_Quote */
         /* @var $mageCart Mage_Checkout_Model_Cart */
@@ -218,6 +216,7 @@ class Shopgate_Framework_Helper_Coupon extends Mage_Core_Helper_Abstract
         $appliedRules       = $mageQuote->getAppliedRuleIds();
         $totals             = $mageQuote->getTotals();
         $discountAmount     = empty($totals['discount']) ? 0 : $totals['discount']->getValue();
+        $discountTitle      = Mage::helper('sales')->__('Discount');
 
         if (!$cart->getExternalCoupons() && empty($discountAmount)) {
             return array();
@@ -246,19 +245,18 @@ class Shopgate_Framework_Helper_Coupon extends Mage_Core_Helper_Abstract
             try {
                 $totals = $mageQuote->getTotals();
                 if (isset($totals['discount'])) {
-                    $discount = $totals['discount'];
-                    $coupon   = new ShopgateExternalCoupon();
+                    /** @var Mage_Sales_Model_Quote_Address_Total $discount */
+                    $discount    = $totals['discount'];
+                    $couponValue = abs($discount->getData('value'));
+
+                    $coupon = new ShopgateExternalCoupon();
                     $coupon->setIsValid(true);
                     $coupon->setCode(self::CART_RULE_COUPON_CODE);
-                    $title = $discount->getTitle();
-                    $title = empty($title) ? Mage::helper('sales')->__('Discount') : $title;
-                    $coupon->setName($title);
-                    $coupon->setDescription($discount->getTitle());
-                    $amountCoupon = abs($discount->getValue());
+                    $coupon->setName($discountTitle);
                     if ($useTaxClasses) {
-                        $coupon->setAmountGross($amountCoupon);
+                        $coupon->setAmountGross($couponValue);
                     } else {
-                        $coupon->setAmountNet($amountCoupon);
+                        $coupon->setAmountNet($couponValue);
                     }
                     $coupon->setCurrency(Mage::app()->getStore()->getCurrentCurrencyCode());
                     $coupon->setInternalInfo(
@@ -280,7 +278,7 @@ class Shopgate_Framework_Helper_Coupon extends Mage_Core_Helper_Abstract
         if ($returnEmptyCoupon) {
             $coupon = new ShopgateExternalCoupon();
             $coupon->setCode(self::CART_RULE_COUPON_CODE);
-            $coupon->setName(Mage::helper('sales')->__('Discount'));
+            $coupon->setName($discountTitle);
             $coupon->setIsValid(false);
             $externalCoupons[] = $coupon;
         }
@@ -308,7 +306,6 @@ class Shopgate_Framework_Helper_Coupon extends Mage_Core_Helper_Abstract
         try {
             $mageQuote->setCouponCode($coupon->getCode());
             $mageQuote->setTotalsCollectedFlag(false)->collectTotals();
-            $totals = $mageQuote->getTotals();
         } catch (Exception $e) {
             $externalCoupon->setIsValid(false);
             $externalCoupon->setNotValidMessage($e->getMessage());
@@ -323,43 +320,31 @@ class Shopgate_Framework_Helper_Coupon extends Mage_Core_Helper_Abstract
         }
 
         if ($mageRule->getId() && $mageQuote->getCouponCode()) {
-            $discountName = isset($totals['discount'])
-                ? $totals['discount']->getTitle()
-                : $mageRule->getDescription();
-
-            $couponInfo              = array();
-            $couponInfo["coupon_id"] = $mageCoupon->getId();
-            $couponInfo["rule_id"]   = $mageRule->getId();
+            $couponInfo['coupon_id'] = $mageCoupon->getId();
+            $couponInfo['rule_id']   = $mageRule->getId();
 
             $amountCoupon = $mageQuote->getSubtotal() - $mageQuote->getSubtotalWithDiscount();
-            $storeLabel   = $mageRule->getStoreLabel(Mage::app()->getStore()->getId());
-            $externalCoupon->setName($storeLabel ? $storeLabel : $mageRule->getName());
-            $externalCoupon->setDescription($discountName);
             $externalCoupon->setIsFreeShipping((bool)$mageQuote->getShippingAddress()->getFreeShipping());
             $externalCoupon->setInternalInfo(Mage::helper('shopgate')->getConfig()->jsonEncode($couponInfo));
+
             if ($useTaxClasses) {
                 $externalCoupon->setAmountGross($amountCoupon);
             } else {
                 $externalCoupon->setAmountNet($amountCoupon);
             }
+
             if (!$amountCoupon && !$externalCoupon->getIsFreeShipping()) {
                 $externalCoupon->setIsValid(0);
                 $externalCoupon->setAmount(0);
                 $externalCoupon->setNotValidMessage(
-                    Mage::helper('shopgate')->__(
-                        'Coupon code "%s" is not valid.',
-                        Mage::helper('core')->escapeHtml($coupon->getCode())
-                    )
+                    Mage::helper('shopgate')->__('Coupon code "%s" is not valid.', $coupon->getCode())
                 );
             }
         } else {
             $externalCoupon->setIsValid(0);
             $externalCoupon->setAmount(0);
             $externalCoupon->setNotValidMessage(
-                Mage::helper('shopgate')->__(
-                    'Coupon code "%s" is not valid.',
-                    Mage::helper('core')->escapeHtml($coupon->getCode())
-                )
+                Mage::helper('shopgate')->__('Coupon code "%s" is not valid.', $coupon->getCode())
             );
         }
         $externalCoupon->setCurrency(Mage::app()->getStore()->getCurrentCurrencyCode());

@@ -1624,8 +1624,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             return $this->_getCouponHelper()->checkCouponsAndCartRules(
                 $mageCart,
                 $cart,
-                $this->useTaxClasses,
-                $this->_getFactory()->getAffiliate($cart)
+                $this->useTaxClasses
             );
         }
 
