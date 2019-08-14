@@ -22,29 +22,17 @@
  */
 
 /**
- * Forwarder to PayPal between Standard & Express
+ * Class Shopgate_Framework_Model_Payment_Inv_Payol
  *
- * Class Shopgate_Framework_Model_Payment_Simple_Paypal
- *
- * @author  Konstantin Kiritsenko <konstantin@kiritsenko.com>
+ * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
-class Shopgate_Framework_Model_Payment_Simple_Paypal extends Shopgate_Framework_Model_Payment_Simple
+class Shopgate_Framework_Model_Payment_Inv_Payol
+    extends Shopgate_Framework_Model_Payment_Abstract_AbstractPayol
+    implements Shopgate_Framework_Model_Payment_Interface
 {
-    /**
-     * Redirect to standard or express
-     *
-     * @return false|Shopgate_Framework_Model_Payment_Abstract
-     */
-    public function getModelByPaymentMethod()
-    {
-        $standard = Mage::getModel('shopgate/payment_simple_paypal_standard', $this->getShopgateOrder());
-
-        if ($standard instanceof Shopgate_Framework_Model_Payment_Interface && $standard->isValid()) {
-            $this->setPaymentMethod('STANDARD');
-        } else {
-            $this->setPaymentMethod('EXPRESS');
-        }
-
-        return parent::getModelByPaymentMethod();
-    }
+    const PAYMENT_IDENTIFIER     = ShopgateCartBase::PAYOL_INV;
+    const XML_CONFIG_ENABLED     = 'payment/payolution_invoice/active';
+    const MODULE_CONFIG          = 'Payolution_Invoice';
+    const PAYMENT_MODEL          = 'payolution_invoice/xmlPayment';
+    const XML_CONFIG_STATUS_PAID = 'payment/payolution_invoice/order_status';
 }

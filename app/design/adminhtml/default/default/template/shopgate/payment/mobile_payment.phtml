@@ -37,5 +37,5 @@ if ($this->getShopgateOrder()->getShopgateOrderObject()->getIsTest()):?><strong 
 
 <?php echo $this->__('Shopgate order number: %s', $this->getShopgateOrderNumber()); ?>
 <p style="margin-top: 1em;">
-    <?php echo $this->printPaymentInfo(); ?>
+    <?php echo $this->printPaymentInfo($this->getPaymentInfos()); ?>
 </p>

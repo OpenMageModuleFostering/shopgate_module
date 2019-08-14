@@ -94,10 +94,11 @@ class Shopgate_Framework_Model_Carrier_Fix
         $method->setMethod($this->_method);
         $method->setMethodTitle($methodTitle);
 
-	    $isZeroTax = Mage::getSingleton('core/session')->getData('is_zero_tax');
-	    $amount["shipping"] = $shippingInfo->getAmount() < $sgOrder->getAmountShipping()
-		    ? $this->_getNetForGrossShipping($shippingInfo->getAmount(), false)
-		    : $this->_getNetForGrossShipping($sgOrder->getAmountShipping(), !$isZeroTax);
+	    $shippingContainsTax = $sgOrder->getShippingTaxPercent() > 0
+            ? true
+            : false;
+
+	    $amount['shipping'] = $this->_getNetForGrossShipping($shippingInfo->getAmount(), $shippingContainsTax);
 
         $amountShopPayment = $sgOrder->getAmountShopPayment();
         if ($amountShopPayment >= 0) {

@@ -400,7 +400,13 @@ class Shopgate_Framework_Model_Export_Product_Xml
                     : $index->load($this->item->getId())->getFinalPrice();
             }
         } else {
-            $rulePrice  = Mage::helper("shopgate/export")->calcProductPriceRule($this->item);
+
+            $rulePrice = Mage::helper("shopgate/export")->calcProductPriceRule(
+                $useParent
+                    ? $this->_parent
+                    : $this->item
+            );
+
             $finalPrice = $useParent
                 ? $this->_parent->getFinalPrice()
                 : $this->item->getFinalPrice();

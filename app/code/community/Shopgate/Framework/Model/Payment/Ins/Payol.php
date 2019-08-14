@@ -22,29 +22,18 @@
  */
 
 /**
- * Forwarder to PayPal between Standard & Express
+ * Class Shopgate_Framework_Model_Payment_Ins_Payol
  *
- * Class Shopgate_Framework_Model_Payment_Simple_Paypal
- *
- * @author  Konstantin Kiritsenko <konstantin@kiritsenko.com>
+ * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
-class Shopgate_Framework_Model_Payment_Simple_Paypal extends Shopgate_Framework_Model_Payment_Simple
+class Shopgate_Framework_Model_Payment_Ins_Payol
+    extends Shopgate_Framework_Model_Payment_Abstract_AbstractPayol
+    implements Shopgate_Framework_Model_Payment_Interface
 {
-    /**
-     * Redirect to standard or express
-     *
-     * @return false|Shopgate_Framework_Model_Payment_Abstract
-     */
-    public function getModelByPaymentMethod()
-    {
-        $standard = Mage::getModel('shopgate/payment_simple_paypal_standard', $this->getShopgateOrder());
+    const PAYMENT_IDENTIFIER     = ShopgateCartBase::PAYOL_INS;
+    const XML_CONFIG_ENABLED     = 'payment/installment/active';
+    const MODULE_CONFIG          = 'Payolution_Installment';
+    const PAYMENT_MODEL          = 'installment/xmlPayment';
+    const XML_CONFIG_STATUS_PAID = 'payment/installment/order_status';
 
-        if ($standard instanceof Shopgate_Framework_Model_Payment_Interface && $standard->isValid()) {
-            $this->setPaymentMethod('STANDARD');
-        } else {
-            $this->setPaymentMethod('EXPRESS');
-        }
-
-        return parent::getModelByPaymentMethod();
-    }
 }

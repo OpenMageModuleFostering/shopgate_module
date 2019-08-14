@@ -76,7 +76,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
      * @var null | Shopgate_Framework_Model_Payment_Factory
      */
     protected $_factory = null;
-    
+
     /**
      * Callback function for initialization by plugin implementations.
      * This method gets called on instantiation of a ShopgatePlugin child class and serves as __construct() replacement.
@@ -89,14 +89,14 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
         /* @var $config Shopgate_Framework_Helper_Config */
         $this->_config     = $this->_getConfig();
         $this->_defaultTax = Mage::getModel("tax/calculation")->getDefaultCustomerTaxClass(
-                                 $this->_getConfig()->getStoreViewId()
+            $this->_getConfig()->getStoreViewId()
         );
         return true;
     }
 
     /**
      * Simple setter
-     * 
+     *
      * @param $factory Shopgate_Framework_Model_Payment_Factory
      */
     protected function _setFactory(Shopgate_Framework_Model_Payment_Factory $factory)
@@ -106,19 +106,19 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
 
     /**
      * Factory getter
-     * 
+     *
      * @return null|Shopgate_Framework_Model_Payment_Factory
      */
     protected function _getFactory()
     {
-        if(!$this->_factory){
-            $shopgateOrder  = Mage::getModel('core/session')->getShopgateOrder();
-            $factory        = Mage::getModel('shopgate/payment_factory', $shopgateOrder);
+        if (!$this->_factory) {
+            $shopgateOrder = Mage::getModel('core/session')->getShopgateOrder();
+            $factory       = Mage::getModel('shopgate/payment_factory', $shopgateOrder);
             $this->_setFactory($factory);
         }
         return $this->_factory;
     }
-    
+
     /**
      *
      * @param string $action
@@ -165,8 +165,10 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                 $this->_cronCancelOrder();
                 break;
             default:
-                throw new ShopgateLibraryException(ShopgateLibraryException::PLUGIN_CRON_UNSUPPORTED_JOB,
-                                                   '"' . $jobname . '"', true);
+                throw new ShopgateLibraryException(
+                    ShopgateLibraryException::PLUGIN_CRON_UNSUPPORTED_JOB,
+                    '"' . $jobname . '"', true
+                );
         }
 
         $this->log("END Run CRON-Jobs", ShopgateLogger::LOGTYPE_DEBUG);
@@ -217,8 +219,8 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                 continue;
             }
             $this->log(
-                 ">> Order with ID {$order->getId()} loaded and ready for cancellation",
-                 ShopgateLogger::LOGTYPE_DEBUG
+                ">> Order with ID {$order->getId()} loaded and ready for cancellation",
+                ShopgateLogger::LOGTYPE_DEBUG
             );
             $this->log(">> Dispatching event order_cancel_after", ShopgateLogger::LOGTYPE_DEBUG);
             Mage::dispatchEvent('order_cancel_after', array('order' => $order, 'shopgate_order' => $shopgateOrder));
@@ -282,7 +284,11 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             if ($e->getCode() == Mage_Customer_Model_Customer::EXCEPTION_EMAIL_EXISTS) {
                 throw new ShopgateLibraryException(ShopgateLibraryException::REGISTER_USER_ALREADY_EXISTS);
             } else {
-                throw new ShopgateLibraryException(ShopgateLibraryException::REGISTER_FAILED_TO_ADD_USER, $e->getMessage(), true);
+                throw new ShopgateLibraryException(
+                    ShopgateLibraryException::REGISTER_FAILED_TO_ADD_USER,
+                    $e->getMessage(),
+                    true
+                );
             }
         } catch (Exception $e) {
             throw new ShopgateLibraryException(ShopgateLibraryException::UNKNOWN_ERROR_CODE, $e->getMessage(), true);
@@ -321,8 +327,8 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             $this->log("# Try to load old shopgate order to check for duplicate", ShopgateLogger::LOGTYPE_DEBUG);
             /** @var Shopgate_Framework_Model_Shopgate_Order $magentoShopgateOrder */
             $magentoShopgateOrder = Mage::getModel("shopgate/shopgate_order")->load(
-                                        $order->getOrderNumber(),
-                                        "shopgate_order_number"
+                $order->getOrderNumber(),
+                "shopgate_order_number"
             );
 
             if ($magentoShopgateOrder->getId() !== null) {
@@ -333,13 +339,14 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                     $orderId = $magentoShopgateOrder->getOrderId();
                 }
 
-                throw new ShopgateLibraryException(ShopgateLibraryException::PLUGIN_DUPLICATE_ORDER,
-                                                   'orderId: ' . $orderId, true);
+                throw new ShopgateLibraryException(
+                    ShopgateLibraryException::PLUGIN_DUPLICATE_ORDER,
+                    'orderId: ' . $orderId, true
+                );
             }
             Mage::dispatchEvent('shopgate_add_order_before', array('shopgate_order' => $order));
             $this->log("# Add shopgate order to Session", ShopgateLogger::LOGTYPE_DEBUG);
             Mage::getSingleton("core/session")->setData("shopgate_order", $order);
-            Mage::getSingleton('core/session')->setData('is_zero_tax', false);
             $this->log("# Create quote for order", ShopgateLogger::LOGTYPE_DEBUG);
 
             $quote = Mage::getModel('sales/quote')->setStoreId($this->_getConfig()->getStoreViewId());
@@ -385,11 +392,11 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             $title = $title ? $title : $order->getShippingInfos()->getDisplayName();
             $quote->getShippingAddress()->setShippingDescription($title);
             $quote->save();
-            
+
             // due to compatibility with 3rd party modules which fetches the quote from the session (like phoenix_cod, SUE)
             // needed before $service->submitAll() is called
             Mage::getSingleton('checkout/session')->replaceQuote($quote);
-            
+
             $magentoOrder = $this->_getFactory()->createNewOrder($quote);
 
             $this->log("# Create order from quote", ShopgateLogger::LOGTYPE_DEBUG);
@@ -400,9 +407,9 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             $magentoOrder = $this->executeLoaders($this->_getCreateOrderLoaders(), $magentoOrder, $order);
             $magentoOrder->setShippingDescription($title);
             $magentoOrder->setShippingMethod($method);
-            
+
             //todo: move this out, intentionally here after executeLoaders?
-            if ($magentoOrder->getTotalDue() > 0 
+            if ($magentoOrder->getTotalDue() > 0
                 && $order->getPaymentMethod() == ShopgateOrder::PP_WSPP_CC
             ) {
                 if (!$magentoOrder->getPayment()->getIsTransactionPending()) {
@@ -429,11 +436,11 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             $totalShopgate = $order->getAmountComplete();
             $totalMagento  = $magentoOrder->getTotalDue();
             $this->log(
-                 "
+                "
 					Total Shopgate: {$totalShopgate} {$order->getCurrency()}
 					Total Magento: {$totalMagento} {$order->getCurrency()}
 					",
-                 ShopgateLogger::LOGTYPE_DEBUG
+                ShopgateLogger::LOGTYPE_DEBUG
             );
 
             $result = array(
@@ -456,7 +463,11 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             throw $e;
         } catch (Exception $e) {
             Mage::getModel("sales/order")->getResource()->rollback();
-            throw new ShopgateLibraryException(ShopgateLibraryException::UNKNOWN_ERROR_CODE, "{$e->getMessage()}\n{$e->getTraceAsString()}", true);
+            throw new ShopgateLibraryException(
+                ShopgateLibraryException::UNKNOWN_ERROR_CODE,
+                "{$e->getMessage()}\n{$e->getTraceAsString()}",
+                true
+            );
         }
 
         return $result;
@@ -500,12 +511,13 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
 
         foreach ($order->getItems() as $item) {
             /* @var $item ShopgateOrderItem */
-            if ($item->getUnitAmountWithTax() < 0 && !$item->getInternalOrderInfo()) {
+            if (!$item->getInternalOrderInfo()) {
+                /** might be a shopgate coupon due to we only export products with internal_order_info */
                 continue;
             }
 
-            $orderInfo     = $item->getInternalOrderInfo();
-            $orderInfo     = $this->jsonDecode($orderInfo, true);
+            $orderInfo = $item->getInternalOrderInfo();
+            $orderInfo = $this->jsonDecode($orderInfo, true);
 
             $stackQuantity = 1;
             if (!empty($orderInfo['stack_quantity']) && $orderInfo['stack_quantity'] > 1) {
@@ -514,39 +526,54 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
 
             $pId = $orderInfo["product_id"];
             /** @var Mage_Catalog_Model_Product $product */
-            $product       = Mage::getModel('catalog/product')->setStoreId($this->_getConfig()->getStoreViewId())
-                                 ->load($pId);
+            $product = Mage::getModel('catalog/product')->setStoreId($this->_getConfig()->getStoreViewId())
+                           ->load($pId);
 
             if (!$product->getId()) {
                 throw new ShopgateLibraryException(
                     ShopgateLibraryException::CART_ITEM_PRODUCT_NOT_FOUND, 'product ID: ' . $pId, true
                 );
             }
-            
+
             $itemNumber    = $item->getItemNumber();
-            $productWeight = NULL;
+            $productWeight = null;
 
             if (strpos($itemNumber, '-') !== false) {
                 $productWeight = $product->getTypeInstance()->getWeight();
-                $productIds = explode('-', $itemNumber);
-                $parentId   = $productIds[0];
+                $productIds    = explode('-', $itemNumber);
+                $parentId      = $productIds[0];
+                $childId       = $productIds[1];
                 /** @var Mage_Catalog_Model_Product $parent */
                 $parent = Mage::getModel('catalog/product')->setStoreId($this->_getConfig()->getStoreViewId())
                               ->load($parentId);
-	            if ($parent->isConfigurable()
-		            && !$this->_getConfig()->addOnlySimplesToCart()
-	            ) {
+                if ($parent->isConfigurable()
+                    && !$this->_getConfig()->addOnlySimplesToCart()
+                ) {
                     $buyObject       = $this->_createQuoteItemBuyInfo($item, $parent, $stackQuantity);
                     $superAttributes = $parent->getTypeInstance(true)->getConfigurableAttributesAsArray($parent);
                     $superAttConfig  = array();
 
                     foreach ($superAttributes as $productAttribute) {
                         $superAttConfig[$productAttribute['attribute_id']] = $product->getData(
-                                                                                     $productAttribute['attribute_code']
+                            $productAttribute['attribute_code']
                         );
                     }
                     $buyObject->setSuperAttribute($superAttConfig);
                     $product = $parent;
+                } elseif ($parent->isGrouped()) {
+                    /** @var Mage_Catalog_Model_Product_Type_Grouped  $product */
+                    $product            = Mage::getModel('catalog/product')->setStoreId($this->_getConfig()->getStoreViewId())->load($childId);
+                    $buyObject          = $this->_createQuoteItemBuyInfo($item, $product, $stackQuantity);
+                    $associatedProducts = $parent->getTypeInstance(true)->getAssociatedProducts($parent);
+                    $superGroup         = array();
+                    foreach ($associatedProducts as $associatedProduct) {
+                        /** @var Mage_Catalog_Model_Product $associatedProduct */
+                        $superGroup[$associatedProduct->getId()] = 1;
+                    }
+                    $buyObject->setSuperGroup($superGroup);
+                    $buyObject->setSuperProductConfig(
+                        array('product_type' => Mage_Catalog_Model_Product_Type_Grouped::TYPE_CODE, 'product_id' => $parent->getId())
+                    );
                 } else {
                     $buyObject = $this->_createQuoteItemBuyInfo($item, $product, $stackQuantity);
                 }
@@ -568,7 +595,8 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                         throw new ShopgateLibraryException(
                             ShopgateLibraryException::UNKNOWN_ERROR_CODE,
                             "Error on adding product to quote! Details: " . var_export($quoteItem, true),
-                            true);
+                            true
+                        );
                     }
                 }
                 $quoteItem = $quote->getItemByProduct($product);
@@ -577,11 +605,6 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                     $quoteItem->setWeight($productWeight);
                 }
                 $quoteItem->setRowWeight($quoteItem->getWeight() * $quoteItem->getQuantity());
-
-                if (!(int)$item->getTaxPercent()) {
-                    Mage::getSingleton('core/session')->setData('is_zero_tax', true);
-                }
-
                 $quoteItem->setWeeeTaxApplied(serialize(array()));
             } catch (Exception $e) {
                 $quote->setShopgateError(array($itemNumber => array($e->getCode() => $e->getMessage())));
@@ -746,33 +769,19 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                     }
                     $itemAmount = $item->getUnitAmountWithTax();
                 }
-                
 
                 $obj = new Varien_Object();
                 $obj->setName($item->getName());
                 $obj->setItemNumber($item->getItemNumber());
                 $obj->setUnitAmountWithTax($itemAmount);
+                $obj->setQty($item->getQuantity());
                 $this->_virtualObjectStack[] = $obj;
-            }
-        } else {
-            if ($order instanceof ShopgateCart) {
-                foreach ($order->getShopgateCoupons() as $coupon) {
-                    /** @var ShopgateShopgateCoupon $coupon */
-                    $obj = new Varien_Object();
-                    $obj->setName($coupon->getName());
-                    $obj->setItemNumber("COUPON");
-                    $obj->setUnitAmountWithTax(-1 * $coupon->getAmount());
-                    $this->_virtualObjectStack[] = $obj;
-                }
-            } else {
-                throw new ShopgateLibraryException(ShopgateLibraryException::UNKNOWN_ERROR_CODE);
             }
         }
     }
 
     /**
      * Set the payment for the given quote
-     * Default: Shopgate, Paypal or ShopgateGeneric
      *
      * @param Mage_Sales_Model_Quote $quote
      * @param ShopgateOrder          $order
@@ -782,10 +791,6 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
     protected function _setQuotePayment($quote, $order)
     {
         $payment = $this->_getFactory()->getPaymentModel();
-
-        if (!$payment) {
-            $payment = $this->_getOrderHelper()->getMagentoPaymentMethod($order->getPaymentMethod());
-        }
 
         $paymentInfo = array();
         $info        = $order->getPaymentInfos();
@@ -877,33 +882,19 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
         }
 
         $quote->setIsSuperMode(true);
-        $name          = '';
-        $number        = '';
-        $amountWithTax = 0.0;
 
         foreach ($this->_virtualObjectStack as $obj) {
             /* @var $obj Varien_Object */
-            $name .= ('' == $name ? '' : ', ') . $obj->getName();
-            $number .= ('' == $number ? '' : ', ') . $obj->getItemNumber();
-            $amountWithTax += $obj->getUnitAmountWithTax();
+            $amountWithTax = $obj->getUnitAmountWithTax();
 
             /* @var $merged Mage_Catalog_Model_Product */
-            $merged = Mage::getModel('catalog/product');
-            $merged->setPriceCalculation(false);
-            $merged->setName($name);
-            $merged->setSku($number);
-            $merged->setPrice($amountWithTax);
-
-            // typeid is important for magento 1.4
-            $merged->setTypeId(Mage_Catalog_Model_Product_Type::TYPE_VIRTUAL);
+            $merged = $this->_getCouponHelper()->createProductFromShopgateCoupon($obj);
 
             /* @var $quoteItem Mage_Sales_Model_Quote_Item */
-            $quoteItem = $quote->addProduct($merged, 1);
-
+            $quoteItem = $quote->addProduct($merged, $obj->getQty());
             $quoteItem->setCustomPrice($amountWithTax);
             $quoteItem->setOriginalPrice($amountWithTax);
             $quoteItem->setOriginalCustomPrice($amountWithTax);
-
             $quoteItem->setNoDiscount(true);
             $quoteItem->setRowWeight(0);
             $quoteItem->setWeeeTaxApplied(serialize(array()));
@@ -922,25 +913,29 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
     protected function _setQuoteCustomer($quote, $order)
     {
         /* @var $customer Mage_Customer_Model_Customer */
-        $customer = Mage::getModel('customer/customer');
+        $customer           = Mage::getModel('customer/customer');
         $externalCustomerId = $order->getExternalCustomerId();
         if ($externalCustomerId) {
             $this->log('external customer id: ' . $externalCustomerId, ShopgateLogger::LOGTYPE_DEBUG);
             $customer->load($externalCustomerId);
             if (!$customer->getId()) {
-                throw new ShopgateLibraryException(ShopgateLibraryException::UNKNOWN_ERROR_CODE,
-                sprintf('customer with external id \'%s\' does not exist', $externalCustomerId));
+                throw new ShopgateLibraryException(
+                    ShopgateLibraryException::UNKNOWN_ERROR_CODE,
+                    sprintf('customer with external id \'%s\' does not exist', $externalCustomerId)
+                );
             } else {
                 $quote->setCustomer($customer);
                 $this->log('external customer loaded', ShopgateLogger::LOGTYPE_DEBUG);
             }
         }
-        $invoiceAddress = $order->getInvoiceAddress(); 
+        $invoiceAddress = $order->getInvoiceAddress();
         if ($invoiceAddress) {
             $this->log('invoice address start', ShopgateLogger::LOGTYPE_DEBUG);
             $quote->getBillingAddress()->setShouldIgnoreValidation(true);
             $billingAddressData = $this->_getSalesHelper()->createAddressData(
-                                       $order, $order->getInvoiceAddress(), true
+                $order,
+                $order->getInvoiceAddress(),
+                true
             );
             $billingAddress     = $quote->getBillingAddress()->addData($billingAddressData);
             $this->log('invoice address end', ShopgateLogger::LOGTYPE_DEBUG);
@@ -952,17 +947,19 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
 
             $quote->getShippingAddress()->setShouldIgnoreValidation(true);
             $shippingAddressData = $this->_getSalesHelper()->createAddressData(
-                                        $order, $order->getDeliveryAddress(), false
+                $order,
+                $order->getDeliveryAddress(),
+                false
             );
             $shippingAddress     = $quote->getShippingAddress()->addData($shippingAddressData);
 
             $this->_getHelper()->setShippingMethod($shippingAddress, $order);
             $this->log('delivery address end', ShopgateLogger::LOGTYPE_DEBUG);
         }
-        
+
         $quote->setCustomerEmail($order->getMail());
         $this->log('customer email: ' . $order->getMail(), ShopgateLogger::LOGTYPE_DEBUG);
-        
+
         if ($invoiceAddress) {
             $this->log('invoice address start (names)', ShopgateLogger::LOGTYPE_DEBUG);
 
@@ -972,13 +969,13 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
 
             $this->log('invoice address end (names)', ShopgateLogger::LOGTYPE_DEBUG);
         }
-        
+
         $externalCustomerId = $order->getExternalCustomerId();
         if (empty($externalCustomerId)) {
             $this->log('external customer number unavailable', ShopgateLogger::LOGTYPE_DEBUG);
             $quote->setCustomerIsGuest(1);
-	        $quote->getShippingAddress();
-	        $quote->getBillingAddress();
+            $quote->getShippingAddress();
+            $quote->getBillingAddress();
         } else {
             $this->log('external customer number available', ShopgateLogger::LOGTYPE_DEBUG);
 
@@ -991,25 +988,25 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                 $shippingAddress->setCustomerAddressId($deliveryAddress->getId());
             }
         }
-        
+
         Mage::register(
             'rule_data',
             new Varien_Object(
                 array(
-                    'store_id' => Mage::app()->getStore()->getId(),
-                    'website_id' => Mage::app()->getStore()->getWebsiteId(),
+                    'store_id'          => Mage::app()->getStore()->getId(),
+                    'website_id'        => Mage::app()->getStore()->getWebsiteId(),
                     'customer_group_id' => $quote->getCustomerGroupId()
                 )
             )
         );
-        
+
         $quote->setIsActive("0");
         $quote->setRemoteIp("shopgate.com");
         $quote->save();
-	    if (empty($externalCustomerId)) {
-		    $quote->getBillingAddress()->isObjectNew(false);
-		    $quote->getShippingAddress()->isObjectNew(false);
-	    }
+        if (empty($externalCustomerId)) {
+            $quote->getBillingAddress()->isObjectNew(false);
+            $quote->getShippingAddress()->isObjectNew(false);
+        }
         return $quote;
     }
 
@@ -1036,7 +1033,10 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             if ($order instanceof ShopgateOrder) {
 
                 if (!$coupon->getInternalInfo()) {
-                    throw new ShopgateLibraryException(ShopgateLibraryException::COUPON_NOT_VALID, 'Field "internal_info" is empty.');
+                    throw new ShopgateLibraryException(
+                        ShopgateLibraryException::COUPON_NOT_VALID,
+                        'Field "internal_info" is empty.'
+                    );
                 }
                 /** @var Mage_SalesRule_Model_Coupon $mageCoupon */
                 if ($this->_getConfigHelper()->getIsMagentoVersionLower1410()) {
@@ -1159,19 +1159,26 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
     {
         $order->addStatusHistoryComment($this->_getHelper()->__("[SHOPGATE] Order added by Shopgate."), false);
         $order->addStatusHistoryComment(
-              $this->_getHelper()->__(
-                   "[SHOPGATE] Shopgate order number: %s",
-                   $shopgateOrder->getOrderNumber()
-              ),
-              false
+            $this->_getHelper()->__(
+                "[SHOPGATE] Shopgate order number: %s",
+                $shopgateOrder->getOrderNumber()
+            ),
+            false
         );
 
-        if (Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ORDER_CUSTOMFIELDS_TO_STATUSHISTORY, 
-                                 $this->_getConfig()->getStoreViewId())) {
+        if (Mage::getStoreConfig(
+            Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ORDER_CUSTOMFIELDS_TO_STATUSHISTORY,
+            $this->_getConfig()->getStoreViewId()
+        )
+        ) {
             foreach ($shopgateOrder->getCustomFields() as $field) {
                 $order->addStatusHistoryComment(
-                      $this->_getHelper()
-                           ->__("[SHOPGATE] Custom fields:") . "\n\"" . addslashes($field->getLabel()) . "\" => \"" . addslashes($field->getValue()) . "\"", false);
+                    $this->_getHelper()
+                         ->__("[SHOPGATE] Custom fields:") . "\n\"" . addslashes(
+                        $field->getLabel()
+                    ) . "\" => \"" . addslashes($field->getValue()) . "\"",
+                    false
+                );
             }
         }
 
@@ -1197,8 +1204,8 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
     {
         $this->log("## Start to update Order", ShopgateLogger::LOGTYPE_DEBUG);
         $this->log(
-             "## Order-Number: {$order->getOrderNumber()}",
-             ShopgateLogger::LOGTYPE_DEBUG
+            "## Order-Number: {$order->getOrderNumber()}",
+            ShopgateLogger::LOGTYPE_DEBUG
         );
 
         Mage::dispatchEvent('shopgate_update_order_before', array('shopgate_order' => $order));
@@ -1207,8 +1214,8 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
 
         /** @var Shopgate_Framework_Model_Shopgate_Order $shopgateOrder */
         $shopgateOrder = Mage::getModel("shopgate/shopgate_order")->load(
-                             $order->getOrderNumber(),
-                             'shopgate_order_number'
+            $order->getOrderNumber(),
+            'shopgate_order_number'
         );
 
         if ($shopgateOrder->getId() == null) {
@@ -1221,8 +1228,8 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
         $magentoOrder = $shopgateOrder->getOrder();
         $magentoOrder = $this->_getUpdateOrderLoaders($magentoOrder, $order, $shopgateOrder);
         $magentoOrder->addStatusHistoryComment(
-                     $this->_getHelper()->__("[SHOPGATE] Order updated by Shopgate."),
-                     false
+            $this->_getHelper()->__("[SHOPGATE] Order updated by Shopgate."),
+            false
         );
 
         $magentoOrder->save();
@@ -1413,7 +1420,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                 }
             }
         } else {
-            $stateObject = new Varien_Object();
+            $stateObject    = new Varien_Object();
             $methodInstance = $magentoOrder->getPayment()->getMethodInstance();
             if ($shopgateOrder->getPaymentMethod() != ShopgateOrder::AMAZON_PAYMENT
                 && strpos($shopgateOrder->getPaymentMethod(), 'PAYONE') === false
@@ -1469,41 +1476,9 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
      *
      * @return Mage_Sales_Model_Order
      */
-    protected function _setOrderPayment($magentoOrder, $shopgateOrder)
+    protected function _setOrderPayment($magentoOrder, $shopgateOrder = null)
     {
-        /** @var Shopgate_Framework_Model_Payment_Factory $factory */
-        $factory = $this->_getFactory();
-        if ($factory->validatePaymentClass()) {
-            return $factory->manipulateOrderWithPaymentData($magentoOrder);
-        }
-
-        // Abstract will handle anything that doesn't have a manipulateOrder function
-        if ($shopgateOrder->getIsPaid() && $magentoOrder->getBaseTotalDue()) {
-            $magentoOrder->getPayment()->setShouldCloseParentTransaction(true);
-            $magentoOrder->getPayment()->registerCaptureNotification($shopgateOrder->getAmountComplete());
-
-            $magentoOrder->addStatusHistoryComment($this->_getHelper()->__("[SHOPGATE] Payment received."), false)
-                         ->setIsCustomerNotified(false);
-
-            if ($shopgateOrder->getPaymentMethod() === ShopgateOrder::PAYPAL) {
-                try {
-                    $transaction = Mage::getModel("sales/order_payment_transaction");
-                    $transaction->setOrderPaymentObject($magentoOrder->getPayment());
-                    $transaction->setIsClosed(false);
-                    $transaction->setTxnId($shopgateOrder->getPaymentTransactionNumber());
-                    $transaction->setTxnType(Mage_Sales_Model_Order_Payment_Transaction::TYPE_CAPTURE);
-                    $transaction->save();
-
-                    $magentoOrder->getPayment()->importTransactionInfo($transaction);
-                } catch (Exception $x) {
-                    $this->log($x->getMessage());
-                }
-            }
-        }
-
-        $magentoOrder->getPayment()->setLastTransId($shopgateOrder->getPaymentTransactionNumber());
-
-        return $magentoOrder;
+        return $this->_getFactory()->manipulateOrderWithPaymentData($magentoOrder);
     }
 
     /**
@@ -1644,10 +1619,10 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                 if (!$amountCoupon && !$externalCoupon->getIsFreeShipping()) {
                     $externalCoupon->setIsValid(false);
                     $externalCoupon->setNotValidMessage(
-                                   $this->_getHelper()->__(
-                                        'Coupon code "%s" is not valid.',
-                                        Mage::helper('core')->htmlEscape($coupon->getCode())
-                                   )
+                        $this->_getHelper()->__(
+                            'Coupon code "%s" is not valid.',
+                            Mage::helper('core')->htmlEscape($coupon->getCode())
+                        )
                     );
                 }
 
@@ -1655,10 +1630,10 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             } else {
                 $externalCoupon->setIsValid(false);
                 $externalCoupon->setNotValidMessage(
-                               $this->_getHelper()->__(
-                                    'Coupon code "%s" is not valid.',
-                                    Mage::helper('core')->htmlEscape($coupon->getCode())
-                               )
+                    $this->_getHelper()->__(
+                        'Coupon code "%s" is not valid.',
+                        Mage::helper('core')->htmlEscape($coupon->getCode())
+                    )
                 );
             }
 
@@ -1707,15 +1682,16 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             "payment_methods"  => array(),
             "items"            => array(),
             "customer"         => $this->_getSalesHelper()->getCustomerData(
-                                       $cart, $this->_getConfig()->getStoreViewId()
-                )
+                $cart,
+                $this->_getConfig()->getStoreViewId()
+            )
         );
 
-	    if ($mageCart->getQuote()->hasItems()
+        if ($mageCart->getQuote()->hasItems()
             && $shippingMethods = $this->_getSalesHelper()->getShippingMethods($mageCart)
         ) {
-		    $response["shipping_methods"] = $shippingMethods;
-	    }
+            $response["shipping_methods"] = $shippingMethods;
+        }
 
         if ($coupon = $this->checkCoupons($mageCart, $cart)) {
             $response["external_coupons"] = $coupon;
@@ -1967,8 +1943,8 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
         $this->setDefaultItemRowOptionCount($this->_getHelper()->getMaxOptionCount());
 
         $this->log(
-             'number of options to be exported: ' . $this->getDefaultItemRowOptionCount(),
-             ShopgateLogger::LOGTYPE_DEBUG
+            'number of options to be exported: ' . $this->getDefaultItemRowOptionCount(),
+            ShopgateLogger::LOGTYPE_DEBUG
         );
 
         $start      = time();
@@ -1989,8 +1965,8 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             /** @var Mage_Catalog_Model_Product $product */
             if ($this->_getExportHelper()->productHasRequiredFileOption($product)) {
                 $this->log(
-                     "Exclude Product with ID: {$product->getId()} from CSV: custom option type file",
-                     ShopgateLogger::LOGTYPE_DEBUG
+                    "Exclude Product with ID: {$product->getId()} from CSV: custom option type file",
+                    ShopgateLogger::LOGTYPE_DEBUG
                 );
                 continue;
             }
@@ -2000,23 +1976,23 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             $memoryPeekUsage = round(($memoryPeekUsage / 1024 / 1024), 2);
 
             $this->log(
-                 "[{$product->getId()}] Start Load Product with ID: {$product->getId()}",
-                 ShopgateLogger::LOGTYPE_DEBUG
+                "[{$product->getId()}] Start Load Product with ID: {$product->getId()}",
+                ShopgateLogger::LOGTYPE_DEBUG
             );
             $this->log("Memory usage: {$memoryUsage} MB", ShopgateLogger::LOGTYPE_DEBUG);
             $this->log("Memory peek usage: {$memoryPeekUsage} MB", ShopgateLogger::LOGTYPE_DEBUG);
 
             $this->log(
-                 "[{$product->getId()}] Product-Data:\n" . print_r(
-                     array(
-                         "id"   => $product->getId(),
-                         "name" => $product->getName(),
-                         "sku"  => $product->getSku(),
-                         "type" => $product->getTypeId(),
-                     ),
-                     true
-                 ),
-                 ShopgateLogger::LOGTYPE_DEBUG
+                "[{$product->getId()}] Product-Data:\n" . print_r(
+                    array(
+                        "id"   => $product->getId(),
+                        "name" => $product->getName(),
+                        "sku"  => $product->getSku(),
+                        "type" => $product->getTypeId(),
+                    ),
+                    true
+                ),
+                ShopgateLogger::LOGTYPE_DEBUG
             );
 
             if ($product->isSuper()) {
@@ -2076,14 +2052,15 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
 
         if ($xml) {
             $collection->addAttributeToFilter(
-                       'visibility',
-                       array('in' => 
-                                 array(
-                                     Mage_Catalog_Model_Product_Visibility::VISIBILITY_IN_SEARCH,
-                                     Mage_Catalog_Model_Product_Visibility::VISIBILITY_IN_CATALOG,
-                                     Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH
-                                 )
-                       )
+                'visibility',
+                array(
+                    'in' =>
+                        array(
+                            Mage_Catalog_Model_Product_Visibility::VISIBILITY_IN_SEARCH,
+                            Mage_Catalog_Model_Product_Visibility::VISIBILITY_IN_CATALOG,
+                            Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH
+                        )
+                )
             );
         }
         $collection->addAttributeToFilter('status', Mage_Catalog_Model_Product_Status::STATUS_ENABLED);
@@ -2096,7 +2073,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             $this->log("Offset: " . $this->exportOffset, ShopgateLogger::LOGTYPE_ACCESS);
             $this->log("[*] Offset: {$this->exportOffset}", ShopgateLogger::LOGTYPE_DEBUG);
         } else {
-            $ids = $collection->getAllIds();            
+            $ids = $collection->getAllIds();
         }
 
         return $ids;
@@ -2154,14 +2131,14 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
         $this->log("[*] Export Start...", ShopgateLogger::LOGTYPE_DEBUG);
 
         $this->log(
-             'number of options to be exported: ' . $this->getDefaultItemRowOptionCount(),
-             ShopgateLogger::LOGTYPE_DEBUG
+            'number of options to be exported: ' . $this->getDefaultItemRowOptionCount(),
+            ShopgateLogger::LOGTYPE_DEBUG
         );
 
         $start      = time();
         $productIds = $uids ? $uids : $this->_getExportProduct(true, $limit, $offset);
         $oldVersion = $this->_getConfigHelper()->getIsMagentoVersionLower15();
-        
+
         $i = 1;
 
         foreach ($productIds as $productId) {
@@ -2171,14 +2148,14 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             $this->log("#{$i}", ShopgateLogger::LOGTYPE_DEBUG);
             $i++;
 
-	        /** @var Mage_Catalog_Model_Product $product */
-	        if ($this->_getExportHelper()->productHasRequiredFileOption($product)) {
-		        $this->log(
-			        "Exclude Product with ID: {$product->getId()} from CSV: custom option type file",
-			        ShopgateLogger::LOGTYPE_DEBUG
-		        );
-		        continue;
-	        }
+            /** @var Mage_Catalog_Model_Product $product */
+            if ($this->_getExportHelper()->productHasRequiredFileOption($product)) {
+                $this->log(
+                    "Exclude Product with ID: {$product->getId()} from CSV: custom option type file",
+                    ShopgateLogger::LOGTYPE_DEBUG
+                );
+                continue;
+            }
 
             $memoryUsage     = memory_get_usage(true);
             $memoryUsage     = round(($memoryUsage / 1024 / 1024), 2);
@@ -2186,23 +2163,23 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             $memoryPeekUsage = round(($memoryPeekUsage / 1024 / 1024), 2);
 
             $this->log(
-                 "[{$product->getId()}] Start Load Product with ID: {$product->getId()}",
-                 ShopgateLogger::LOGTYPE_DEBUG
+                "[{$product->getId()}] Start Load Product with ID: {$product->getId()}",
+                ShopgateLogger::LOGTYPE_DEBUG
             );
             $this->log("Memory usage: {$memoryUsage} MB", ShopgateLogger::LOGTYPE_DEBUG);
             $this->log("Memory peek usage: {$memoryPeekUsage} MB", ShopgateLogger::LOGTYPE_DEBUG);
 
             $this->log(
-                 "[{$product->getId()}] Product-Data:\n" . print_r(
-                     array(
-                         "id"   => $product->getId(),
-                         "name" => $product->getName(),
-                         "sku"  => $product->getSku(),
-                         "type" => $product->getTypeId(),
-                     ),
-                     true
-                 ),
-                 ShopgateLogger::LOGTYPE_DEBUG
+                "[{$product->getId()}] Product-Data:\n" . print_r(
+                    array(
+                        "id"   => $product->getId(),
+                        "name" => $product->getName(),
+                        "sku"  => $product->getSku(),
+                        "type" => $product->getTypeId(),
+                    ),
+                    true
+                ),
+                ShopgateLogger::LOGTYPE_DEBUG
             );
 
             $this->addItem($this->_buildProductItem($product));
@@ -2237,7 +2214,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
      */
     protected function createReviewsCsv()
     {
-        $reviews = $this->_getReviewCollection($this->exportLimit, $this->exportOffset);
+        $reviews           = $this->_getReviewCollection($this->exportLimit, $this->exportOffset);
         $reviewExportModel = Mage::getModel('shopgate/export_review_csv');
         $reviewExportModel->setDefaultRow($this->buildDefaultReviewRow());
         foreach ($reviews as $review) {
@@ -2332,7 +2309,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
      */
     public function setUseTaxClasses($bool)
     {
-        $this->useTaxClasses = $bool; 
+        $this->useTaxClasses = $bool;
     }
 
     /** ========================================= SETTING EXPORT END ================================================ */
@@ -2383,19 +2360,19 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
     }
 
     /**
-     * @return Shopgate_Framework_Helper_Data
-     */
-    protected function _getDataHelper()
-    {
-        return Mage::helper('shopgate/data');
-    }
-
-    /**
      * @return Shopgate_Framework_Helper_Payment_Abstract
      */
     protected function _getPaymentHelper()
     {
         return Mage::helper('shopgate/payment_abstract');
+    }
+
+    /**
+     * @return Shopgate_Framework_Helper_Coupon
+     */
+    protected function _getCouponHelper()
+    {
+        return Mage::helper('shopgate/coupon');
     }
 
     /**
@@ -2407,14 +2384,6 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
             $this->_exportProductInstance = Mage::getModel('shopgate/export_product');
         }
         return $this->_exportProductInstance;
-    }
-
-    /**
-     * @return Shopgate_Framework_Helper_Import_Order
-     */
-    protected function _getOrderHelper()
-    {
-        return Mage::helper('shopgate/import_order');
     }
 
     /** ========================================== HELPER METHODS END ================================================*/
@@ -2449,8 +2418,8 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
     public function createShopInfo()
     {
         $shopInfo         = parent::createShopInfo();
-        $entitiesCount    = $this->_getDataHelper()->getEntitiesCount($this->config->getStoreViewId());
-        $pluginsInstalled = array('plugins_installed' => $this->_getDataHelper()->getThirdPartyModules());
+        $entitiesCount    = $this->_getHelper()->getEntitiesCount($this->config->getStoreViewId());
+        $pluginsInstalled = array('plugins_installed' => $this->_getHelper()->getThirdPartyModules());
 
         return array_merge($shopInfo, $entitiesCount, $pluginsInstalled);
     }

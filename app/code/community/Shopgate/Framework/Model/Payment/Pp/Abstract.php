@@ -57,12 +57,12 @@ class Shopgate_Framework_Model_Payment_Pp_Abstract
             $rawData       = $order->getPayment()->getTransactionAdditionalInfo(
                 Mage_Sales_Model_Order_Payment_Transaction::RAW_DETAILS
             );
-            $paymentStatus = strtolower($rawData['payment_status']);
+            $paymentStatus = $rawData['payment_status'];
         }
 
         $total  = $order->getBaseCurrency()->formatTxt($order->getGrandTotal());
         $state  = Mage_Sales_Model_Order::STATE_PROCESSING;
-        $action = $this->getActionByStatus($paymentStatus);
+        $action = $this->getActionByStatus(strtolower($paymentStatus));
 
         if ($order->getPayment()->getIsTransactionPending()) {
             $message = Mage::helper('paypal')->__(

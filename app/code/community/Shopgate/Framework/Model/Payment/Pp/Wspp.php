@@ -18,8 +18,9 @@ class Shopgate_Framework_Model_Payment_Pp_Wspp
     implements Shopgate_Framework_Model_Payment_Interface
 {
     const PAYMENT_IDENTIFIER = ShopgateOrder::PP_WSPP_CC;
-    const XML_CONFIG_ENABLED = 'payment/paypal_wps_express/active';
     const MODULE_CONFIG      = 'Mage_Paypal';
+    const PAYMENT_MODEL      = 'paypal/direct';
+    const XML_CONFIG_ENABLED = 'payment/paypal_wps_express/active';
 
     /**
      * Create new order for amazon payment
@@ -212,14 +213,33 @@ class Shopgate_Framework_Model_Payment_Pp_Wspp
     }
 
     /**
-     * WSPP online actions still work without method being enabled.
-     * It also breaks when runs with default abstract
+     * Rewrite to tailor for lower versions
+     * of magento's PP implementation
      *
      * @return bool
      */
     public function isEnabled()
     {
-        return true;
+        return parent::isEnabled() || $this->_isOldWsppEnabled();
+    }
+
+    /**
+     * Checks if Website Payments Pro OR
+     * Website Payment Pro Payflow are enabled
+     *
+     * @return bool
+     */
+    private function _isOldWsppEnabled()
+    {
+        $wpp    = Mage::getStoreConfig('payment/paypal_direct/active');
+        $wppp   = Mage::getStoreConfig('payment/paypaluk_direct/active');
+        $result = !empty($wpp) || !empty($wppp);
+        
+        if (!$result) {
+            $debug = $this->_getHelper()->__('Neither WSPP or WSPP Payflow are enabled');
+            ShopgateLogger::getInstance()->log($debug, ShopgateLogger::LOGTYPE_DEBUG);
+        }
+        return $result;
     }
 
     /**

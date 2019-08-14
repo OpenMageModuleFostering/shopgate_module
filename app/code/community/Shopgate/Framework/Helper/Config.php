@@ -47,6 +47,14 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
     const ENTERPRISE_EDITION = 'Enterprise';
 
     /**
+     * When native COD & Bank payments
+     * were introduced
+     * 
+     * @var string
+     */
+    protected $_magentoVersion1700 = '';
+    
+    /**
      * When PayPal UI was updated
      * @var string
      */
@@ -72,6 +80,7 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
      */
     public function __construct()
     {
+        $this->_magentoVersion1700 = ($this->getEdition() == 'Enterprise') ? '1.12.0.0' : '1.7.0.0';
         $this->_magentoVersion1701 = ($this->getEdition() == 'Enterprise') ? '1.12.0.2' : '1.7.0.1';
         $this->_magentoVersion15   = ($this->getEdition() == 'Enterprise') ? '1.9.1.0' : '1.5';
         $this->_magentoVersion1410 = ($this->getEdition() == 'Enterprise') ? '1.9.0.0' : '1.4.1.0';
@@ -99,8 +108,6 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
     }
 
     /**
-     * TODO: redo comparison check to be scalable 
-     *
      * @param string $version - magento version e.g "1.9.1.1"
      * @return bool
      */
@@ -109,6 +116,14 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
         return version_compare(Mage::getVersion(), $version, "<");
     }
 
+    /**
+     * @return bool
+     */
+    public function getIsMagentoVersionLower1700()
+    {
+        return $this->getIsMagentoVersionLower($this->_magentoVersion1700);
+    }
+    
     /**
      * compare version if it is lower than 1.7.0.1
      *

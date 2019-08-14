@@ -22,29 +22,36 @@
  */
 
 /**
- * Forwarder to PayPal between Standard & Express
- *
- * Class Shopgate_Framework_Model_Payment_Simple_Paypal
- *
- * @author  Konstantin Kiritsenko <konstantin@kiritsenko.com>
+ * Handles SHOPGATE payment method orders
+ * 
+ * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
-class Shopgate_Framework_Model_Payment_Simple_Paypal extends Shopgate_Framework_Model_Payment_Simple
+class Shopgate_Framework_Model_Payment_Simple_Shopgate
+    extends Shopgate_Framework_Model_Payment_Abstract
+    implements Shopgate_Framework_Model_Payment_Interface
 {
+    const PAYMENT_IDENTIFIER = ShopgateOrder::SHOPGATE;
+    const MODULE_CONFIG      = 'Shopgate_Framework';
+    const PAYMENT_MODEL      = 'shopgate/payment_shopgate';
+
     /**
-     * Redirect to standard or express
+     * No need to check activation, just import!
      *
-     * @return false|Shopgate_Framework_Model_Payment_Abstract
+     * @return true
      */
-    public function getModelByPaymentMethod()
+    public function isEnabled()
     {
-        $standard = Mage::getModel('shopgate/payment_simple_paypal_standard', $this->getShopgateOrder());
+        return true;
+    }
 
-        if ($standard instanceof Shopgate_Framework_Model_Payment_Interface && $standard->isValid()) {
-            $this->setPaymentMethod('STANDARD');
-        } else {
-            $this->setPaymentMethod('EXPRESS');
-        }
-
-        return parent::getModelByPaymentMethod();
+    /**
+     * No need to pull status, it is assigned automatically
+     * 
+     * @param Mage_Sales_Model_Order $magentoOrder
+     * @return mixed
+     */
+    public function setOrderStatus($magentoOrder)
+    {
+        return $magentoOrder->setShopgateStatusSet(true);
     }
 }

@@ -22,29 +22,15 @@
  */
 
 /**
- * Forwarder to PayPal between Standard & Express
+ * Handlers for payment methods added by Magento in version 1.7.0.0rc1
  *
- * Class Shopgate_Framework_Model_Payment_Simple_Paypal
- *
- * @author  Konstantin Kiritsenko <konstantin@kiritsenko.com>
+ * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
-class Shopgate_Framework_Model_Payment_Simple_Paypal extends Shopgate_Framework_Model_Payment_Simple
+class Shopgate_Framework_Model_Payment_Simple_Cod_Native
+    extends Shopgate_Framework_Model_Payment_Simple_Cod_Abstract
+    implements Shopgate_Framework_Model_Payment_Interface
 {
-    /**
-     * Redirect to standard or express
-     *
-     * @return false|Shopgate_Framework_Model_Payment_Abstract
-     */
-    public function getModelByPaymentMethod()
-    {
-        $standard = Mage::getModel('shopgate/payment_simple_paypal_standard', $this->getShopgateOrder());
-
-        if ($standard instanceof Shopgate_Framework_Model_Payment_Interface && $standard->isValid()) {
-            $this->setPaymentMethod('STANDARD');
-        } else {
-            $this->setPaymentMethod('EXPRESS');
-        }
-
-        return parent::getModelByPaymentMethod();
-    }
+    const XML_CONFIG_ENABLED = 'payment/cashondelivery/active';
+    const MODULE_CONFIG      = 'Mage_Payment';
+    const PAYMENT_MODEL      = 'payment/method_cashondelivery';
 }

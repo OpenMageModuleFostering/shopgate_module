@@ -22,29 +22,34 @@
  */
 
 /**
- * Forwarder to PayPal between Standard & Express
- *
- * Class Shopgate_Framework_Model_Payment_Simple_Paypal
- *
- * @author  Konstantin Kiritsenko <konstantin@kiritsenko.com>
+ * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
-class Shopgate_Framework_Model_Payment_Simple_Paypal extends Shopgate_Framework_Model_Payment_Simple
+class Shopgate_Framework_Model_Payment_Simple_Prepay_Phoenix
+    extends Shopgate_Framework_Model_Payment_Simple_Prepay_Abstract
+    implements Shopgate_Framework_Model_Payment_Interface
 {
+    const MODULE_CONFIG      = 'Phoenix_BankPayment';
+    const PAYMENT_MODEL      = 'bankpayment/bankPayment';
+    const XML_CONFIG_ENABLED = 'payment/bankpayment/active';
+
     /**
-     * Redirect to standard or express
+     * Rewrite to accommodate older version of BankPayment
      *
-     * @return false|Shopgate_Framework_Model_Payment_Abstract
+     * @return bool
      */
-    public function getModelByPaymentMethod()
+    public function isModuleActive()
     {
-        $standard = Mage::getModel('shopgate/payment_simple_paypal_standard', $this->getShopgateOrder());
+        return parent::isModuleActive() || $this->_isActive('Mage_BankPayment');
+    }
 
-        if ($standard instanceof Shopgate_Framework_Model_Payment_Interface && $standard->isValid()) {
-            $this->setPaymentMethod('STANDARD');
-        } else {
-            $this->setPaymentMethod('EXPRESS');
-        }
-
-        return parent::getModelByPaymentMethod();
+    /**
+     * Helps with readability
+     *
+     * @param $moduleName
+     * @return bool
+     */
+    private function _isActive($moduleName)
+    {
+        return Mage::getConfig()->getModuleConfig($moduleName)->is('active', 'true');
     }
 }

@@ -38,7 +38,7 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
      * Model code of the class that inherits mage's Payment_Method_Abstract
      * Defaults to Shopgate's Mobile payment block
      */
-    const PAYMENT_MODEL = '';
+    const PAYMENT_MODEL = 'shopgate/payment_mobilePayment';
 
     /**
      * The config path to module enabled
@@ -210,7 +210,6 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
 
     /**
      * Checks store config to be active
-     * //todo: can we check storeId on import?
      *
      * @return bool
      */
@@ -352,22 +351,22 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
     }
 
     /**
-     * Payment method return
-     * method and don't use it anymore.
+     * Returns the payment model of a class,
+     * else falls back to mobilePayment 
      *
-     * @return bool|mixed
+     * @return mixed
      */
     public function getPaymentModel()
     {
         $model = Mage::getModel($this::PAYMENT_MODEL);
         if (!$model) {
-            /*$debug = $this->_getHelper()->__(
+            $debug = $this->_getHelper()->__(
                 'Could not find PAYMENT_MODEL %s in class %s',
                 $this::PAYMENT_MODEL,
                 get_class($this)
             );
             ShopgateLogger::getInstance()->log($debug, ShopgateLogger::LOGTYPE_DEBUG);
-            return Mage::getModel(self::PAYMENT_MODEL);*/
+            $model = Mage::getModel(self::PAYMENT_MODEL);
         }
         return $model;
     }
@@ -392,5 +391,13 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
     protected function _getPaymentHelper()
     {
         return Mage::helper('shopgate/payment_abstract');
+    }
+
+    /**
+     * @return Shopgate_Framework_Helper_Config
+     */
+    protected function _getConfigHelper()
+    {
+        return Mage::helper('shopgate/config');
     }
 }

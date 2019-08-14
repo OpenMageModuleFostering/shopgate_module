@@ -198,16 +198,16 @@ class Shopgate_Framework_Model_Observer
 
         ShopgateLogger::getInstance()->log("> Save data and return!", ShopgateLogger::LOGTYPE_DEBUG);
 
-        Mage::getSingleton('core/session')->addSuccess(
-            Mage::helper("shopgate")->__("[SHOPGATE] Order status was updated successfully at Shopgate")
-        );
-
         if ($errors > 0) {
             Mage::getSingleton('core/session')->addError(
                 Mage::helper("shopgate")->__(
                     "[SHOPGATE] Order status was updated but %s errors occurred",
                     $errors['errorcount']
                 )
+            );
+        } else {
+            Mage::getSingleton('core/session')->addSuccess(
+                Mage::helper("shopgate")->__("[SHOPGATE] Order status was updated successfully at Shopgate")
             );
         }
     }
@@ -581,30 +581,6 @@ class Shopgate_Framework_Model_Observer
     }
 
     /**
-     * @param Varien_Event_Observer $observer
-     */
-    public function saveShopgateCouponProducts($observer)
-    {
-        if (Mage::helper("shopgate")->isShopgateApiRequest()) {
-            $quote = $observer->getQuote();
-            $helper = Mage::helper('shopgate/coupon');
-            foreach ($quote->getAllItems() as $item) {
-                if ($helper->isShopgateCoupon($item->getProduct())) {
-                    $product = $helper->prepareShopgateCouponProduct($item->getProduct());
-                    try {
-                        $product->save();
-                        if ($id = $product->getId()) {
-                            $item->setProductId($id);
-                        }
-                    } catch (Exception $e) {
-                        Mage::logException($e);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * @param $observer Varien_Event_Observer
      */
     public function deleteShopgateCouponProducts($observer)
@@ -849,20 +825,24 @@ class Shopgate_Framework_Model_Observer
      * Main purpose is to set a different sequence number
      * after we capture an invoice. Else we cannot refund
      * because PayOne plugin is not setting it correctly.
-     * 
+     *
      * @param Varien_Event_Observer $event
      * @return $this
      * @throws Exception
      */
     public function preparePayoneOrderForRefund(Varien_Event_Observer $event)
     {
+        $active = Mage::getConfig()->getModuleConfig('Payone_Core')->is('active', 'true');
+        if (!$active) {
+            return $this;
+        }
+
         $factory = Mage::getModel('payone_core/factory');
-        if(!$factory) return $this;
         /** @var Mage_Sales_Model_Order_Invoice $invoice */
-        $invoice = $event['invoice'];
+        $invoice     = $event['invoice'];
         $transaction = $factory->getModelTransaction();
         $transStatus = $factory->getModelApi();
-        if($transaction->load($invoice->getTransactionId(), 'txid')->hasData()) {
+        if ($transaction->load($invoice->getTransactionId(), 'txid')->hasData()) {
             $collection = $transStatus
                 ->getCollection()
                 ->addFieldToFilter('order_id', $transaction->getOrderId())
@@ -872,12 +852,12 @@ class Shopgate_Framework_Model_Observer
              * If we have an approval on capture in API
              * call database, set next sequence as refund
              */
-            if($collection->getSize() > 0) {
+            if ($collection->getSize() > 0) {
                 $transaction->setLastSequencenumber(1);
                 $transaction->save();
             }
         }
-        
+
         return $this;
     }
 }

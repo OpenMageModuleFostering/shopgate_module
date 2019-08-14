@@ -22,29 +22,16 @@
  */
 
 /**
- * Forwarder to PayPal between Standard & Express
+ * This is a handler for people trying to fake bank payment
+ * with Check Money Order if magento version is below 1.7
  *
- * Class Shopgate_Framework_Model_Payment_Simple_Paypal
- *
- * @author  Konstantin Kiritsenko <konstantin@kiritsenko.com>
+ * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
-class Shopgate_Framework_Model_Payment_Simple_Paypal extends Shopgate_Framework_Model_Payment_Simple
+class Shopgate_Framework_Model_Payment_Simple_Prepay_Checkmo
+    extends Shopgate_Framework_Model_Payment_Simple_Prepay_Abstract
+    implements Shopgate_Framework_Model_Payment_Interface
 {
-    /**
-     * Redirect to standard or express
-     *
-     * @return false|Shopgate_Framework_Model_Payment_Abstract
-     */
-    public function getModelByPaymentMethod()
-    {
-        $standard = Mage::getModel('shopgate/payment_simple_paypal_standard', $this->getShopgateOrder());
-
-        if ($standard instanceof Shopgate_Framework_Model_Payment_Interface && $standard->isValid()) {
-            $this->setPaymentMethod('STANDARD');
-        } else {
-            $this->setPaymentMethod('EXPRESS');
-        }
-
-        return parent::getModelByPaymentMethod();
-    }
+    const MODULE_CONFIG      = 'Mage_Payment';
+    const PAYMENT_MODEL      = 'payment/method_checkmo';
+    const XML_CONFIG_ENABLED = 'payment/checkmo/active';
 }

@@ -22,29 +22,39 @@
  */
 
 /**
- * Forwarder to PayPal between Standard & Express
+ * Redirects to the proper bank payment class
  *
- * Class Shopgate_Framework_Model_Payment_Simple_Paypal
- *
- * @author  Konstantin Kiritsenko <konstantin@kiritsenko.com>
+ * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
-class Shopgate_Framework_Model_Payment_Simple_Paypal extends Shopgate_Framework_Model_Payment_Simple
+class Shopgate_Framework_Model_Payment_Simple_Prepay extends Shopgate_Framework_Model_Payment_Simple
 {
     /**
-     * Redirect to standard or express
+     * If mage 1.7+ use native bank payment, else try Check Money Order.
+     * Phoenix plugin takes priority if it's enabled
+     * Note! Last one overwrites previous.
      *
      * @return false|Shopgate_Framework_Model_Payment_Abstract
      */
     public function getModelByPaymentMethod()
     {
-        $standard = Mage::getModel('shopgate/payment_simple_paypal_standard', $this->getShopgateOrder());
-
-        if ($standard instanceof Shopgate_Framework_Model_Payment_Interface && $standard->isValid()) {
-            $this->setPaymentMethod('STANDARD');
+        if ($this->_getConfigHelper()->getIsMagentoVersionLower1700() === false) {
+            $native = Mage::getModel('shopgate/payment_simple_prepay_native', $this->getShopgateOrder());
+            if ($native instanceof Shopgate_Framework_Model_Payment_Interface && $native->isValid()) {
+                $this->setPaymentMethod('Native');
+            }
         } else {
-            $this->setPaymentMethod('EXPRESS');
+            $checkmo = Mage::getModel('shopgate/payment_simple_prepay_checkmo', $this->getShopgateOrder());
+            if ($checkmo instanceof Shopgate_Framework_Model_Payment_Interface && $checkmo->isValid()) {
+                $this->setPaymentMethod('Checkmo');
+            }
+        }
+
+        $phoenix = Mage::getModel('shopgate/payment_simple_prepay_phoenix', $this->getShopgateOrder());
+        if ($phoenix instanceof Shopgate_Framework_Model_Payment_Interface && $phoenix->isValid()) {
+            $this->setPaymentMethod('Phoenix');
         }
 
         return parent::getModelByPaymentMethod();
     }
+
 }

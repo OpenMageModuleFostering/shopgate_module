@@ -1,5 +1,27 @@
 '''English'''
 
+'''Version 2.9.20'''
+* Added a quote to getpaymentmethods
+* Import of order /w coupon bug fixed
+* Ignore faulty shipping methods
+* Improve/simplify shopgate detection logic
+* Fixed bug that caused taxes for shipping costs being collected twice
+* Fixed stock calculation for group products
+* Added support to Payolution Payment method
+* Fixed problem with wrong tax amount on desktop site
+
+'''Version 2.9.19'''
+* Fixed invoicing bug when display_errors is enabled
+* COD mapping added for mage native payment
+* Updated Shopgate Coupon creation logic
+* PayPal Standard optimizations
+* Fixed missing special prices based on catalog price rules for child products
+* Added payment model mapping to classes
+* Added Prepay fallback to use CheckMoneyOrder in mage v1.4-1.7
+* Fixed bug with printing Mobile Payment when empty array is passed
+* Changed PHP dependency from 5.2.0 to 5.3.0
+* Optimized error handling when creating shipments
+
 '''Version 2.9.18'''
 * Overhaul of payment & status mapping in add_order calls
 * Added debug logs to vital functions of order/status mapping

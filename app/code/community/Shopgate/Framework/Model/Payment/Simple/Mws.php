@@ -33,8 +33,9 @@ class Shopgate_Framework_Model_Payment_Simple_Mws
     implements Shopgate_Framework_Model_Payment_Interface
 {
     const PAYMENT_IDENTIFIER = ShopgateOrder::AMAZON_PAYMENT;
-    const XML_CONFIG_ENABLED = 'amazonpayments/general/active';
     const MODULE_CONFIG      = 'Creativestyle_AmazonPayments';
+    const PAYMENT_MODEL      = 'amazonpayments/payment_advanced';
+    const XML_CONFIG_ENABLED = 'amazonpayments/general/active';
 
     /**
      * create new order for amazon payment
@@ -193,7 +194,7 @@ class Shopgate_Framework_Model_Payment_Simple_Mws
      */
     public function prepareQuote($quote, $info)
     {
-        $payment = Mage::helper('shopgate/import_order')->getMagentoPaymentMethod($this::PAYMENT_IDENTIFIER);;
+        $payment = $this->getPaymentModel();
         if ($quote->isVirtual()) {
             $quote->getBillingAddress()->setPaymentMethod($payment->getCode() ? $payment->getCode() : null);
         } else {

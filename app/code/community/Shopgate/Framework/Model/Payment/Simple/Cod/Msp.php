@@ -22,29 +22,15 @@
  */
 
 /**
- * Forwarder to PayPal between Standard & Express
- *
- * Class Shopgate_Framework_Model_Payment_Simple_Paypal
- *
- * @author  Konstantin Kiritsenko <konstantin@kiritsenko.com>
+ * Support for MSP_COD plugin added v1.2.5 and up
+ * 
+ * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
-class Shopgate_Framework_Model_Payment_Simple_Paypal extends Shopgate_Framework_Model_Payment_Simple
+class Shopgate_Framework_Model_Payment_Simple_Cod_Msp
+    extends Shopgate_Framework_Model_Payment_Simple_Cod_Abstract
+    implements Shopgate_Framework_Model_Payment_Interface
 {
-    /**
-     * Redirect to standard or express
-     *
-     * @return false|Shopgate_Framework_Model_Payment_Abstract
-     */
-    public function getModelByPaymentMethod()
-    {
-        $standard = Mage::getModel('shopgate/payment_simple_paypal_standard', $this->getShopgateOrder());
-
-        if ($standard instanceof Shopgate_Framework_Model_Payment_Interface && $standard->isValid()) {
-            $this->setPaymentMethod('STANDARD');
-        } else {
-            $this->setPaymentMethod('EXPRESS');
-        }
-
-        return parent::getModelByPaymentMethod();
-    }
+    const MODULE_CONFIG          = 'MSP_CashOnDelivery';
+    const XML_CONFIG_ENABLED     = 'payment/msp_cashondelivery/active';
+    const PAYMENT_MODEL          = 'msp_cashondelivery/cashondelivery';
 }

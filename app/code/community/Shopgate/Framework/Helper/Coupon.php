@@ -39,6 +39,8 @@ class Shopgate_Framework_Helper_Coupon extends Mage_Core_Helper_Abstract
     const COUPON_ATTRIUBTE_SET_NAME = 'Shopgate Coupon';
     const COUPON_PRODUCT_SKU        = 'shopgate-coupon';
 
+    protected $_attributeSet = null;
+
     /**
      * Determines if a product is a Shopgate Coupon
      *
@@ -47,12 +49,12 @@ class Shopgate_Framework_Helper_Coupon extends Mage_Core_Helper_Abstract
      */
     public function isShopgateCoupon(Mage_Catalog_Model_Product $product)
     {
-	    $attributeSetModel = Mage::getModel("eav/entity_attribute_set")
-		    ->load($product->getAttributeSetId());
+        $attributeSetModel = Mage::getModel("eav/entity_attribute_set")
+                                 ->load($product->getAttributeSetId());
 
-	    if ($product->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_VIRTUAL
-		    && $attributeSetModel->getAttributeSetName() == self::COUPON_ATTRIUBTE_SET_NAME
-	    ) {
+        if ($product->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_VIRTUAL
+            && $attributeSetModel->getAttributeSetName() == self::COUPON_ATTRIUBTE_SET_NAME
+        ) {
             return true;
         }
 
@@ -71,8 +73,9 @@ class Shopgate_Framework_Helper_Coupon extends Mage_Core_Helper_Abstract
         $product->setData('tax_class_id', $this->_getTaxClassId());
         $product->setData('attribute_set_id', $this->_getAttributeSetId());
         $product->setData('stock_data', $this->_getStockData());
-        $product->setData('visibility', 1);
-        $product->setData('status', 1);
+        $product->setData('visibility', Mage_Catalog_Model_Product_Visibility::VISIBILITY_NOT_VISIBLE);
+        $product->setData('status', Mage_Catalog_Model_Product_Status::STATUS_ENABLED);
+        $product->setData('type_id', Mage_Catalog_Model_Product_Type::TYPE_VIRTUAL);
 
         return $product;
     }
@@ -94,11 +97,7 @@ class Shopgate_Framework_Helper_Coupon extends Mage_Core_Helper_Abstract
      */
     protected function _getAttributeSetId()
     {
-        if ($attributeSet = $this->_getShopgateCouponAttributeSet()) {
-            return $attributeSet->getId();
-        } else {
-            return $this->_createShopgateCouponAttributeSet()->getId();
-        }
+        return $this->_getShopgateCouponAttributeSet()->getId();
     }
 
     /**
@@ -106,15 +105,18 @@ class Shopgate_Framework_Helper_Coupon extends Mage_Core_Helper_Abstract
      */
     protected function _getShopgateCouponAttributeSet()
     {
-        $collection = Mage::getModel('eav/entity_attribute_set')
-                          ->getCollection()
-                          ->addFieldToFilter('attribute_set_name', self::COUPON_ATTRIUBTE_SET_NAME);
+        if (!$this->_attributeSet) {
+            $collection = Mage::getModel('eav/entity_attribute_set')
+                              ->getCollection()
+                              ->addFieldToFilter('attribute_set_name', self::COUPON_ATTRIUBTE_SET_NAME);
 
-        if (count($collection->getItems())) {
-            return $collection->getFirstItem();
+            if (count($collection->getItems())) {
+                $this->_attributeSet = $collection->getFirstItem();
+            } else {
+                $this->_attributeSet = $this->_createShopgateCouponAttributeSet();
+            }
         }
-
-        return null;
+        return $this->_attributeSet;
     }
 
     /**
@@ -130,7 +132,7 @@ class Shopgate_Framework_Helper_Coupon extends Mage_Core_Helper_Abstract
                             ->setAttributeSetName(self::COUPON_ATTRIUBTE_SET_NAME);
 
         $attributeSet->validate();
-        $attributeSet->save();
+        $this->_attributeSet = $attributeSet->save();
 
         return $this->_getShopgateCouponAttributeSet();
     }
@@ -138,7 +140,7 @@ class Shopgate_Framework_Helper_Coupon extends Mage_Core_Helper_Abstract
     /**
      * Delivers an stock_item Dummy Object
      *
-     * @return multitype:number
+     * @return array
      */
     protected function _getStockData()
     {
@@ -153,5 +155,34 @@ class Shopgate_Framework_Helper_Coupon extends Mage_Core_Helper_Abstract
         );
 
         return $stockData;
+    }
+
+    /**
+     * Create magento coupon product from object
+     *
+     * @param Varien_Object $coupon
+     * @return Mage_Catalog_Model_Product
+     */
+    public function createProductFromShopgateCoupon(Varien_Object $coupon)
+    {
+        /* @var $product Mage_Catalog_Model_Product */
+        $product = Mage::getModel('catalog/product');
+        $id = $product->getIdBySku($coupon->getItemNumber());
+        $product->load($id);
+        
+        $product = $this->prepareShopgateCouponProduct($product);
+        $product->setPriceCalculation(false);
+        $product->setName($coupon->getName());
+        $product->setSku($coupon->getItemNumber());
+        $product->setPrice($coupon->getUnitAmountWithTax());
+        $product->setStoreId(Mage::app()->getStore()->getStoreId());
+
+        if (!$product->getId()) {
+            $oldStoreId = Mage::app()->getStore()->getStoreId();
+            Mage::app()->setCurrentStore(0);
+            $product->save();
+            Mage::app()->setCurrentStore($oldStoreId);
+        }
+        return $product;
     }
 }

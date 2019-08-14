@@ -29,7 +29,7 @@
  * @author      Peter Liebig <p.liebig@me.com, peter.liebig@magcorp.de>
  * @author      Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
-class Shopgate_Framework_Model_Payment_Pp_Paypal
+class Shopgate_Framework_Model_Payment_Simple_Paypal_Express
     extends Shopgate_Framework_Model_Payment_Pp_Abstract
     implements Shopgate_Framework_Model_Payment_Interface
 {
@@ -235,17 +235,5 @@ class Shopgate_Framework_Model_Payment_Pp_Paypal
     {
         return Mage::helper('shopgate/payment_wspp');
     }
-
-    /**
-     * Makes sure we are on the right PayPal
-     *
-     * @return bool
-     */
-    public function checkGenericValid()
-    {
-        $payment = Mage::helper('shopgate/import_order')
-                       ->getMagentoPaymentMethod($this->getPaymentMethod());
-
-        return $payment ? $payment->getCode() === "paypal_express" : false;
-    }
+    
 }

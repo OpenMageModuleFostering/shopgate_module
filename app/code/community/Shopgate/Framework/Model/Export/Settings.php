@@ -149,6 +149,7 @@ class Shopgate_Framework_Model_Export_Settings extends Shopgate_Framework_Model_
         $shopgatePaymentMethods = array();
 
         $paymentMethods = Mage::helper('payment')->getPaymentMethods($store);
+		$emptyQuote = Mage::getModel('sales/quote');
         foreach ( $paymentMethods as $code => $methodConfig) {
             $prefix = 'payment/' . $code . '/';
             $model = Mage::getStoreConfig($prefix . 'model', $store);
@@ -163,7 +164,7 @@ class Shopgate_Framework_Model_Export_Settings extends Shopgate_Framework_Model_
             $shopgatePaymentMethod              = array();
 			$shopgatePaymentMethod['id']        = $code;
             $shopgatePaymentMethod['title']     = $methodConfig['title'];
-			$shopgatePaymentMethod['is_active'] = (int)$methodInstance->isAvailable();
+			$shopgatePaymentMethod['is_active'] = (int)$methodInstance->isAvailable($emptyQuote);
             $shopgatePaymentMethods[]           = $shopgatePaymentMethod;
         }
         $this->_defaultSettings["payment_methods"] = $shopgatePaymentMethods;

@@ -33,6 +33,7 @@ class Shopgate_Framework_Model_Payment_Simple_Sue_Sue300
     implements Shopgate_Framework_Model_Payment_Interface
 {
     const XML_CONFIG_ENABLED         = 'payment/paymentnetwork_pnsofortueberweisung/active';
+    const PAYMENT_MODEL              = 'sofort/method_sofort';
     const XML_CONFIG_STATUS_PAID     = 'payment/paymentnetwork_pnsofortueberweisung/order_status_received_credited';
     const XML_CONFIG_STATUS_NOT_PAID = 'payment/paymentnetwork_pnsofortueberweisung/order_status_pending_not_credited_yet';
 }

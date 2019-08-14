@@ -1,22 +1,16 @@
 <?php
+
 /**
- * User: pliebig
- * Date: 17.09.14
- * Time: 17:39
- * E-Mail: p.liebig@me.com, peter.liebig@magcorp.de
- */
- 
- /**
- * 
- *
+ * @deprecated  v2.9.19
  * @package     Shopgate_Framework_Helper_Import_Order
  * @author      Peter Liebig <p.liebig@me.com, peter.liebig@magcorp.de>
- */ 
-
+ * @author      Konstantin Kirittsenko <konstantin@kiritsenko.com>
+ */
 class Shopgate_Framework_Helper_Import_Order extends Mage_Core_Helper_Abstract
 {
     /**
-     * @param string $paymentType
+     * @deprecated  v2.9.19 handled in classes now
+     * @param       string  $paymentType
      *
      * @return Mage_Payment_Model_Method_Abstract
      */
@@ -32,7 +26,7 @@ class Shopgate_Framework_Helper_Import_Order extends Mage_Core_Helper_Abstract
                 $payment = Mage::getModel("paypal/standard");
                 if (!$payment->isAvailable()) {
                     $payment = Mage::getModel("paypal/express");
-                    if (!$payment->isAvailable()){
+                    if (!$payment->isAvailable()) {
                         $payment = Mage::getModel("shopgate/payment_mobilePayment");
                     }
                 }
@@ -46,8 +40,8 @@ class Shopgate_Framework_Helper_Import_Order extends Mage_Core_Helper_Abstract
                     $payment = Mage::getModel('payment/method_banktransfer');
                     break;
                 }
-                
-                if ($this->_isModuleActive('Phoenix_BankPayment') || $this->_isModuleActive('Mage_BankPayment')){
+
+                if ($this->_isModuleActive('Phoenix_BankPayment') || $this->_isModuleActive('Mage_BankPayment')) {
                     $payment = Mage::getModel("bankpayment/bankPayment");
                     break;
                 }
@@ -82,7 +76,7 @@ class Shopgate_Framework_Helper_Import_Order extends Mage_Core_Helper_Abstract
     }
 
     /**
-     * @return MSP_CashOnDelivery_Model_Cashondelivery|null|Phoenix_CashOnDelivery_Model_CashOnDelivery
+     * @return MSP_CashOnDelivery_Model_Cashondelivery|null|Phoenix_CashOnDelivery_Model_CashOnDelivery|Mage_Payment_Model_Method_Cashondelivery
      */
     protected function _getCodPayment()
     {
@@ -99,9 +93,15 @@ class Shopgate_Framework_Helper_Import_Order extends Mage_Core_Helper_Abstract
         if ($this->_isModuleActive('MSP_CashOnDelivery')) {
             $payment = Mage::getModel('msp_cashondelivery/cashondelivery');
         }
+
+        $classExists = mageFindClassFile('Mage_Payment_Model_Method_Cashondelivery');
+        if ($classExists !== false && Mage::getStoreConfigFlag('payment/cashondelivery/active')) {
+            $payment = Mage::getModel('payment/method_cashondelivery');
+        }
+
         return $payment;
     }
-    
+
     /**
      * @return null|Paymentnetwork_Pnsofortueberweisung_Model_Pnsofortueberweisung|Paymentnetwork_Pnsofortueberweisung_Model_Method_Sofort
      */
@@ -118,10 +118,10 @@ class Shopgate_Framework_Helper_Import_Order extends Mage_Core_Helper_Abstract
         }
         return $payment;
     }
-    
+
     /**
      * Helps with readability
-     * 
+     *
      * @param $moduleName
      * @return bool
      */

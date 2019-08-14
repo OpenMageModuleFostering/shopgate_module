@@ -150,6 +150,7 @@ class Shopgate_Framework_Helper_Sales extends Mage_Core_Helper_Abstract
         foreach ($shippingAddress->getShippingRatesCollection() as $_rate) {
             if ($_rate instanceof Mage_Shipping_Model_Rate_Result_Error
                 || strpos($_rate->getCode(), 'error') !== false
+				|| $_rate->getCarrierInstance() == false
             ) {
                 /* skip errors so they dont get processed as valid shipping rates without any cost */
                 ShopgateLogger::getInstance()->log(

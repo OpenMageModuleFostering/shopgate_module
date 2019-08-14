@@ -101,16 +101,12 @@ class Shopgate_Framework_Block_Payment_MobilePayment extends Mage_Payment_Block_
      * Helper function to print PaymentInfo
      * recursively
      *
-     * @param $list
+     * @param $list - paymentInfo array
      * @param $html - don't pass anything, recrusive helper
      * @return string
      */
-    public function printPaymentInfo($list = null, $html = '')
+    public function printPaymentInfo($list, $html = '')
     {
-        if (empty($list)) {
-            $list = $this->getPaymentInfos();
-        }
-
         if (is_array($list)) {
             foreach ($list as $_key => $_value) {
                 if (is_array($_value)) {

@@ -33,5 +33,6 @@ class Shopgate_Framework_Model_Payment_Simple_Sue_Sue118
     implements Shopgate_Framework_Model_Payment_Interface
 {
     const XML_CONFIG_ENABLED     = 'payment/pnsofortueberweisung/active';
+    const PAYMENT_MODEL          = 'pnsofortueberweisung/pnsofortueberweisung';
     const XML_CONFIG_STATUS_PAID = 'payment/pnsofortueberweisung/order_status';
 }
