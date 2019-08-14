@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Shopgate GmbH
  *
@@ -18,22 +19,36 @@
  * transfer to third parties is only permitted where we previously consented thereto in writing. The provisions
  * of paragraph 69 d, sub-paragraphs 2, 3 and paragraph 69, sub-paragraph e of the German Copyright Act shall remain unaffected.
  *
- *  @author Shopgate GmbH <interfaces@shopgate.com>
+ * @author Shopgate GmbH <interfaces@shopgate.com>
  */
-
-$this->startSetup();
-
-$this->run("CREATE TABLE IF NOT EXISTS `{$this->getTable('shopgate/customer')}` (
-  `id` int(10) unsigned NOT NULL,
-  `customer_id` int(10) unsigned NOT NULL,
-  `token` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-");
-
-$this->run("
-ALTER TABLE `{$this->getTable('shopgate_customer')}`
-MODIFY COLUMN id int(10) unsigned NOT NULL AUTO_INCREMENT
-");
-
-$this->endSetup();
+interface Shopgate_Helper_Redirect_KeywordsManagerInterface
+{
+	/**
+	 * @var int (hours) the default time to be set for updating the cache
+	 */
+	const DEFAULT_CACHE_TIME = 24;
+	
+	/**
+	 * Returns a regular expression matching everything on the whitelist and not matching anything on the black list.
+	 *
+	 * @return string
+	 */
+	public function toRegEx();
+	
+	/**
+	 * @return string[] A list of keywords that identify a smartphone user.
+	 */
+	public function getWhitelist();
+	
+	/**
+	 * @return string[] A list keywords that identify a smartphone user but should be ignored in the redirect.
+	 */
+	public function getBlacklist();
+	
+	/**
+	 * Updates the keyword cache from the merchant API regardless of expiry etc.
+	 *
+	 * @throws ShopgateLibraryException in case the request to the Shopgate Merchant API fails.
+	 */
+	public function update();
+}

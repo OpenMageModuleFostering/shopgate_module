@@ -65,7 +65,7 @@ class Shopgate_Framework_Helper_Export extends Mage_Core_Helper_Abstract
      *
      * @param Mage_Catalog_Model_Product $product
      *
-     * @return float
+     * @return float|null
      */
     public function calcProductPriceRule(Mage_Catalog_Model_Product $product)
     {
@@ -486,6 +486,7 @@ class Shopgate_Framework_Helper_Export extends Mage_Core_Helper_Abstract
 
                 $counter = 0;
                 foreach ($attributeCodes as $attributeCode) {
+                    $attributeCode = trim($attributeCode);
                     if (!empty($attributeCode)) {
                         /** @var Mage_Catalog_Model_Resource_Eav_Attribute  $attribute */
                         $attribute    = $product->getResource()->getAttribute($attributeCode);

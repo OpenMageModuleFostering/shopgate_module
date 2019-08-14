@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Shopgate GmbH
  *
@@ -18,22 +19,36 @@
  * transfer to third parties is only permitted where we previously consented thereto in writing. The provisions
  * of paragraph 69 d, sub-paragraphs 2, 3 and paragraph 69, sub-paragraph e of the German Copyright Act shall remain unaffected.
  *
- *  @author Shopgate GmbH <interfaces@shopgate.com>
+ * @author Shopgate GmbH <interfaces@shopgate.com>
  */
-
-$this->startSetup();
-
-$this->run("CREATE TABLE IF NOT EXISTS `{$this->getTable('shopgate/customer')}` (
-  `id` int(10) unsigned NOT NULL,
-  `customer_id` int(10) unsigned NOT NULL,
-  `token` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-");
-
-$this->run("
-ALTER TABLE `{$this->getTable('shopgate_customer')}`
-MODIFY COLUMN id int(10) unsigned NOT NULL AUTO_INCREMENT
-");
-
-$this->endSetup();
+interface Shopgate_Helper_Redirect_TemplateParserInterface
+{
+	const FUNCTION_NAME_HEX        = 'hex';
+	const FUNCTION_NAME_URLENCODED = 'urlencoded';
+	const FUNCTION_NAME_BASE64     = 'base64';
+	const FUNCTION_NAME_ESCAPED    = 'escaped';
+	
+	/**
+	 * @param $template
+	 *
+	 * @return Shopgate_Model_Redirect_HtmlTagVariable[]
+	 */
+	public function getVariables($template);
+	
+	/**
+	 * @param string                                  $template
+	 * @param Shopgate_Model_Redirect_HtmlTagVariable $variable
+	 * @param string                                  $replacement
+	 *
+	 * @return string
+	 */
+	public function process($template, $variable, $replacement);
+	
+	/**
+	 * @param string $value
+	 * @param string $functionName
+	 *
+	 * @return string
+	 */
+	public function filterVariableValue($value, $functionName = '');
+}

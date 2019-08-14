@@ -166,7 +166,12 @@ class Shopgate_Framework_Model_Export_Settings extends Shopgate_Framework_Model_
             $shopgatePaymentMethod              = array();
 			$shopgatePaymentMethod['id']        = $code;
             $shopgatePaymentMethod['title']     = $methodConfig['title'];
-			$shopgatePaymentMethod['is_active'] = (int)$methodInstance->isAvailable($emptyQuote);
+            $shopgatePaymentMethod['is_active'] = 0;
+            if (isset($methodConfig['active']) && $methodConfig['active'] == 1) {
+                $shopgatePaymentMethod['is_active'] = 1;
+            } elseif ((int)$methodInstance->isAvailable($emptyQuote) == 1) {
+                $shopgatePaymentMethod['is_active'] = 1;
+            }
             $shopgatePaymentMethods[]           = $shopgatePaymentMethod;
         }
         $this->_defaultSettings["payment_methods"] = $shopgatePaymentMethods;

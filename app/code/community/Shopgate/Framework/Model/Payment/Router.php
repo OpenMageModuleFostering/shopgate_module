@@ -82,20 +82,16 @@ class Shopgate_Framework_Model_Payment_Router extends Shopgate_Framework_Model_P
 
     /**
      * Using payment_method as example - AUTHN_CC.
-     * If 2nd part, replaces _Router with _Cc,
-     * else finishes with 1st part to build _Cc_Authn
+     * Adds _cc to an already resolved shopgate/payment_authn
      *
      * @return string
      */
     protected function getClassFromMethod()
     {
-        $endPart = ucfirst(strtolower($this->_getMethodPart()));
-        $current = get_class($this);
-        if (strstr($current, 'Router') !== false) {
-            return str_replace('Router', $endPart, $current);
-        } else {
-            return $current . '_' . $endPart;
-        }
+        $endPart = strtolower($this->_getMethodPart());
+        $current = $this->getCurrentClassShortName();
+        
+        return $current . '_' . $endPart;
     }
 
     /**
@@ -124,7 +120,7 @@ class Shopgate_Framework_Model_Payment_Router extends Shopgate_Framework_Model_P
     protected function _checkAllPossibleModels()
     {
         $combinations = $this->_getModelCombinations();
-        $class        = str_replace('_Router', '', get_class());
+        $class        = $this->getCurrentClassShortName();
         foreach ($combinations as $combination) {
             $className = $class . $combination;
             $model     = Mage::getModel($className, $this->getShopgateOrder());
@@ -171,7 +167,7 @@ class Shopgate_Framework_Model_Payment_Router extends Shopgate_Framework_Model_P
         for ($i = 0; $i < sizeof($arr); $i++) {
             $arrcopy = $arr;
             $elem    = array_splice($arrcopy, $i, 1); // removes and returns the i'th element
-            $temp    = $temp_string . "_" . ucfirst($elem[0]);
+            $temp    = $temp_string . "_" . $elem[0];
             if (sizeof($arrcopy) > 0) {
                 $this->depthPicker($arrcopy, $temp, $collect);
             } else {
@@ -180,4 +176,16 @@ class Shopgate_Framework_Model_Payment_Router extends Shopgate_Framework_Model_P
         }
     }
 
+    /**
+     * Resolves current class name to magento's
+     * short class. Truncates Router as well.
+     * 
+     * @return string
+     */
+    private function getCurrentClassShortName()
+    {
+        $class = str_replace('Shopgate_Framework_Model_', 'shopgate/', get_class($this));
+        $class = preg_replace('/_Router$/', '', $class);
+        return strtolower($class);
+    }
 }

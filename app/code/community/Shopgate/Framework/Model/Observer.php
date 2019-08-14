@@ -365,7 +365,8 @@ class Shopgate_Framework_Model_Observer
                 $cancellationItems = array();
                 $qtyCancelled      = 0;
 
-                $rd         = $shopgateOrder->getShopgateOrderObject();
+                $rd = $shopgateOrder->getShopgateOrderObject();
+
                 $orderItems = $order->getItemsCollection();
                 $rdItem     = false;
 
@@ -373,6 +374,12 @@ class Shopgate_Framework_Model_Observer
                     /**  @var $orderItem Mage_Sales_Model_Order_Item */
                     if ($rd instanceof ShopgateOrder) {
                         $rdItem = $this->_findItemByProductId($rd->getItems(), $orderItem->getData('product_id'));
+                    } else {
+                        throw new ShopgateLibraryException(
+                            ShopgateLibraryException::UNKNOWN_ERROR_CODE,
+                            "! (#{$orderNumber})  unable to unserialize shopgate order object",
+                            true
+                        );
                     }
 
                     if ($orderItem->getProductType() != Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE &&

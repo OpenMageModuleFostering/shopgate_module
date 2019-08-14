@@ -91,6 +91,13 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
         $this->_defaultTax = Mage::getModel("tax/calculation")->getDefaultCustomerTaxClass(
             $this->_getConfig()->getStoreViewId()
         );
+
+        $netCountries = $this->_getConfig()->getNetMarketCountries();
+        $country = Mage::getStoreConfig("tax/defaults/country", $this->_getConfig()->getStoreViewId());
+        if (!in_array($country, $netCountries)) {
+            $this->setUseTaxClasses(true);
+        }
+        
         return true;
     }
 
@@ -245,10 +252,19 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
         } catch (Exception $e) {
             switch ($e->getCode()) {
                 case Mage_Customer_Model_Customer::EXCEPTION_EMAIL_NOT_CONFIRMED:
-                    throw new ShopgateLibraryException(ShopgateLibraryException::PLUGIN_CUSTOMER_ACCOUNT_NOT_CONFIRMED);
+                    throw new ShopgateLibraryException(ShopgateLibraryException::PLUGIN_CUSTOMER_ACCOUNT_NOT_CONFIRMED,
+                        null,
+                        false,
+                        false
+                    );
                     break;
                 case Mage_Customer_Model_Customer::EXCEPTION_INVALID_EMAIL_OR_PASSWORD:
-                    throw new ShopgateLibraryException(ShopgateLibraryException::PLUGIN_WRONG_USERNAME_OR_PASSWORD);
+                    throw new ShopgateLibraryException(
+                        ShopgateLibraryException::PLUGIN_WRONG_USERNAME_OR_PASSWORD,
+                        null,
+                        false,
+                        false
+                    );
                     break;
                 default:
                     throw new ShopgateLibraryException(ShopgateLibraryException::PLUGIN_CUSTOMER_UNKNOWN_ERROR);
@@ -773,9 +789,9 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                     continue;
                 }
                 if ($this->useTaxClasses) {
-                    $itemAmount = $item->getUnitAmount();
-                } else {
                     $itemAmount = $item->getUnitAmountWithTax();
+                } else {
+                    $itemAmount = $item->getUnitAmount();
                 }
 
                 $obj = new Varien_Object();

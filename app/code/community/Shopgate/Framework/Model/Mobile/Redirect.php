@@ -241,11 +241,10 @@ class Shopgate_Framework_Model_Mobile_Redirect extends Mage_Core_Model_Abstract
         if ($value !== false) {
             $jsHeader = unserialize($value);
         } else {
-            $builder          = new ShopgateBuilder($this->_config);
-            $shopgateRedirect = $builder->buildRedirect();
+            $shopgateRedirect = $this->_createMobileRedirect($type, $objId);
 
             if (!in_array(
-                    Mage::app()->getRequest()->getControllerName(),
+                    $type,
                     array(
                         self::CATEGORY,
                         self::PRODUCT,
@@ -271,7 +270,7 @@ class Shopgate_Framework_Model_Mobile_Redirect extends Mage_Core_Model_Abstract
                 ',',
                 Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_DISABLE_REDIRECT_CONTROLLERS)
             );
-            $controllerName      = Mage::app()->getRequest()->getControllerName();
+            $controllerName      = $type;
             if (in_array($controllerName, $disabledControllers)) {
                 $shopgateRedirect->suppressRedirect();
             }
@@ -331,5 +330,138 @@ class Shopgate_Framework_Model_Mobile_Redirect extends Mage_Core_Model_Abstract
             );
         }
         return $jsHeader;
+    }
+
+
+
+    /**
+     * Get cached header js for redirect or load and save to cache
+     *
+     * @param $type  string
+     * @param $objId string|int
+     * @param $automaticRedirect
+     * @return mixed|string|void
+     */
+    protected function _createMobileRedirect($type, $objId)
+    {
+        $builder     = new ShopgateBuilder($this->_config);
+        $redirectObj = $builder->buildMobileRedirect($_SERVER['HTTP_USER_AGENT'], $_GET, $_COOKIE);
+
+        try {
+            $storeId   = $this->_config->getStoreViewId();
+            $siteName  = Mage::app()->getWebsite()->getName();
+            $mobileUrl = $this->_config->getCname();
+            $shopUrl   = Mage::getStoreConfig("web/unsecure/base_url", $storeId);
+
+            switch ($type) {
+                case self::CATEGORY:
+                    $pageTitle = Mage::getModel('catalog/category')->setStoreId($storeId)->load($objId)->getName();
+                    break;
+                case self::PRODUCT:
+                    $pageTitle = Mage::getModel('catalog/product')->setStoreId($storeId)->load($objId)->getName();
+                    break;
+                case self::PAGE:
+                    $pageTitle = Mage::getModel('cms/page')->setStoreId($storeId)->load($objId)->getTitle();
+                    break;
+                default:
+                    $pageTitle = $siteName;
+                    break;
+            }
+            if (empty($pageTitle)) {
+                $pageTitle = $siteName;
+            }
+
+            empty($siteName)  ?: $redirectObj->addSiteParameter(
+                Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_SITENAME, $siteName);
+            empty($shopUrl)   ?: $redirectObj->addSiteParameter(
+                Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_DESKTOP_URL, $shopUrl);
+            empty($mobileUrl) ?: $redirectObj->addSiteParameter(
+                Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_MOBILE_WEB_URL, $mobileUrl);
+            empty($pageTitle) ?: $redirectObj->addSiteParameter(
+                Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_TITLE, $pageTitle);
+
+            if ($type == self::PRODUCT) {
+
+                /** @var Mage_Catalog_Model_Product $product */
+                $product = Mage::getModel('catalog/product')->setStoreId($storeId)->load($objId);
+
+                $categoryId = Mage::app()->getRequest()->getParam('category');
+                if (!empty($categoryId)) {
+                    $categoryName = Mage::getModel('catalog/category')->load($categoryId)->getName();
+                }
+
+                $name          = $product->getData('name');
+                $availableText = $product->isInStock() ? 'instock' : 'oos';
+
+                $eanAttCode = Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_EAN_ATTR_CODE, $storeId);
+                if (is_object($eanAttCode)) {
+                    $ean = $product->getData($eanAttCode);
+                }
+
+                $image = $product->getMediaGalleryImages()->getFirstItem();
+                if (is_object($image)) {
+                    $imageUrl = $image->getData('url');
+                }
+
+                $description = $product->getData('short_description');
+                if (strlen($description) > 140) {
+                    $description = substr($description, 0, 136) . ' ...';
+                }
+
+                $price           = $product->getData('price');
+                $defaultCurrency = Mage::getStoreConfig("currency/options/default", $storeId);
+                $baseCurrency    = Mage::getStoreConfig("currency/options/base", $storeId);
+                if ($defaultCurrency != $baseCurrency) {
+                    $price = Mage::helper('directory')->currencyConvert($price, $baseCurrency, $defaultCurrency);
+                }
+                $priceIsGross = Mage::getStoreConfig("tax/calculation/price_includes_tax", $storeId);
+                $request = new Varien_Object(
+                    array(
+                        'country_id'        => Mage::getStoreConfig("tax/defaults/country", $storeId),
+                        'region_id'         => Mage::getStoreConfig("tax/defaults/region", $storeId),
+                        'postcode'          => Mage::getStoreConfig("tax/defaults/postcode", $storeId),
+                        'customer_class_id' => Mage::getModel("tax/calculation")->getDefaultCustomerTaxClass($storeId),
+                        'product_class_id'  => $product->getTaxClassId(),
+                        'store'             => Mage::app()->getStore($storeId)
+                    )
+                );
+
+                /** @var Mage_Tax_Model_Calculation $model */
+                $taxRate = Mage::getSingleton('tax/calculation')->getRate($request) / 100;
+                if ($priceIsGross) {
+                    $priceNet   = round($price / (1 + $taxRate), 2);
+                    $priceGross = round($price, 2);
+                } else {
+                    $priceNet   = round($price, 2);
+                    $priceGross = round($price * (1 + $taxRate), 2);
+                }
+
+                empty($imageUrl) ?: $redirectObj->addSiteParameter(
+                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_IMAGE, $imageUrl);
+                empty($name) ?: $redirectObj->addSiteParameter(
+                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_NAME, $name);
+                empty($description) ?: $redirectObj->addSiteParameter(
+                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_DESCRIPTION_SHORT, $description);
+                empty($ean) ?: $redirectObj->addSiteParameter(
+                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_EAN, $ean);
+                empty($availableText) ?: $redirectObj->addSiteParameter(
+                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_AVAILABILITY, $availableText);
+                empty($categoryName) ?: $redirectObj->addSiteParameter(
+                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_CATEGORY, $categoryName);
+                empty($priceGross) ?: $redirectObj->addSiteParameter(
+                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_PRICE, $priceGross);
+                empty($priceGross) ?: $redirectObj->addSiteParameter(
+                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_CURRENCY, $defaultCurrency);
+                empty($priceNet) ?: $redirectObj->addSiteParameter(
+                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_PRETAX_PRICE, $priceNet);
+                empty($priceNet) ?: $redirectObj->addSiteParameter(
+                    Shopgate_Helper_Redirect_TagsGenerator::SITE_PARAMETER_PRODUCT_PRETAX_CURRENCY, $defaultCurrency);
+
+            }
+        } catch (Exception $e) {
+            ShopgateLogger::getInstance()->log('error on tag creation for type:' . $type . ' object ID:' . $objId);
+        }
+
+        return $redirectObj;
     }
 }

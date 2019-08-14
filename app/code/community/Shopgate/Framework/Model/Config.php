@@ -901,6 +901,9 @@ class Shopgate_Framework_Model_Config extends ShopgateConfig
         if ($type == 'array' && is_array($value)) {
             return implode(",", $value);
         }
+        if (is_bool($value)) {
+            $value = (int)$value;
+        }
 
         return $value;
     }

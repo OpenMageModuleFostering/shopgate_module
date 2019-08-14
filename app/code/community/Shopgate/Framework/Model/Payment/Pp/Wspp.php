@@ -113,7 +113,7 @@ class Shopgate_Framework_Model_Payment_Pp_Wspp
     public function manipulateOrderWithPaymentData($order)
     {
         $paymentInfos  = $this->getShopgateOrder()->getPaymentInfos();
-        $paypalIpnData = json_decode($paymentInfos['paypal_ipn_data'], true);
+        $paypalIpnData = $paymentInfos['paypal_ipn_data'];
         $paypalIpnData = array_merge($paymentInfos['credit_card'], $paypalIpnData);
         $paymentStatus = $this->_getPaymentHelper()->filterPaymentStatus($paypalIpnData['payment_status']);
 

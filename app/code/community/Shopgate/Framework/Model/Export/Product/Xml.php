@@ -179,7 +179,8 @@ class Shopgate_Framework_Model_Export_Product_Xml
      */
     public function setName()
     {
-        $parentName = Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_EXPORT_PARENT_PRODUCT_NAME);
+        $parentName =
+            Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_EXPORT_PARENT_PRODUCT_NAME);
 
         if ($parentName && $this->_parent != null) {
             $name = $this->_parent->getName();
@@ -199,12 +200,12 @@ class Shopgate_Framework_Model_Export_Product_Xml
         $request = new Varien_Object(
             array(
                 'country_id'        => Mage::getStoreConfig(
-                                           "tax/defaults/country",
-                                           $this->_getConfig()->getStoreViewId()
-                    ),
+                    "tax/defaults/country",
+                    $this->_getConfig()->getStoreViewId()
+                ),
                 'customer_class_id' => Mage::getModel("tax/calculation")->getDefaultCustomerTaxClass(
-                                           $this->_getConfig()->getStoreViewId()
-                    ),
+                    $this->_getConfig()->getStoreViewId()
+                ),
                 'product_class_id'  => $product->getTaxClassId()
             )
         );
@@ -220,30 +221,32 @@ class Shopgate_Framework_Model_Export_Product_Xml
      */
     public function setTaxPercent()
     {
-	    if ($this->item->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_BUNDLE
-		    && $this->item->getPriceType() == Mage_Bundle_Model_Product_Price::PRICE_TYPE_DYNAMIC
-	    ) {
-		    $childIds       = $this->item->getTypeInstance()->getChildrenIds($this->item->getId());
-		    $taxRates       = array();
-		    foreach ($childIds as $childOption) {
-			    foreach ($childOption as $childId) {
-				    $product = Mage::getModel('catalog/product')
-					    ->setStoreId($this->_getConfig()->getStoreViewId())
-					    ->load($childId);
+        if ($this->item->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_BUNDLE
+            && $this->item->getPriceType() == Mage_Bundle_Model_Product_Price::PRICE_TYPE_DYNAMIC
+        ) {
+            $childIds = $this->item->getTypeInstance()->getChildrenIds($this->item->getId());
+            $taxRates = array();
+            foreach ($childIds as $childOption) {
+                foreach ($childOption as $childId) {
+                    $product = Mage::getModel('catalog/product')
+                                   ->setStoreId($this->_getConfig()->getStoreViewId())
+                                   ->load($childId);
 
-				    $taxRates[] = $this->_getTaxRate($product);
-			    }
-		    }
+                    $taxRates[] = $this->_getTaxRate($product);
+                }
+            }
 
-		    parent::setTaxPercent(max($taxRates));
-	    } else {
-            if(!($this->item->getTaxClassId() == Shopgate_Framework_Model_Export_Product_Xml::DEFAULT_TAX_CLASS_ID_NONE && $this->_parent)) {
+            parent::setTaxPercent(max($taxRates));
+        } else {
+            if (!($this->item->getTaxClassId() == Shopgate_Framework_Model_Export_Product_Xml::DEFAULT_TAX_CLASS_ID_NONE
+                && $this->_parent)
+            ) {
                 $taxPercent = $this->_getTaxRate($this->item);
-                if(!empty($taxPercent)) {
+                if (!empty($taxPercent)) {
                     parent::setTaxPercent($this->_getTaxRate($this->item));
                 }
             }
-	    }
+        }
     }
 
     /**
@@ -251,31 +254,33 @@ class Shopgate_Framework_Model_Export_Product_Xml
      */
     public function setTaxClass()
     {
-	    if ($this->item->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_BUNDLE
-		    && $this->item->getPriceType() == Mage_Bundle_Model_Product_Price::PRICE_TYPE_DYNAMIC
-	    ) {
-		    $childIds       = $this->item->getTypeInstance()->getChildrenIds($this->item->getId());
-		    $taxRates       = array();
-		    foreach ($childIds as $childOption) {
-			    foreach ($childOption as $childId) {
-				    $product = Mage::getModel('catalog/product')
-					    ->setStoreId($this->_getConfig()->getStoreViewId())
-					    ->load($childId);
+        if ($this->item->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_BUNDLE
+            && $this->item->getPriceType() == Mage_Bundle_Model_Product_Price::PRICE_TYPE_DYNAMIC
+        ) {
+            $childIds = $this->item->getTypeInstance()->getChildrenIds($this->item->getId());
+            $taxRates = array();
+            foreach ($childIds as $childOption) {
+                foreach ($childOption as $childId) {
+                    $product = Mage::getModel('catalog/product')
+                                   ->setStoreId($this->_getConfig()->getStoreViewId())
+                                   ->load($childId);
 
-				    $taxClassId             = $product->getTaxClassId();
-				    $taxRates[$taxClassId]  = $this->_getTaxRate($product);
-			    }
-		    }
+                    $taxClassId            = $product->getTaxClassId();
+                    $taxRates[$taxClassId] = $this->_getTaxRate($product);
+                }
+            }
 
-		    parent::setTaxClass(array_search(max($taxRates), $taxRates));
-	    } else {
-            if(!($this->item->getTaxClassId() == Shopgate_Framework_Model_Export_Product_Xml::DEFAULT_TAX_CLASS_ID_NONE && $this->_parent)) {
+            parent::setTaxClass(array_search(max($taxRates), $taxRates));
+        } else {
+            if (!($this->item->getTaxClassId() == Shopgate_Framework_Model_Export_Product_Xml::DEFAULT_TAX_CLASS_ID_NONE
+                && $this->_parent)
+            ) {
                 $taxClassId = $this->item->getTaxClassId();
-                if(!empty($taxClassId)) {
+                if (!empty($taxClassId)) {
                     parent::setTaxClass($taxClassId);
                 }
             }
-	    }
+        }
     }
 
     /**
@@ -293,7 +298,10 @@ class Shopgate_Framework_Model_Export_Product_Xml
     public function setDescription()
     {
         if (Mage::getStoreConfig(
-                Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_EXPORT_VARIATION_DESCRIPTION) == 1 && $this->_parent) {
+                Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_EXPORT_VARIATION_DESCRIPTION
+            ) == 1
+            && $this->_parent
+        ) {
             $description = "";
         } else {
             $description = $this->_getExportHelper()->createFullDescription($this->item, $this->_parent);
@@ -381,10 +389,11 @@ class Shopgate_Framework_Model_Export_Product_Xml
      */
     public function setPrice()
     {
-        $useParent  = false;
+        $useParent = false;
 
         if (Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_EXPORT_USE_ROOT_PRICES)
-            && $this->_parent != null && $this->_parent->isConfigurable()
+            && $this->_parent != null
+            && $this->_parent->isConfigurable()
         ) {
             $useParent = true;
         }
@@ -441,9 +450,9 @@ class Shopgate_Framework_Model_Export_Product_Xml
                 ->getConfigurableAttributes($this->_parent);
 
             foreach ($superAttributes as $superAttribute) {
-                $code       = $superAttribute->getProductAttribute()->getAttributeCode();
-                $index      = $this->item->getData($code);
-                $isPercent  = false;
+                $code      = $superAttribute->getProductAttribute()->getAttributeCode();
+                $index     = $this->item->getData($code);
+                $isPercent = false;
 
                 if ($superAttribute->hasData('prices')) {
                     foreach ($superAttribute->getPrices() as $saPrice) {
@@ -473,7 +482,7 @@ class Shopgate_Framework_Model_Export_Product_Xml
                 );
                 $calculatedPrices = $this->_parent->getConfigurablePrice();
 
-                $price      += $calculatedPrices;
+                $price += $calculatedPrices;
                 $finalPrice += $calculatedPrices;
             }
         }
@@ -484,15 +493,23 @@ class Shopgate_Framework_Model_Export_Product_Xml
             && Mage::getStoreConfig('catalog/baseprice/disable_ext') == 0
         ) {
             $format    = "{{baseprice}} / {{reference_amount}} {{reference_unit_short}}";
-            $basePrice = Mage::helper("baseprice")->getBasePriceLabel($this->item, $format);
-            $basePrice = strip_tags($basePrice);
-            $basePrice = htmlentities($basePrice, null, "UTF-8");
-            $priceModel->setBasePrice($basePrice);
+            $basePriceSuccess = true;
+            try {
+                $basePrice = Mage::helper("baseprice")->getBasePriceLabel($this->item, $format);
+            } catch (Exception $e) {
+                $basePriceSuccess = false;
+                $this->log('error in DerModPro_BasePrice for item uid:' . $this->item->getId());
+            }
+            if ($basePriceSuccess) {
+                $basePrice = strip_tags($basePrice);
+                $basePrice = htmlentities($basePrice, null, "UTF-8");
+                $priceModel->setBasePrice($basePrice);
+            }
         }
 
         $isGross = Mage::getStoreConfig(
-                       self::CONFIG_XML_PATH_PRICE_INCLUDES_TAX,
-                       $this->_getConfig()->getStoreViewId()
+            self::CONFIG_XML_PATH_PRICE_INCLUDES_TAX,
+            $this->_getConfig()->getStoreViewId()
         );
 
         if ($this->item->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_BUNDLE
@@ -516,8 +533,10 @@ class Shopgate_Framework_Model_Export_Product_Xml
         } else {
             $priceModel->setType(Shopgate_Model_Catalog_Price::DEFAULT_PRICE_TYPE_NET);
         }
-        $this->_createTierPriceNode($priceModel);
-        $this->_createGroupPriceNode($priceModel);
+        if (!$useParent) {
+            $this->_createTierPriceNode($priceModel);
+            $this->_createGroupPriceNode($priceModel);
+        }
 
         parent::setPrice($priceModel);
     }
@@ -537,7 +556,11 @@ class Shopgate_Framework_Model_Export_Product_Xml
                 $tierPrice->setFromQuantity($tier['price_qty']);
                 $tierPrice->setReduction($price->getSalePrice() - $tier['website_price']);
                 $tierPrice->setReductionType(Shopgate_Model_Catalog_TierPrice::DEFAULT_TIER_PRICE_TYPE_FIXED);
-                if ($this->item->isSuper() && Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_EXPORT_USE_ROOT_PRICES)) {
+                if ($this->item->isSuper()
+                    && Mage::getStoreConfig(
+                        Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_EXPORT_USE_ROOT_PRICES
+                    )
+                ) {
                     $tierPrice->setAggregateChildren(true);
                 }
 
@@ -565,7 +588,11 @@ class Shopgate_Framework_Model_Export_Product_Xml
                 $tierPrice->setReduction($price->getSalePrice() - $group['website_price']);
                 $tierPrice->setReductionType(Shopgate_Model_Catalog_TierPrice::DEFAULT_TIER_PRICE_TYPE_FIXED);
                 $tierPrice->setCustomerGroupUid($group['cust_group']);
-                if ($this->item->isSuper() && Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_EXPORT_USE_ROOT_PRICES)) {
+                if ($this->item->isSuper()
+                    && Mage::getStoreConfig(
+                        Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_EXPORT_USE_ROOT_PRICES
+                    )
+                ) {
                     $tierPrice->setAggregateChildren(true);
                 }
 
@@ -655,15 +682,15 @@ class Shopgate_Framework_Model_Export_Product_Xml
             $stock->setIsSaleable(1);
         }
 
-		$stock->setBackorders((int)$stockItem->getBackorders());
-		$stock->setMaximumOrderQuantity((int)$stockItem->getMaxSaleQty());
-		$stock->setMinimumOrderQuantity((int)$stockItem->getMinSaleQty());
-		if (method_exists($stockItem, 'getStockQty')) {
-			$stockQuantity = $stockItem->getStockQty();
-		} else {
-			$stockQuantity = $this->_getExportHelper()->getParentStockQuantity($this->item);
-		}
-		$stock->setStockQuantity((int)$stockQuantity);
+        $stock->setBackorders((int)$stockItem->getBackorders());
+        $stock->setMaximumOrderQuantity((int)$stockItem->getMaxSaleQty());
+        $stock->setMinimumOrderQuantity((int)$stockItem->getMinSaleQty());
+        if (method_exists($stockItem, 'getStockQty')) {
+            $stockQuantity = $stockItem->getStockQty();
+        } else {
+            $stockQuantity = $this->_getExportHelper()->getParentStockQuantity($this->item);
+        }
+        $stock->setStockQuantity((int)$stockQuantity);
         $stock->setAvailabilityText(
             $this->_getExportHelper()->getAvailableText(
                 $this->item,
@@ -696,6 +723,7 @@ class Shopgate_Framework_Model_Export_Product_Xml
 
     /**
      * getting images as array
+     *
      * @return array
      */
     public function getProductImages()
@@ -717,6 +745,7 @@ class Shopgate_Framework_Model_Export_Product_Xml
         }
 
         $images = $this->_compareImageObject($images);
+
         return $images;
     }
 
@@ -725,11 +754,12 @@ class Shopgate_Framework_Model_Export_Product_Xml
      * get product images
      *
      * @param bool $parent
+     *
      * @return array
      */
     protected function _getProductImages($parent = false)
     {
-        $images = array();
+        $images  = array();
         $product = $this->item;
         if ($parent) {
             $product = $this->_parent;
@@ -739,15 +769,21 @@ class Shopgate_Framework_Model_Export_Product_Xml
         if (!empty($mediaGallery)) {
             foreach ($mediaGallery as $image) {
                 if ($image->getFile()) {
-                    $imageConfig = Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_EXPORT_FIRST_PRODUCT_IMAGE);
+                    $imageConfig = Mage::getStoreConfig(
+                        Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_EXPORT_FIRST_PRODUCT_IMAGE
+                    );
                     if ($imageConfig == 'thumbnail' && $image->getFile() == $product->getThumbnail()) {
                         $position = -1;
-                    } else if ($imageConfig == 'base' && $image->getFile() == $product->getImage()) {
-                        $position = -1;
-                    } else if ($imageConfig == 'small' && $image->getFile() == $product->getSmallImage()) {
-                        $position = -1;
                     } else {
-                        $position = $image->getPosition();
+                        if ($imageConfig == 'base' && $image->getFile() == $product->getImage()) {
+                            $position = -1;
+                        } else {
+                            if ($imageConfig == 'small' && $image->getFile() == $product->getSmallImage()) {
+                                $position = -1;
+                            } else {
+                                $position = $image->getPosition();
+                            }
+                        }
                     }
                     $_image = array(
                         'url'      => $image->getUrl(),
@@ -773,6 +809,7 @@ class Shopgate_Framework_Model_Export_Product_Xml
      * compare images
      *
      * @param $images array
+     *
      * @return array
      */
     protected function _compareImageObject($images)
@@ -783,6 +820,7 @@ class Shopgate_Framework_Model_Export_Product_Xml
                 $imageUrls[$_imageObject['url']] = $_imageObject;
             }
         }
+
         return array_values($imageUrls);
     }
 
@@ -795,7 +833,7 @@ class Shopgate_Framework_Model_Export_Product_Xml
         $result = array();
         if ($this->_getExportHelper()->isProductVisibleInCategories($this->item)) {
             $itemsOrderOption = Mage::getStoreConfig(
-                                    Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_EXPORT_ITEM_SORT
+                Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_EXPORT_ITEM_SORT
 
             );
             $linkedCategories = Mage::getResourceSingleton('shopgate/product')->getCategoryIdsAndPosition($this->item);
@@ -806,12 +844,14 @@ class Shopgate_Framework_Model_Export_Product_Xml
 
                 switch ($itemsOrderOption) {
                     case Shopgate_Framework_Model_System_Config_Source_Item_Sort::SORT_TYPE_LAST_UPDATED:
-                        $sortIndex     = Mage::getModel('core/date')->timestamp(strtotime($this->item->getUpdatedAt()));
+                        $sortIndex = Mage::getModel('core/date')->timestamp(strtotime($this->item->getUpdatedAt()));
                         $categoryItemObject->setSortOrder($sortIndex);
                         break;
                     case Shopgate_Framework_Model_System_Config_Source_Item_Sort::SORT_TYPE_NEWEST:
-                        $sortIndex     = Mage::getModel('core/date')->timestamp(strtotime($this->item->getCreatedAt()));
-                        $categoryItemObject->setSortOrder(Shopgate_Framework_Model_Export_Product_Csv::MAX_TIMESTAMP - $sortIndex);
+                        $sortIndex = Mage::getModel('core/date')->timestamp(strtotime($this->item->getCreatedAt()));
+                        $categoryItemObject->setSortOrder(
+                            Shopgate_Framework_Model_Export_Product_Csv::MAX_TIMESTAMP - $sortIndex
+                        );
                         break;
                     case Shopgate_Framework_Model_System_Config_Source_Item_Sort::SORT_TYPE_PRICE_DESC:
                         $sortIndex = round($this->item->getFinalPrice() * 100, 0);
@@ -846,7 +886,7 @@ class Shopgate_Framework_Model_Export_Product_Xml
         }
 
         if (empty($this->_forcedProductAttributeCodes)) {
-            $forcedProperties = explode(
+            $forcedProperties                   = explode(
                 ",",
                 Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_EXPORT_FORCE_PROPERTY_EXPORT)
             );
@@ -855,45 +895,53 @@ class Shopgate_Framework_Model_Export_Product_Xml
 
         $result = array();
 
-	    $cacheKey = 'product_type_' . $this->item->getTypeId() . '_attributes_' . $this->item->getAttributeSetId();
+        $cacheKey = 'product_type_' . $this->item->getTypeId() . '_attributes_' . $this->item->getAttributeSetId();
 
-	    $cache = Mage::app()->getCacheInstance();
-	    $value = $cache->load($cacheKey);
+        $cache = Mage::app()->getCacheInstance();
+        $value = $cache->load($cacheKey);
 
-	    if ($value !== false) {
-		    $attributes = unserialize($value);
-	    } else {
-		    $attributes = $this->item->getAttributes();
-		    $attrCache = array();
-		    foreach ($attributes as $attribute) {
-			    $code = $attribute->getAttributeCode();
+        if ($value !== false) {
+            $attributes = unserialize($value);
+        } else {
+            $attributes = $this->item->getAttributes();
+            $attrCache  = array();
+            foreach ($attributes as $attribute) {
+                $code = $attribute->getAttributeCode();
 
-			    /* @var $attribute Mage_Catalog_Model_Resource_Eav_Attribute */
-			    if ($attribute && $attribute->getIsVisibleOnFront() || in_array($code, $this->_forcedProductAttributeCodes)) {
-				    if (in_array($code, $this->_ignoredProductAttributeCodes) && !in_array($code, $this->_forcedProductAttributeCodes)) {
-					    continue;
-				    }
+                /* @var $attribute Mage_Catalog_Model_Resource_Eav_Attribute */
+                if ($attribute && $attribute->getIsVisibleOnFront()
+                    || in_array(
+                        $code, $this->_forcedProductAttributeCodes
+                    )
+                ) {
+                    if (in_array($code, $this->_ignoredProductAttributeCodes)
+                        && !in_array(
+                            $code, $this->_forcedProductAttributeCodes
+                        )
+                    ) {
+                        continue;
+                    }
 
-				    $attrCache[$code] = array(
-					    'id' => $attribute->getId(),
-					    'label' => $attribute->getStoreLabel($this->_getConfig()->getStoreViewId())
-				    );
-			    }
-		    }
-		    $attributes = $attrCache;
+                    $attrCache[$code] = array(
+                        'id'    => $attribute->getId(),
+                        'label' => $attribute->getStoreLabel($this->_getConfig()->getStoreViewId())
+                    );
+                }
+            }
+            $attributes = $attrCache;
             $cache->save(
-                  serialize($attrCache),
-                  $cacheKey,
-                  array(
-                      'shopgate_export',
-                      Mage_Core_Model_Mysql4_Collection_Abstract::CACHE_TAG,
-                      Mage_Catalog_Model_Resource_Eav_Attribute::CACHE_TAG
-                  ),
-                  60
+                serialize($attrCache),
+                $cacheKey,
+                array(
+                    'shopgate_export',
+                    Mage_Core_Model_Mysql4_Collection_Abstract::CACHE_TAG,
+                    Mage_Catalog_Model_Resource_Eav_Attribute::CACHE_TAG
+                ),
+                60
             );
-	    }
+        }
 
-	    foreach ($attributes as $code => $data) {
+        foreach ($attributes as $code => $data) {
             $value = $this->item->getResource()->getAttribute($code)->getFrontend()->getValue($this->item);
             if (!empty($value) && !is_array($value)) {
                 $propertyItemObject = new Shopgate_Model_Catalog_Property();
@@ -1145,6 +1193,8 @@ class Shopgate_Framework_Model_Export_Product_Xml
     }
 
     /**
+     * Calculates percentage using catalog price rule base price
+     *
      * @param $value Mage_Core_Model_Abstract
      *
      * @return float
@@ -1152,9 +1202,12 @@ class Shopgate_Framework_Model_Export_Product_Xml
     protected function _getOptionValuePrice($value)
     {
         if ($value->getPriceType() == 'percent') {
-            $rulePrice = Mage::helper("shopgate/export")->calcProductPriceRule($this->item);
-            $price     = $rulePrice * ($value->getPrice() / 100);
-            return $price;
+            $rulePrice = Mage::helper('shopgate/export')->calcProductPriceRule($this->item);
+            if ($rulePrice) {
+                return $rulePrice * ($value->getPrice() / 100);
+            } else {
+                return $this->item->getFinalPrice() * ($value->getPrice() / 100);
+            }
         }
 
         return $value->getPrice();
@@ -1170,9 +1223,6 @@ class Shopgate_Framework_Model_Export_Product_Xml
         return $this->_getOptionValuePrice($value);
     }
 
-    /**
-     *
-     */
     public function setChildren()
     {
         $children = array();
@@ -1180,8 +1230,8 @@ class Shopgate_Framework_Model_Export_Product_Xml
             $childProductIds = $this->item->getTypeInstance()->getUsedProductIds();
             foreach ($childProductIds as $child) {
                 $configChild = Mage::getModel('catalog/product')
-                    ->setStoreId($this->_getConfig()->getStoreViewId())
-                    ->load($child);
+                                   ->setStoreId($this->_getConfig()->getStoreViewId())
+                                   ->load($child);
                 if ($configChild->getStatus() != Mage_Catalog_Model_Product_Status::STATUS_DISABLED) {
                     $childProducts[] = $configChild;
                 }
@@ -1192,8 +1242,8 @@ class Shopgate_Framework_Model_Export_Product_Xml
             $childProductIds = $this->item->getTypeInstance()->getAssociatedProductIds();
             foreach ($childProductIds as $child) {
                 $configChild = Mage::getModel('catalog/product')
-                    ->setStoreId($this->_getConfig()->getStoreViewId())
-                    ->load($child);
+                                   ->setStoreId($this->_getConfig()->getStoreViewId())
+                                   ->load($child);
                 if ($configChild->getStatus() != Mage_Catalog_Model_Product_Status::STATUS_DISABLED) {
                     $childProducts[] = $configChild;
                 }
@@ -1255,7 +1305,7 @@ class Shopgate_Framework_Model_Export_Product_Xml
     }
 
     /**
-     *
+     * Calls array methods one at a time
      */
     public function setFireMethodsForChildren()
     {
@@ -1322,8 +1372,10 @@ class Shopgate_Framework_Model_Export_Product_Xml
     protected function _setBundleOptions($inputs = array())
     {
         $bundleOptions       = $this->item->getPriceModel()->getOptions($this->item);
-        $isGross             = Mage::getStoreConfig(self::CONFIG_XML_PATH_PRICE_INCLUDES_TAX,
-                                                    $this->_getConfig()->getStoreViewId());
+        $isGross             = Mage::getStoreConfig(
+            self::CONFIG_XML_PATH_PRICE_INCLUDES_TAX,
+            $this->_getConfig()->getStoreViewId()
+        );
         $stock               = parent::getStock();
         $selectionQuantities = array();
 
@@ -1342,33 +1394,31 @@ class Shopgate_Framework_Model_Export_Product_Xml
                 $bundleOption->setSelections(array());
             }
 
-	        $optionPrices       = array();
-	        $cheapestOptionId   = null;
-	        $cheapestPrice      = null;
+            $optionPrices     = array();
+            $cheapestOptionId = null;
+            $cheapestPrice    = null;
 
-	        // fetch id of cheapest option
-	        foreach ($bundleOption->getSelections() as $selection) {
-		        $selectionPrice = $this->item
-			        ->getPriceModel()
-			        ->getSelectionFinalPrice($this->item, $selection, 1, $selection->getSelectionQty());
+            // fetch id of cheapest option
+            foreach ($bundleOption->getSelections() as $selection) {
+                $selectionPrice = $this->item
+                    ->getPriceModel()
+                    ->getSelectionFinalPrice($this->item, $selection, 1, $selection->getSelectionQty(), false);
 
-		        $selectionPrice = Mage::helper('tax')->getPrice($selection, $selectionPrice, $isGross);
+                $selectionPrice = Mage::helper('tax')->getPrice($selection, $selectionPrice, $isGross);
 
-		        if ($cheapestPrice === null
-		            || $cheapestPrice > $selectionPrice
-		        ) {
-			        $cheapestPrice    = $selectionPrice;
-			        $cheapestOptionId = $selection->getSelectionId();
-		        }
+                if ($cheapestPrice === null || $cheapestPrice > $selectionPrice) {
+                    $cheapestPrice    = $selectionPrice;
+                    $cheapestOptionId = $selection->getSelectionId();
+                }
 
-		        $optionPrices[$selection->getSelectionId()] = $selectionPrice;
-	        }
+                $optionPrices[$selection->getSelectionId()] = $selectionPrice;
+            }
 
             foreach ($bundleOption->getSelections() as $selection) {
                 $option = new Shopgate_Model_Catalog_Option();
                 /** @var $selection Mage_Catalog_Model_Product */
 
-	            $selectionId = $selection->getSelectionId();
+                $selectionId    = $selection->getSelectionId();
                 $qty            = max(1, (int)$selection->getSelectionQty());
                 $selectionPrice = $optionPrices[$selectionId];
 
@@ -1402,15 +1452,15 @@ class Shopgate_Framework_Model_Export_Product_Xml
                 $option->setLabel($selectionName);
                 $option->setSortOrder($selection->getPosition());
 
-	            // reset selection price, in this case the bundle parent is already configured
-	            // with the price of the cheapest bundle configuration
-	            if ($this->item->getPriceType() == Mage_Bundle_Model_Product_Price::PRICE_TYPE_DYNAMIC) {
+                // reset selection price, in this case the bundle parent is already configured
+                // with the price of the cheapest bundle configuration
+                if ($this->item->getPriceType() == Mage_Bundle_Model_Product_Price::PRICE_TYPE_DYNAMIC) {
                     if ($cheapestOptionId == $selection->getSelectionId() && $selection->getOption()->getRequired()) {
                         $selectionPrice = 0;
                     } elseif ($selection->getOption()->getRequired()) {
-                        $selectionPrice = $selectionPrice-$optionPrices[$cheapestOptionId];
+                        $selectionPrice = $selectionPrice - $optionPrices[$cheapestOptionId];
                     }
-	            }
+                }
 
                 $option->setAdditionalPrice($selectionPrice);
                 $optionValues[] = $option;
@@ -1450,15 +1500,19 @@ class Shopgate_Framework_Model_Export_Product_Xml
 
     /**
      * @param $price
+     *
      * @return float
      */
     protected function _formatPrice($price)
     {
         if (Mage::app()->getStore()->getCurrentCurrency() && Mage::app()->getStore()->getBaseCurrency()) {
-            $value = Mage::app()->getStore()->getBaseCurrency()->convert($price, Mage::app()->getStore()->getCurrentCurrency());
+            $value = Mage::app()->getStore()->getBaseCurrency()->convert(
+                $price, Mage::app()->getStore()->getCurrentCurrency()
+            );
         } else {
             $value = $price;
         }
+
         return $value;
     }
 } 

@@ -1,9 +1,22 @@
-'''English'''
+'''Version 2.9.27'''
+* Cleaned up tax export/coupon logic
+* Fixed a bug with custom option percent type calculations
+* Improved recognition of active payment methods in get_settings
+* Custom fields are only added to the order comments in case they are not empty
+* Skip baseprice if DerModPro_BasePrice throws an error
+* Deactivating export of variant prices now includes tierprices
+* Added support for payment model overwriting via config.xml
+* Fixed bug on updating from plugin version 2.8.0
+* Support html_tags for App Linking on the Desktop Website
+* Set_settings: solved issue with saving bools to config
+* Fixed bug in bundled product price option export
+* Add_order: fixed problem with credit card payment (PayPal Website Payments Pro)
+* Improved mobile redirect class to allow better rewrites/adaptions
+
 '''Version 2.9.26'''
 * Store deletion will not cause shopgate plugin to redirect to 404 page
 * Exclude unsupported input types from item export
-* Added basic support to 1400-1500 versions
-* 1600+ versions are fully supported
+* Added support to Creativestyle_AmazonPayments in Mage v1.4.0.0+
 * Fix custom description attribute codes
 * Shopgate payment orders import with status Processing when shipping is not blocked
 * Shopgate payment orders import with Shopgate configuration status when shipping is blocked

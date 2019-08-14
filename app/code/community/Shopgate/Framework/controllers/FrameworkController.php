@@ -86,13 +86,8 @@ class Shopgate_Framework_FrameworkController extends Mage_Core_Controller_Front_
             }
             Mage::app()->loadArea("adminhtml");
             Mage::app()->getTranslator()->init("adminhtml", true);
-            $netCountries = $config->getNetMarketCountries();
-            $country      = Mage::getStoreConfig("tax/defaults/country", $config->getStoreViewId());
-            $builder      = new ShopgateBuilder($config);
-            $plugin       = Mage::getModel('shopgate/shopgate_plugin', $builder);
-            if (in_array($country, $netCountries)) {
-                $plugin->setUseTaxClasses(true);
-            }
+            $builder = new ShopgateBuilder($config);
+            $plugin  = Mage::getModel('shopgate/shopgate_plugin', $builder);
             $plugin->handleRequest(Mage::app()->getRequest()->getParams());
         } catch (ShopgateLibraryException $e) {
             $response = new ShopgatePluginApiResponseAppJson(

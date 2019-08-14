@@ -145,14 +145,25 @@ class Shopgate_Framework_Helper_Import_Order extends Mage_Core_Helper_Abstract
         )
         ) {
             $comment        = '';
-            $customFieldSet = array(
-                $this->_getHelper()
-                     ->__('[SHOPGATE] Custom fields:') => $shopgateOrder->getCustomFields(),
-                $this->_getHelper()
-                     ->__('Shipping Address fields:')  => $shopgateOrder->getDeliveryAddress()->getCustomFields(),
-                $this->_getHelper()
-                     ->__('Billing Address fields:')   => $shopgateOrder->getInvoiceAddress()->getCustomFields()
-            );
+            $customFieldSet = array();
+
+            $oderCustomFields = $shopgateOrder->getCustomFields();
+            if (!empty($oderCustomFields)) {
+                $label = $this->_getHelper()->__('[SHOPGATE] Custom fields:');
+                $customFieldSet[$label] = $oderCustomFields;
+            }
+
+            $deliveryCustomFields = $shopgateOrder->getDeliveryAddress()->getCustomFields();
+            if (!empty($deliveryCustomFields)) {
+                $label = $this->_getHelper()->__('Shipping Address fields:');
+                $customFieldSet[$label] = $deliveryCustomFields;
+            }
+
+            $invoiceCustomFields = $shopgateOrder->getInvoiceAddress()->getCustomFields();
+            if (!empty($invoiceCustomFields)) {
+                $label = $this->_getHelper()->__('Billing Address fields:');
+                $customFieldSet[$label] = $invoiceCustomFields;
+            }
 
             foreach ($customFieldSet as $title => $set) {
                 $comment .= '<strong>' . $title . '</strong><br/>';
@@ -163,7 +174,9 @@ class Shopgate_Framework_Helper_Import_Order extends Mage_Core_Helper_Abstract
                 }
             }
 
-            $order->addStatusHistoryComment($comment, false);
+            if (!empty($comment)) {
+                $order->addStatusHistoryComment($comment, false);
+            }
         }
 
         return $order;
