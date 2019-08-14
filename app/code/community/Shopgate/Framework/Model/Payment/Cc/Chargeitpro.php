@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Shopgate GmbH
  *
@@ -20,33 +21,20 @@
  *
  * @author Shopgate GmbH <interfaces@shopgate.com>
  */
-
-/**
- * Forwarder for all Credit Card payment methods that contain CC in payment_method
- * Inherits from Simple class to use the first part of payment_method.
- * Meaning use Authn in Authn_CC to make Cc/Auth.php call
- *
- * Class Shopgate_Framework_Model_Payment_Cc
- *
- * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
- */
-class Shopgate_Framework_Model_Payment_Cc extends Shopgate_Framework_Model_Payment_Simple
+class Shopgate_Framework_Model_Payment_Cc_Chargeitpro
+    extends Shopgate_Framework_Model_Payment_Cc_Usaepay
 {
-    /**
-     * Temp rewrite for edge case where AUTHN_CC needs to be
-     * handled by AuthorizeCIM or USAEPAY_CC by ChargeItPro
-     *
-     * @return false|Shopgate_Framework_Model_Payment_Abstract
-     * @throws Exception
-     */
-    public function getModelByPaymentMethod()
-    {
-        if (Mage::getModel('shopgate/payment_cc_authncim', $this->getShopgateOrder())->isValid()) {
-            $this->setPaymentMethod('AUTHNCIM_CC');
-        } elseif (Mage::getModel('shopgate/payment_cc_chargeitpro', $this->getShopgateOrder())->isValid()) {
-            $this->setPaymentMethod('CHARGEITPRO_CC');
-        }
+    const XML_CONFIG_ENABLED     = 'payment/chargeitpro/active';
+    const XML_CONFIG_STATUS_PAID = 'payment/chargeitpro/order_status';
+    const MODULE_CONFIG          = 'Chargeitpro_Chargeitpro';
 
-        return parent::getModelByPaymentMethod();
+    /**
+     * Get the payment model to use withing class and direct children only
+     *
+     * @return Chargeitpro_Chargeitpro_Model_ChargeItPro
+     */
+    protected function _getLocalPaymentModel()
+    {
+        return Mage::getModel('chargeitpro/chargeItPro');
     }
 }

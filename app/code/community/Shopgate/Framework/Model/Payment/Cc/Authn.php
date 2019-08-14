@@ -159,8 +159,8 @@ class Shopgate_Framework_Model_Payment_Cc_Authn
              ->setCcType($this->_getCcTypeName($paymentInfos['credit_card']['type']))
              ->setCcOwner($paymentInfos['credit_card']['holder'])
              ->setCcLast4($lastFour)
-             ->setCcExpMonth("")
-             ->setCcExpYear("")
+             ->setCcExpMonth($paymentInfos['credit_card']['expiry_month'])
+             ->setCcExpYear($paymentInfos['credit_card']['expiry_year'])
              ->setCcSsIssue("")
              ->setCcSsStartMonth("")
              ->setCcSsStartYear("");

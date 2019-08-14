@@ -981,4 +981,19 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
         }
 
     }
+
+    /**
+     * Checks if totals from shopgate and magento differ by 1 cent
+     *
+     * @param ShopgateOrder             $shopgateOrder
+     * @param Mage_Sales_Model_Order    $magentoOrder
+     * @return bool
+     */
+    public function oneCentBugDetected($shopgateOrder, $magentoOrder)
+    {
+        $config         = $this->getConfig();
+        $bugDetected    = round(abs($shopgateOrder->getAmountComplete() - $magentoOrder->getQuoteBaseGrandTotal()), 2) == 0.01;
+        $shouldFixBug   = $config->getFixOneCentBug();
+        return $bugDetected && $shouldFixBug;
+    }
 }

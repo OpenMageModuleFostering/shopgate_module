@@ -22,7 +22,11 @@
  */
 
 /**
- * @deprecated  v.2.9.18 - use Shopgate_Framework_Model_Payment_Pp_Paypal instead
+ * This class is no longer needed due to the payment system changes. We are keeping this class
+ * to be compatible with our own adaptions that overwrite methods in Plugin.php that still call
+ * this class
+ * 
+ * @deprecated  v.2.9.18 - use Shopgate_Framework_Model_Payment_Simple_Paypal_Express instead
  * @package     Shopgate_Framework_Model_Payment_Express
  * @author      Peter Liebig <p.liebig@me.com, peter.liebig@magcorp.de
  * @author      Konstantin Kiritsenko <konstantin@kiritsenko.com>
@@ -31,38 +35,44 @@ class Shopgate_Framework_Model_Payment_Express
 {
 
     /**
-     * create new order for paypal express (type wspp)
+     * Create new order for paypal express (type wspp)
      *
-     * @deprecated v.2.9.18
+     * @deprecated v.2.9.18 - in case adaptions still use this classes
+     *
      * @param $quote            Mage_Sales_Model_Quote
+     *
      * @return Mage_Sales_Model_Order
      * @throws Exception
      */
     public function createNewOrder($quote)
     {
-        return Mage::getModel('shopgate/payment_pp_paypal', new ShopgateOrder())->createNewOrder($quote);
+        return Mage::getModel('shopgate/payment_simple_paypal_express', new ShopgateOrder())->createNewOrder($quote);
     }
 
     /**
      * @deprecated v.2.9.18
+     *
      * @param $order            Mage_Sales_Model_Order
      * @param $shopgateOrder    ShopgateOrder
+     *
      * @return Mage_Sales_Model_Order
      */
     public function manipulateOrderWithPaymentData($order, $shopgateOrder)
     {
-        return Mage::getModel('shopgate/payment_pp_paypal', $shopgateOrder)->manipulateOrderWithPaymentData($order);
+        return Mage::getModel('shopgate/payment_simple_paypal_express', $shopgateOrder)->manipulateOrderWithPaymentData($order);
     }
 
     /**
      * @deprecated v.2.9.18
+     *
      * @param $quote            Mage_Sales_Model_Quote
      * @param $data             array
+     *
      * @return Mage_Sales_Model_Quote
      */
     public function prepareQuote($quote, $data)
     {
-        return Mage::getModel('shopgate/payment_pp_paypal', new ShopgateOrder())->prepareQuote($quote, $data);
+        return Mage::getModel('shopgate/payment_simple_paypal_express', new ShopgateOrder())->prepareQuote($quote, $data);
     }
 
     /**

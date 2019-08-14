@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Shopgate_Framework>
-            <version>2.9.24</version>
+            <version>2.9.25</version>
         </Shopgate_Framework>
     </modules>
     <global>
@@ -353,6 +353,7 @@
                 <payment_title>Shopgate</payment_title>
                 <shipping_title>Shopgate</shipping_title>
                 <add_only_simple>0</add_only_simple>
+                <use_shopgate_prices>0</use_shopgate_prices>
             </orders>
             <shipping>
                 <carriers>

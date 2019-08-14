@@ -1,5 +1,12 @@
 '''English'''
 
+'''Version 2.9.25'''
+* map payment method Paypal Plus
+* fix multiple payment and shipping execution
+* adding credit card expiration date for authorize.net payment method
+* Added configuration, whether the magento or shopgate product prices should be used during addOrder
+* fix custom description attribute codes
+
 '''Version 2.9.24'''
 * fix Quote order problems
 * fixed payment fees are now possible for cash on delivery

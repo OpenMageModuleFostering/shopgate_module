@@ -238,7 +238,10 @@ class Shopgate_Framework_Model_Export_Product_Xml
 		    parent::setTaxPercent(max($taxRates));
 	    } else {
             if(!($this->item->getTaxClassId() == Shopgate_Framework_Model_Export_Product_Xml::DEFAULT_TAX_CLASS_ID_NONE && $this->_parent)) {
-                parent::setTaxPercent($this->_getTaxRate($this->item));
+                $taxPercent = $this->_getTaxRate($this->item);
+                if(!empty($taxPercent)) {
+                    parent::setTaxPercent($this->_getTaxRate($this->item));
+                }
             }
 	    }
     }
@@ -267,7 +270,10 @@ class Shopgate_Framework_Model_Export_Product_Xml
 		    parent::setTaxClass(array_search(max($taxRates), $taxRates));
 	    } else {
             if(!($this->item->getTaxClassId() == Shopgate_Framework_Model_Export_Product_Xml::DEFAULT_TAX_CLASS_ID_NONE && $this->_parent)) {
-                parent::setTaxClass($this->item->getTaxClassId());
+                $taxClassId = $this->item->getTaxClassId();
+                if(!empty($taxClassId)) {
+                    parent::setTaxClass($taxClassId);
+                }
             }
 	    }
     }
@@ -773,7 +779,7 @@ class Shopgate_Framework_Model_Export_Product_Xml
     {
         $imageUrls = array();
         foreach ($images as $_imageObject) {
-            if (!array_key_exists($imageUrls, $_imageObject['url'])) {
+            if (!array_key_exists($_imageObject['url'], $imageUrls)) {
                 $imageUrls[$_imageObject['url']] = $_imageObject;
             }
         }

@@ -516,12 +516,17 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                 continue;
             }
 
-            $orderInfo = $item->getInternalOrderInfo();
-            $orderInfo = $this->jsonDecode($orderInfo, true);
+            $orderInfo      = $item->getInternalOrderInfo();
+            $orderInfo      = $this->jsonDecode($orderInfo, true);
+            $amountWithTax  = $item->getUnitAmountWithTax();
 
             $stackQuantity = 1;
             if (!empty($orderInfo['stack_quantity']) && $orderInfo['stack_quantity'] > 1) {
                 $stackQuantity = $orderInfo['stack_quantity'];
+            }
+
+            if ($stackQuantity > 1) {
+                $amountWithTax = $amountWithTax / $stackQuantity;
             }
 
             $pId = $orderInfo["product_id"];
@@ -600,7 +605,13 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                     }
                 }
                 $quoteItem = $quote->getItemByProduct($product);
+
+                if ($this->_getConfig()->useShopgatePrices()) {
+                    $quoteItem->setCustomPrice($amountWithTax);
+                    $quoteItem->setOriginalCustomPrice($amountWithTax);
+                }
                 $quoteItem->setTaxPercent($item->getTaxPercent());
+
                 if (!is_null($productWeight)) {
                     $quoteItem->setWeight($productWeight);
                 }
@@ -1271,7 +1282,7 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
      */
     protected function _updateOrderPayment($magentoOrder, $shopgateOrder)
     {
-        if ($shopgateOrder->getUpdatePayment()) {
+        if ($shopgateOrder->getUpdatePayment() && $magentoOrder->getTotalDue() > 0) {
             $this->log("# Update payment", ShopgateLogger::LOGTYPE_DEBUG);
             $magentoOrder = $this->_setOrderPayment($magentoOrder, $shopgateOrder);
             $this->log("# Update payment successful", ShopgateLogger::LOGTYPE_DEBUG);
@@ -1288,7 +1299,17 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
      */
     protected function _updateOrderShipping($magentoOrder, $shopgateOrder, $magentoShopgateOrder)
     {
-        if ($shopgateOrder->getUpdateShipping()) {
+        $updateShipment = false;
+
+        foreach ($magentoOrder->getAllItems() as $orderItem) {
+            /** @var $orderItem Mage_Sales_Model_Order_Item */
+            if ($orderItem->getQtyShipped() != $orderItem->getQtyOrdered()) {
+                $updateShipment = true;
+                break;
+            }
+        }
+
+        if ($shopgateOrder->getUpdateShipping() && $updateShipment) {
             $this->log("# Update shipping", ShopgateLogger::LOGTYPE_DEBUG);
             $magentoOrder = $this->_setOrderState($magentoOrder, $shopgateOrder);
             if ($this->_isValidShipping($magentoOrder, $shopgateOrder, $magentoShopgateOrder)) {

@@ -102,11 +102,13 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
 
     /**
      * @param $shopgateOrder ShopgateOrder
+     *
      * @return $this
      */
     public function setShopgateOrder(ShopgateOrder $shopgateOrder)
     {
         $this->_shopgate_order = $shopgateOrder;
+
         return $this;
     }
 
@@ -120,11 +122,13 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
 
     /**
      * @param $paymentMethod string
+     *
      * @return $this
      */
     public function setPaymentMethod($paymentMethod)
     {
         $this->_payment_method = $paymentMethod;
+
         return $this;
     }
 
@@ -136,6 +140,7 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
         if (!$this->_payment_method) {
             $this->_payment_method = $this->getShopgateOrder()->getPaymentMethod();
         }
+
         return $this->_payment_method;
     }
 
@@ -153,6 +158,7 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
      * Helps initialize magento order
      *
      * @param Mage_Sales_Model_Order $order
+     *
      * @return Mage_Sales_Model_Order
      */
     public function setOrder(Mage_Sales_Model_Order $order)
@@ -168,6 +174,7 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
     protected function _getVersion()
     {
         $constant = $this->getConstant('MODULE_CONFIG');
+
         return Mage::getConfig()->getModuleConfig($constant)->version;
     }
 
@@ -229,6 +236,7 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
             );
             ShopgateLogger::getInstance()->log($debug, ShopgateLogger::LOGTYPE_DEBUG);
         }
+
         return $enabled;
     }
 
@@ -274,6 +282,7 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
      * Default order creation if no payment matches
      *
      * @param Mage_Sales_Model_Quote $quote
+     *
      * @return Mage_Sales_Model_Order
      * @throws Exception
      */
@@ -282,6 +291,7 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
         $service = Mage::getModel('sales/service_quote', $quote);
         if (!Mage::helper("shopgate/config")->getIsMagentoVersionLower15()) {
             $service->submitAll();
+
             return $this->setOrder($service->getOrder());
         } else {
             return $this->setOrder($service->submit());
@@ -292,6 +302,7 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
      * Generic order manipulation, taken originally from Plugin::_setOrderPayment()
      *
      * @param Mage_Sales_Model_Order $magentoOrder
+     *
      * @return Mage_Sales_Model_Order
      */
     public function manipulateOrderWithPaymentData($magentoOrder)
@@ -319,6 +330,7 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
      *
      * @param Mage_Sales_Model_Quote $quote
      * @param                        $info
+     *
      * @return Mage_Sales_Model_Quote
      */
     public function prepareQuote($quote, $info)
@@ -330,6 +342,7 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
      * Setting for default magento status
      *
      * @param $magentoOrder Mage_Sales_Model_Order
+     *
      * @return mixed
      */
     public function setOrderStatus($magentoOrder)
@@ -376,7 +389,62 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
             ShopgateLogger::getInstance()->log($debug, ShopgateLogger::LOGTYPE_DEBUG);
             $model = Mage::getModel(self::PAYMENT_MODEL);
         }
+
         return $model;
+    }
+
+    /**
+     * Manipulation of new magento order, BEFORE payment is processed
+     *
+     * @param Mage_Sales_Model_Order $magentoOrder
+     *
+     * @return Mage_Sales_Model_Order
+     */
+    protected function _beforeOrderManipulate($magentoOrder)
+    {
+        $shopgateOrder = $this->getShopgateOrder();
+
+        if ($this->_getHelper()->oneCentBugDetected($shopgateOrder, $magentoOrder)) {
+            $fixedOrderAmount = $shopgateOrder->getAmountComplete();
+            $magentoOrder->setBaseTotalDue($fixedOrderAmount);
+            $magentoOrder->setTotalDue($fixedOrderAmount);
+            $magentoOrder->setBaseGrandTotal($fixedOrderAmount);
+            $magentoOrder->setGrandTotal($fixedOrderAmount);
+        }
+
+        return $magentoOrder;
+    }
+
+    /**
+     * Manipulation of new magento order, AFTER payment is processed
+     *
+     * @param Mage_Sales_Model_Order $magentoOrder
+     *
+     * @return Mage_Sales_Model_Order
+     */
+    protected function _afterOrderManipulate($magentoOrder)
+    {
+        $shopgateOrder = $this->getShopgateOrder();
+
+        if ($this->_getHelper()->oneCentBugDetected($shopgateOrder, $magentoOrder)) {
+            $fixedOrderAmount = $shopgateOrder->getAmountComplete();
+            $magentoOrder->getPayment()->setAmountOrdered($fixedOrderAmount);
+            $magentoOrder->getPayment()->setBaseAmountOrdered($fixedOrderAmount);
+
+            if ($magentoOrder->getInvoiceCollection()->count() == 1) {
+                foreach ($magentoOrder->getInvoiceCollection() as $invoice) {
+                    $invoice->setGrandTotal($magentoOrder->getGrandTotal());
+                    $invoice->setBaseGrandTotal($magentoOrder->getBaseGrandTotal());
+
+                    $magentoOrder->setBaseTotalInvoiced($invoice->getBaseGrandTotal());
+                    $magentoOrder->setTotalInvoiced($invoice->getGrandTotal());
+                    $magentoOrder->setTotalPaid($invoice->getGrandTotal());
+                    $magentoOrder->setBaseTotalPaid($magentoOrder->getBaseTotalInvoiced());
+                }
+            }
+        }
+
+        return $magentoOrder;
     }
 
     /**
@@ -414,11 +482,13 @@ class Shopgate_Framework_Model_Payment_Abstract extends Mage_Core_Model_Abstract
      * constant retrieval
      *
      * @param string $input
+     *
      * @return mixed
      */
     protected final function getConstant($input)
     {
         $configClass = new ReflectionClass($this);
+
         return $configClass->getConstant($input);
     }
 }

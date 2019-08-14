@@ -442,7 +442,10 @@ class Shopgate_Framework_Helper_Export extends Mage_Core_Helper_Abstract
                     $attributeCode = trim($attributeCode);
 
                     if (!empty($attributeCode)) {
-                        $description1 = $product->getData($attributeCode);
+                        /** @var Mage_Catalog_Model_Resource_Eav_Attribute  $attribute */
+                        $attribute = $product->getResource()->getAttribute($attributeCode);
+                        $values = explode(',', $attribute->getFrontend()->getValue($product));
+                        $description1 = implode('<br />', $values);
                         if (in_array("2", $convertDescription)) {
                             $description1 = nl2br($description1);
                         }
@@ -451,6 +454,7 @@ class Shopgate_Framework_Helper_Export extends Mage_Core_Helper_Abstract
                         }
                         $description .= $description1;
                     }
+
                     $counter++;
                 }
         }

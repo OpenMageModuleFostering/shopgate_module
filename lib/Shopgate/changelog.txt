@@ -1,6 +1,13 @@
+'''Version 2.9.33'''
+* changed the initial value of the ShopgateDeliveryNote::$shipping_service_id entry to null
+* added payment method constant for Paypal Plus
+
+'''Version 2.9.32'''
+* amount_complete getter is now returning the correct field
+
 '''Version 2.9.31'''
-* added ShopgateShippingInfo:$amount_net and $amount_gross properties, getters and setters
-* ShopgateShippingInfo:$amount, getter and setter are now deprecated
+* added ShopgateShippingInfo::$amount_net and $amount_gross properties, getters and setters
+* ShopgateShippingInfo::$amount, getter and setter are now deprecated
 
 '''Version 2.9.30'''
 * amount_complete is now being set correctly for get_orders
@@ -12,7 +19,7 @@
 * XML export: fixed a bug that lead to unwanted occurrences of 'xmlns=""' in the XML
 
 '''Version 2.9.27'''
-* XML export: omit empty subnodes if they are defined as optional by the XSD
+* XML export: omit empty sub nodes if they are defined as optional by the XSD
 
 '''Version 2.9.26'''
 * added constants for order item types

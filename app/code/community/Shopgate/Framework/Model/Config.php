@@ -96,10 +96,12 @@ class Shopgate_Framework_Model_Config extends ShopgateConfig
     const XML_PATH_SHOPGATE_ORDER_SEND_NEW_ORDER_MAIL            = "shopgate/orders/send_new_order_mail";
     const XML_PATH_SHOPGATE_ORDER_CUSTOMFIELDS_TO_STATUSHISTORY  = "shopgate/orders/write_customfields_into_statushistory";
 	const XML_PATH_SHOPGATE_ORDER_ADD_ONLY_SIMPLE                = "shopgate/orders/add_only_simple";
+    const XML_PATH_SHOPGATE_ORDER_USE_SHOPGATE_PRICES            = "shopgate/orders/use_shopgate_prices";
     const XML_PATH_SHOPGATE_REDIRECT_TYPE                        = "shopgate/mobile/redirect_type";
     const XML_PATH_SHOPGATE_SERVER                               = "shopgate/debug/server";
     const XML_PATH_SHOPGATE_SHOP_NUMBER                          = "shopgate/option/shop_number";
     const XML_PATH_SHOPGATE_SHOP_ACTIVE                          = "shopgate/hidden/shop_is_active";
+    const XML_PATH_SHOPGATE_FIX_ONE_CENT_BUG                     = "shopgate/hidden/fix_one_cent_bug";
     const XML_PATH_SHOPGATE_SHOP_DEFAULT_STORE                   = "shopgate/option/default_store";
     const XML_PATH_SHOPGATE_UPC_ATTR_CODE                        = "shopgate/export/upc_attr_code";
     const XML_PATH_SHOPGATE_WEIGHT_UNIT                          = "shopgate/export/weight_unit";
@@ -117,6 +119,29 @@ class Shopgate_Framework_Model_Config extends ShopgateConfig
      * @var integer
      */
     protected $_storeViewId;
+
+    /**
+     * Fix one cent bug
+     *
+     * @var integer|bool
+     */
+    protected $fix_one_cent_bug;
+
+    /**
+     * @param $value
+     */
+    public function setFixOneCentBug($value)
+    {
+        $this->fix_one_cent_bug = $value;
+    }
+
+    /**
+     * @return bool|int
+     */
+    public function getFixOneCentBug()
+    {
+        return $this->fix_one_cent_bug;
+    }
 
     /**
      * Sets the given fields with the given values in ShopgateConfig Model
@@ -295,6 +320,8 @@ class Shopgate_Framework_Model_Config extends ShopgateConfig
             "available_text_attribute_code"
                                            => self::XML_PATH_SHOPGATE_EXPORT_AVAILABLE_TEXT_ATTRIBUTE_CODE,
             "add_only_simple"              => self::XML_PATH_SHOPGATE_ORDER_ADD_ONLY_SIMPLE,
+            "fix_one_cent_bug"             => self::XML_PATH_SHOPGATE_FIX_ONE_CENT_BUG,
+            "use_shopgate_prices"          => self::XML_PATH_SHOPGATE_ORDER_USE_SHOPGATE_PRICES,
             "upc_attr_code"                => self::XML_PATH_SHOPGATE_UPC_ATTR_CODE
         );
     }
@@ -312,6 +339,7 @@ class Shopgate_Framework_Model_Config extends ShopgateConfig
             "always_use_ssl"        => self::XML_PATH_SHOPGATE_ALWAYS_USE_SSL,
             "mobile_header_parent"  => self::XML_PATH_SHOPGATE_MOBILE_HEADER_PARENT,
             "mobile_header_prepend" => self::XML_PATH_SHOPGATE_MOBILE_HEADER_PREPEND,
+            "fix_one_cent_bug"      => self::XML_PATH_SHOPGATE_FIX_ONE_CENT_BUG
         );
     }
 
@@ -1010,4 +1038,17 @@ class Shopgate_Framework_Model_Config extends ShopgateConfig
 			$this->getStoreViewId()
 		);
 	}
+
+    /**
+     * Returns if prices from shopgate should be used to overwrite the magento ones
+     *
+     * @return mixed
+     */
+    public function useShopgatePrices()
+    {
+        return Mage::getStoreConfigFlag(
+            Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ORDER_USE_SHOPGATE_PRICES,
+            $this->getStoreViewId()
+        );
+    }
 }

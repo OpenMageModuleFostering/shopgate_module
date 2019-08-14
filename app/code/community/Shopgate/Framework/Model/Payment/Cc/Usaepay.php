@@ -22,7 +22,7 @@
  */
 
 /**
- * Native model for usa epay
+ * Native model for USA ePay
  *
  * @package Shopgate_Framework_Model_Payment_Usaepay
  * @author  Peter Liebig <p.liebig@me.com, peter.liebig@magcorp.de>
@@ -36,18 +36,17 @@ class Shopgate_Framework_Model_Payment_Cc_Usaepay extends Shopgate_Framework_Mod
     const MODULE_CONFIG          = 'Mage_Usaepay';
 
     /**
-     * @param $order            Mage_Sales_Model_Order
+     * @param $order Mage_Sales_Model_Order
      *
      * @return Mage_Sales_Model_Order
      */
     public function manipulateOrderWithPaymentData($order)
     {
-        $paymentInfos = $this->getShopgateOrder()->getPaymentInfos();
-        // changing order payment method here cause otherwise validation fails cause not CC number, no expiration date
-        $paymentUsaepay = Mage::getModel('usaepay/CCPaymentAction');
-        $order->getPayment()->setMethod($paymentUsaepay->getCode());
-        $paymentUsaepay->setInfoInstance($order->getPayment());
-        $order->getPayment()->setMethodInstance($paymentUsaepay);
+        $paymentInfos    = $this->getShopgateOrder()->getPaymentInfos();
+        $paymentInstance = $this->_getLocalPaymentModel();
+        $order->getPayment()->setMethod($paymentInstance->getCode());
+        $paymentInstance->setInfoInstance($order->getPayment());
+        $order->getPayment()->setMethodInstance($paymentInstance);
         $order->save();
 
         $lastFour = substr($paymentInfos['credit_card']['masked_number'], -4);
@@ -57,69 +56,42 @@ class Shopgate_Framework_Model_Payment_Cc_Usaepay extends Shopgate_Framework_Mod
         $order->getPayment()->setCcApproval($paymentInfos['authorization_number']);
         $order->getPayment()->setCcType($this->_getCcTypeName($paymentInfos['credit_card']['type']));
         $order->getPayment()->setCcOwner($paymentInfos['credit_card']['holder']);
+        $order->getPayment()->setCcExpMonth(
+            str_pad($paymentInfos['credit_card']['expiry_month'], 2, '0', STR_PAD_LEFT)
+        );
+        $order->getPayment()->setCcExpYear($paymentInfos['credit_card']['expiry_year']);
         $order->getPayment()->setLastTransId($paymentInfos['reference_number']);
 
-        // C or A type. no const in usa epay model for this
-        $paymentStatus = $this->getShopgateOrder()->getIsPaid() ? 'C' : 'A';
         try {
-            $invoice = $this->_getPaymentHelper()->createOrderInvoice($order);
-            switch ($paymentStatus) {
-                case 'C':
-                    $order->getPayment()->setAmountAuthorized($invoice->getGrandTotal());
-                    $order->getPayment()->setBaseAmountAuthorized($invoice->getBaseGrandTotal());
-                    $order->getPayment()->setBaseAmountPaidOnline($invoice->getBaseGrandTotal());
-                    $invoice->setIsPaid(true);
-                    $invoice->setTransactionId($paymentInfos['reference_number']);
-                    $invoice->pay();
-                    $invoice->save();
-                    $order->addRelatedObject($invoice);
-                    break;
-                case 'A':
-                    $order->getPayment()->setAmountAuthorized($order->getGrandTotal());
-                    $order->getPayment()->setBaseAmountAuthorized($order->getBaseGrandTotal());
-                    $order->getPayment()->setIsTransactionPending(true);
-                    $invoice->setIsPaid(false);
-                    $invoice->save();
-                    $order->addRelatedObject($invoice);
-                    break;
-                default:
-                    throw new Exception("Cannot handle payment status '{$paymentStatus}'.");
+            if (isset($paymentInfos['transaction_type']) && $paymentInfos['transaction_type'] === 'sale') {
+                $invoice = $this->_getPaymentHelper()->createOrderInvoice($order);
+                $order->getPayment()->setAmountAuthorized($invoice->getGrandTotal());
+                $order->getPayment()->setBaseAmountAuthorized($invoice->getBaseGrandTotal());
+                $order->getPayment()->setBaseAmountPaidOnline($invoice->getBaseGrandTotal());
+                $invoice->setIsPaid(true);
+                $invoice->setTransactionId($paymentInfos['reference_number']);
+                $invoice->pay();
+                $invoice->save();
+                $order->addRelatedObject($invoice);
+            } else {
+                $order->getPayment()->setAmountAuthorized($order->getGrandTotal());
+                $order->getPayment()->setBaseAmountAuthorized($order->getBaseGrandTotal());
+                $order->getPayment()->setIsTransactionPending(true);
             }
-        } catch (Exception $x) {
-            $order->addStatusHistoryComment(Mage::helper('sales')->__('Note: %s', $x->getMessage()));
-            Mage::logException($x);
+        } catch (Exception $e) {
+            $order->addStatusHistoryComment(Mage::helper('sales')->__('Note: %s', $e->getMessage()));
+            Mage::logException($e);
         }
         return $order;
     }
 
     /**
-     * A bit dirty, but status setting can be complicated
+     * Get the payment model to use withing class and direct children only
      *
-     * @param Mage_Sales_Model_Order $magentoOrder
-     * @return Mage_Sales_Model_Order
+     * @return Mage_Usaepay_Model_CCPaymentAction
      */
-    public function setOrderStatus($magentoOrder)
+    protected function _getLocalPaymentModel()
     {
-        if ($this->getShopgateOrder()->getIsPaid()) {
-            $total  = $magentoOrder->getBaseCurrency()->formatTxt($magentoOrder->getBaseGrandTotal());
-            $status = Mage::getStoreConfig(self::XML_CONFIG_STATUS_PAID, $magentoOrder->getStoreId());
-            if (!$status) {
-                $state  = Mage_Sales_Model_Order::STATE_PROCESSING;
-                $status = Mage::helper('shopgate')->getStatusFromState($state);
-            } else {
-                $state = Mage::helper('shopgate')->getStateForStatus($status);
-            }
-            $message = Mage::helper('sales')->__('Captured amount of %s online.', $total);
-        } else {
-            $state   = Mage::helper("shopgate")->getStateForStatus("payment_review");
-            $status  = Mage::helper('shopgate')->getStatusFromState($state);
-            $due     = $magentoOrder->getBaseCurrency()->formatTxt($magentoOrder->getTotalDue());
-            $message = Mage::helper('paypal')->__('Authorized amount of %s.', $due);
-        }
-
-        $magentoOrder->setState($state, $status, $message);
-        $magentoOrder->setShopgateStatusSet(true);
-
-        return $magentoOrder;
+        return Mage::getModel('usaepay/CCPaymentAction');
     }
 }

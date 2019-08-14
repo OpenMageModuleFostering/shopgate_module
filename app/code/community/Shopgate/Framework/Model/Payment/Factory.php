@@ -91,10 +91,15 @@ class Shopgate_Framework_Model_Payment_Factory extends Shopgate_Framework_Model_
      */
     public function manipulateOrderWithPaymentData($magentoOrder)
     {
-        if ($this->validatePaymentClass()) {
-            return $this->getPaymentClass()->manipulateOrderWithPaymentData($magentoOrder);
-        }
-        return parent::manipulateOrderWithPaymentData($magentoOrder);
+        $magentoOrder = $this->_beforeOrderManipulate($magentoOrder);
+
+        $magentoOrder = $this->validatePaymentClass()
+            ? $this->getPaymentClass()->manipulateOrderWithPaymentData($magentoOrder)
+            : parent::manipulateOrderWithPaymentData($magentoOrder);
+
+        $magentoOrder = $this->_afterOrderManipulate($magentoOrder);
+
+        return $magentoOrder;
     }
 
     /**

@@ -80,8 +80,9 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
      */
     public function __construct()
     {
-        $this->_magentoVersion1700 = ($this->getEdition() == 'Enterprise') ? '1.12.0.0' : '1.7.0.0';
+        $this->_magentoVersion1922 = ($this->getEdition() == 'Enterprise') ? '1.14.2.2' : '1.9.2.2';
         $this->_magentoVersion1701 = ($this->getEdition() == 'Enterprise') ? '1.12.0.2' : '1.7.0.1';
+        $this->_magentoVersion1700 = ($this->getEdition() == 'Enterprise') ? '1.12.0.0' : '1.7.0.0';
         $this->_magentoVersion15   = ($this->getEdition() == 'Enterprise') ? '1.9.1.0' : '1.5';
         $this->_magentoVersion1410 = ($this->getEdition() == 'Enterprise') ? '1.9.0.0' : '1.4.1.0';
     }
@@ -201,19 +202,19 @@ class Shopgate_Framework_Helper_Config extends Mage_Core_Helper_Abstract
         $table_config_data = $resource->getTableName('core/config_data');
         $collection = Mage::getModel('core/config_data')->getCollection()
                           ->addFieldToFilter(
-                              '`main_table`.`path`',
+                              'main_table.path',
                               Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_SHOP_NUMBER
                           )
-                          ->addFieldToFilter('`main_table`.`scope`', 'websites')
-                          ->addFieldToFilter('`main_table`.`value`', array('nin' => array('', null)))
+                          ->addFieldToFilter('main_table.scope', 'websites')
+                          ->addFieldToFilter('main_table.value', array('nin' => array('', null)))
                           ->addFieldToFilter(
-                              '`dsv`.`path`',
+                              'dsv.path',
                               Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_SHOP_DEFAULT_STORE
                           )
                           ->getSelect()
                           ->joinInner(
                               array('dsv' => $table_config_data),
-                              '`dsv`.`scope` = `main_table`.`scope` AND `dsv`.`scope_id` = `main_table`.`scope_id`',
+                              'dsv.scope = main_table.scope AND dsv.scope_id = main_table.scope_id',
                               array('default_store_view' => 'value')
                           )->query()
                           ->fetchAll();
