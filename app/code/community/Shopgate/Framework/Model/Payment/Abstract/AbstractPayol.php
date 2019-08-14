@@ -109,9 +109,9 @@ class Shopgate_Framework_Model_Payment_Abstract_AbstractPayol extends Shopgate_F
                 $this->_getTransactionAction(),
                 $this->getOrder()->getBaseCurrency()->formatTxt($amountToCapture)
             );
-            $state   = Mage_Sales_Model_Order::STATE_PAYMENT_REVIEW;
+            $state   = $this->_getHelper()->getStateForStatus('payment_review');
             if ($payment->getIsFraudDetected()) {
-                $status = Mage_Sales_Model_Order::STATUS_FRAUD;
+                $status = Mage_Sales_Model_Order::STATE_HOLDED;
             }
         } else {
             $status  = Mage::getStoreConfig($this::XML_CONFIG_STATUS_PAID);
@@ -140,7 +140,7 @@ class Shopgate_Framework_Model_Payment_Abstract_AbstractPayol extends Shopgate_F
         $info = $this->getShopgateOrder()->getPaymentInfos();
 
         if (!isset($info['unique_id'])) {
-            $error = mage::helper('shopgate')->__('Unique ID was missing in paymentInfo of add_order');
+            $error = $this->_getHelper()->__('Unique ID was missing in paymentInfo of add_order');
             ShopgateLogger::getInstance()->log($error, ShopgateLogger::LOGTYPE_ERROR);
             return false;
         }
@@ -252,7 +252,7 @@ class Shopgate_Framework_Model_Payment_Abstract_AbstractPayol extends Shopgate_F
 
             $trans->save();
             $this->getOrder()->getPayment()->setTransactionAdditionalInfo(
-                Mage_Sales_Model_Order_Payment_Transaction::RAW_DETAILS,
+                $this->_getPaymentHelper()->getTransactionRawDetails(),
                 $info
             );
             $this->getOrder()->getPayment()->setTransactionId($transId)->setIsTransactionClosed(0);

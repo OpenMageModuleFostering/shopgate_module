@@ -24,7 +24,7 @@
 ###################################################################################
 # define constants
 ###################################################################################
-define('SHOPGATE_LIBRARY_VERSION', '2.9.21');
+define('SHOPGATE_LIBRARY_VERSION', '2.9.24');
 define('SHOPGATE_LIBRARY_ENCODING' , 'UTF-8');
 define('SHOPGATE_BASE_DIR', realpath(dirname(__FILE__).'/../'));
 
@@ -361,6 +361,7 @@ class ShopgateLibraryException extends Exception {
 	 * @param string $additionalInformation More detailed information on what exactly went wrong.
 	 * @param bool $appendAdditionalInformationToMessage Set true to output the additional information to the response. Set false to log it silently.
 	 * @param bool $writeLog true to create a log entry in the error log, false otherwise.
+	 * @param Exception $previous
 	 */
 	public function __construct($code, $additionalInformation = null, $appendAdditionalInformationToMessage = false, $writeLog = true, Exception $previous = null) {
 		// Set code and message
@@ -993,8 +994,7 @@ class ShopgateBuilder {
 				break;
 			default:
 				// undefined auth service
-				trigger_error('Invalid SMA-Auth-Service defined - this should not happen with valid plugin code', E_USER_ERROR);
-				break;
+				return trigger_error('Invalid SMA-Auth-Service defined - this should not happen with valid plugin code', E_USER_ERROR);
 		}
 		// -> PluginAPI auth service (currently the plugin API supports only one auth service)
 		$spaAuthService = new ShopgateAuthenticationServiceShopgate($this->config->getCustomerNumber(), $this->config->getApikey());
@@ -1125,7 +1125,7 @@ abstract class ShopgateObject {
 
 	/**
 	 * Save the already instantiated Helper Object to guarantee the only one instance is allocated
-	 * 
+	 *
 	 * @var array of Shopgate_Helper_DataStructure|Shopgate_Helper_Pricing|Shopgate_Helper_String
 	 */
 	private $helperClassInstances = array(
@@ -1903,7 +1903,6 @@ abstract class ShopgatePlugin extends ShopgateObject {
 	
 	/**
 	 *
-	 * @param boolean tax classes will be used
 	 * @see http://wiki.shopgate.com/CSV_File_Items/
 	 */
 	protected function useTaxClasses(){
@@ -2089,7 +2088,7 @@ abstract class ShopgatePlugin extends ShopgateObject {
 	protected function removeTagsFromString($string, $removeTags = array(), $additionalAllowedTags = array())
 	{
 		$helper = $this->getHelper(self::HELPER_STRING);
-		return $helper->removeTagsFromString($string, $removeTags, $additionalAllowedTags);	
+		return $helper->removeTagsFromString($string, $removeTags, $additionalAllowedTags);
 	}
 
 	/**
@@ -2419,8 +2418,8 @@ abstract class ShopgatePlugin extends ShopgateObject {
 	
 	/**
 	 * Returns an array of certain settings of the shop. (Currently mainly tax settings.)
-	 * 
-	 * 
+	 *
+	 *
 	 * @see http://developer.shopgate.com/plugin_api/system_information/get_settings
 	 *
 	 * @return array(
@@ -2450,8 +2449,17 @@ abstract class ShopgatePlugin extends ShopgateObject {
 	 * @see http://developer.shopgate.com/plugin_api/export/get_items_csv
 	 *
 	 * @throws ShopgateLibraryException
+	 *
+	 * @deprecated Use createItems().
 	 */
-	protected abstract function createItemsCsv();
+	protected function createItemsCsv(){
+		throw new ShopgateLibraryException(
+				ShopgateLibraryException::PLUGIN_API_DISABLED_ACTION,
+				'The requested action is not disabled but has not been implemented in this plugin.',
+				true,
+				false
+		);
+	}
 	
 	/**
 	 * Loads the Media file information to the products of the shop system's database and passes them to the buffer.
@@ -2476,9 +2484,18 @@ abstract class ShopgatePlugin extends ShopgateObject {
 	 * @see http://developer.shopgate.com/plugin_api/export/get_categories_csv
 	 *
 	 * @throws ShopgateLibraryException
+	 *
+	 * @deprecated Use createCategories().
 	 */
-	protected abstract function createCategoriesCsv();
-
+	protected function createCategoriesCsv() {
+		throw new ShopgateLibraryException(
+				ShopgateLibraryException::PLUGIN_API_DISABLED_ACTION,
+				'The requested action is not disabled but has not been implemented in this plugin.',
+				true,
+				false
+		);
+	}
+	
 	/**
 	 * Loads the product reviews of the shop system's database and passes them to the buffer.
 	 *
@@ -2489,9 +2506,18 @@ abstract class ShopgatePlugin extends ShopgateObject {
 	 * @see http://developer.shopgate.com/plugin_api/export/get_reviews_csv
 	 *
 	 * @throws ShopgateLibraryException
+	 *
+	 * @deprecated Use createReviews().
 	 */
-	protected abstract function createReviewsCsv();
-
+	protected function createReviewsCsv() {
+		throw new ShopgateLibraryException(
+				ShopgateLibraryException::PLUGIN_API_DISABLED_ACTION,
+				'The requested action is not disabled but has not been implemented in this plugin.',
+				true,
+				false
+		);
+	}
+	
 	/**
 	 * Exports orders from the shop system's database to Shopgate.
 	 *

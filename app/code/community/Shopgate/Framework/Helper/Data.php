@@ -46,13 +46,25 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
     protected $_mage14xStates = array(
         Mage_Sales_Model_Order::STATE_NEW             => "pending",
         Mage_Sales_Model_Order::STATE_PENDING_PAYMENT => "pending",
-        Mage_Sales_Model_Order::STATE_PAYMENT_REVIEW  => "payment_review",
         Mage_Sales_Model_Order::STATE_PROCESSING      => "processing",
         Mage_Sales_Model_Order::STATE_COMPLETE        => "complete",
         Mage_Sales_Model_Order::STATE_CLOSED          => "closed",
         Mage_Sales_Model_Order::STATE_CANCELED        => "canceled",
         Mage_Sales_Model_Order::STATE_HOLDED          => "holded",
     );
+
+    /**
+     * Helps with status for lower versions
+     */
+    public function __construct()
+    {
+        if (Mage::helper("shopgate/config")->getIsMagentoVersionLower1410()) {
+            $this->_mage14xStates['payment_review'] = Mage_Sales_Model_Order::STATE_HOLDED;
+            $this->_mage14xStates['fraud']          = Mage_Sales_Model_Order::STATE_HOLDED;
+        } else {
+            $this->_mage14xStates[Mage_Sales_Model_Order::STATE_PAYMENT_REVIEW] = "payment_review";
+        }
+    }
 
     /**
      * get QR Code directory
@@ -357,7 +369,7 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
                 "VMR" => "Valmiera",
                 "VEN" => "LV-VEN",
                 // Unknown
-                // 						"" => "LV-LE", "" => "LV-RI", "" => "LV-VM",
+                // "" => "LV-LE", "" => "LV-RI", "" => "LV-VM",
             ),
         );
 
@@ -423,7 +435,7 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
         if (!$result) {
             $result = $db->fetchOne("SELECT state FROM {$table} WHERE state = '{$state}'");
         }
-        if(!$result) {
+        if (!$result) {
             $result = $this->_getStatusFromStateMagento14x($state);
         }
         return $result;
@@ -447,7 +459,7 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
      * Mage 1.4 non DB support for all states
      *
      * @param $state - status returned
-     *               
+     *
      * @return string
      */
     protected function _getStatusFromStateMagento14x($state)
@@ -488,9 +500,9 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
         $totalMagento  = $oMageOrder->getTotalDue() + $oMageOrder->getTotalPaid();
 
         ShopgateLogger::getInstance()->log(
-                      "Total Shopgate: {$totalShopgate} {$order->getCurrency()} 
+            "Total Shopgate: {$totalShopgate} {$order->getCurrency()} 
             Total Magento: {$totalMagento} {$order->getCurrency()}",
-                      ShopgateLogger::LOGTYPE_DEBUG
+            ShopgateLogger::LOGTYPE_DEBUG
         );
 
         if (abs($totalShopgate - $totalMagento) > 0.02) {
@@ -519,9 +531,11 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
         if (!$order->getShippingGroup()) {
             ShopgateLogger::getInstance()
                           ->log(
-                          "# setShippingMethod skipped, no Shipping information in " . get_class($order) . " available",
-                          ShopgateLogger::LOGTYPE_DEBUG
-                );
+                              "# setShippingMethod skipped, no Shipping information in " . get_class(
+                                  $order
+                              ) . " available",
+                              ShopgateLogger::LOGTYPE_DEBUG
+                          );
             return;
         }
 
@@ -530,8 +544,8 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
         $shippingAddress->setShippingMethod($mapper->getCarrier() . '_' . $mapper->getMethod());
 
         ShopgateLogger::getInstance()->log(
-                      "  Shipping method set: '" . $shippingAddress->getShippingMethod() . "'",
-                      ShopgateLogger::LOGTYPE_DEBUG
+            "  Shipping method set: '" . $shippingAddress->getShippingMethod() . "'",
+            ShopgateLogger::LOGTYPE_DEBUG
         );
         ShopgateLogger::getInstance()->log("# End of setShippingMethod process", ShopgateLogger::LOGTYPE_DEBUG);
     }
@@ -754,7 +768,7 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
                                   ->addAttributeToFilter('visibility', array('nin' => $productNotVisible))
                                   ->addAttributeToFilter('status', Mage_Catalog_Model_Product_Status::STATUS_ENABLED)
                                   ->getSize();
-        $reviewCount = 0;
+        $reviewCount   = 0;
         if (Mage::getConfig()->getModuleConfig("Mage_Review")->is('active', 'true')) {
             $reviewCount = (int)Mage::getModel('review/review')
                                     ->getCollection()
@@ -825,17 +839,17 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
         if ($qtyIncrements && (Mage::helper('core')->getExactDivision($qty, $qtyIncrements) != 0)) {
             $result->setHasError(true)
                    ->setQuoteMessage(
-                   Mage::helper('cataloginventory')->__(
-                       'Some of the products cannot be ordered in the requested quantity.'
+                       Mage::helper('cataloginventory')->__(
+                           'Some of the products cannot be ordered in the requested quantity.'
+                       )
                    )
-                )
                    ->setErrorCode('qty_increments')
                    ->setQuoteMessageIndex('qty');
             $result->setMessage(
-                   Mage::helper('cataloginventory')->__(
-                       'This product is available for purchase in increments of %s only.',
-                       $qtyIncrements * 1
-                   )
+                Mage::helper('cataloginventory')->__(
+                    'This product is available for purchase in increments of %s only.',
+                    $qtyIncrements * 1
+                )
             );
         }
 
@@ -886,8 +900,9 @@ class Shopgate_Framework_Helper_Data extends Mage_Core_Helper_Abstract
             if ($connection->getScope() == 'websites') {
                 $collection = Mage::getModel('core/config_data')->getCollection()
                                   ->addFieldToFilter(
-                                  'path', Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_SHOP_DEFAULT_STORE
-                    )
+                                      'path',
+                                      Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_SHOP_DEFAULT_STORE
+                                  )
                                   ->addFieldToFilter('scope', $connection->getScope())
                                   ->addFieldToFilter('scope_id', $connection->getScopeId());
 

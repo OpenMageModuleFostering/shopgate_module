@@ -22,33 +22,29 @@
  */
 
 /**
- * Forwarder to PayPal between Standard & Express
+ * PayPal Standard handler for mage v.1.4.0.0
  *
- * Class Shopgate_Framework_Model_Payment_Simple_Paypal
- *
- * @author  Konstantin Kiritsenko <konstantin@kiritsenko.com>
+ * @author Konstantin Kiritsenko <konstantin@kiritsenko.com>
  */
-class Shopgate_Framework_Model_Payment_Simple_Paypal extends Shopgate_Framework_Model_Payment_Simple
+class Shopgate_Framework_Model_Payment_Simple_Paypal_Standard1400
+    extends Shopgate_Framework_Model_Payment_Pp_Abstract
+    implements Shopgate_Framework_Model_Payment_Interface
 {
+    const PAYMENT_IDENTIFIER = ShopgateOrder::PAYPAL;
+    const XML_CONFIG_ENABLED = 'payment/paypal_standard/active';
+    const PAYMENT_MODEL      = 'paypal/standard';
+
     /**
-     * Redirect to standard or express
-     *
-     * @return false|Shopgate_Framework_Model_Payment_Abstract
+     * Partial, online refund not supported
+     * 
+     * @param Mage_Sales_Model_Order $magentoOrder
+     * @return Mage_Sales_Model_Order
      */
-    public function getModelByPaymentMethod()
+    public function manipulateOrderWithPaymentData($magentoOrder)
     {
-        $standard = Mage::getModel('shopgate/payment_simple_paypal_standard', $this->getShopgateOrder());
-
-        if ($standard instanceof Shopgate_Framework_Model_Payment_Interface && $standard->isValid()) {
-            if ($this->_getConfigHelper()->getIsMagentoVersionLower1410()) {
-                $this->setPaymentMethod('STANDARD1400');
-            } else {
-                $this->setPaymentMethod('STANDARD');
-            }
-        } else {
-            $this->setPaymentMethod('EXPRESS');
-        }
-
-        return parent::getModelByPaymentMethod();
+        $info         = $this->getShopgateOrder()->getPaymentInfos();
+        $magentoOrder = parent::manipulateOrderWithPaymentData($magentoOrder);
+        $magentoOrder->getPayment()->setLastTransId($info['transaction_id']);
+        return $magentoOrder;
     }
 }

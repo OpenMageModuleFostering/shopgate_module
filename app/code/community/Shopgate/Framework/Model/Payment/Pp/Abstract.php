@@ -34,16 +34,6 @@ class Shopgate_Framework_Model_Payment_Pp_Abstract
     const MODULE_CONFIG      = 'Mage_Paypal';
 
     /**
-     * History message action map
-     *
-     * @var array
-     */
-    protected $_messageStatusAction = array(
-        Mage_Paypal_Model_Info::PAYMENTSTATUS_COMPLETED => 'Captur',
-        Mage_Paypal_Model_Info::PAYMENTSTATUS_PENDING   => 'Authoriz'
-    );
-
-    /**
      * Depends on Shopgate paymentInfos() to be passed
      * into the TransactionAdditionalInfo of $order.
      *
@@ -53,59 +43,16 @@ class Shopgate_Framework_Model_Payment_Pp_Abstract
      */
     public function orderStatusManager(Mage_Sales_Model_Order $order, $paymentStatus = null)
     {
-        if (!$paymentStatus) {
-            $rawData       = $order->getPayment()->getTransactionAdditionalInfo(
-                Mage_Sales_Model_Order_Payment_Transaction::RAW_DETAILS
-            );
-            $paymentStatus = $rawData['payment_status'];
-        }
-
-        $total  = $order->getBaseCurrency()->formatTxt($order->getGrandTotal());
-        $state  = Mage_Sales_Model_Order::STATE_PROCESSING;
-        $action = $this->getActionByStatus(strtolower($paymentStatus));
-
-        if ($order->getPayment()->getIsTransactionPending()) {
-            $message = Mage::helper('paypal')->__(
-                '%sing amount of %s is pending approval on gateway.',
-                $action,
-                $total
-            );
-            $state   = Mage_Sales_Model_Order::STATE_PAYMENT_REVIEW;
-        } else {
-            $message = Mage::helper('paypal')->__(
-                '%sed amount of %s online.',
-                $action,
-                $total
-            );
-        }
-
-        //test for fraud
-        if ($order->getPayment()->getIsFraudDetected()) {
-            $status = Mage_Sales_Model_Order::STATUS_FRAUD;
-            $state  = Mage::helper('shopgate')->getStateForStatus($status);
-            if (!$state) {
-                $state = Mage_Sales_Model_Order::STATE_PAYMENT_REVIEW;
-            }
-        }
-
-        if (!isset($status)) {
-            $status = Mage::helper('shopgate')->getStatusFromState($state);
-        }
-        $order->setState($state, $status, $message);
+        $this->_getPaymentHelper()->orderStatusManager($order, $paymentStatus);
         $order->setShopgateStatusSet(true);
         return $order;
     }
 
     /**
-     * Maps correct message action based on order status.
-     * E.g. authorize if pending, capture on complete
-     *
-     * @param $paymentStatus
-     * @return string
+     * @return Shopgate_Framework_Helper_Payment_Wspp
      */
-    public function getActionByStatus($paymentStatus)
+    protected function _getPaymentHelper()
     {
-        return isset($this->_messageStatusAction[$paymentStatus]) ?
-            $this->_messageStatusAction[$paymentStatus] : 'Authoriz';
+        return Mage::helper('shopgate/payment_wspp');
     }
 }

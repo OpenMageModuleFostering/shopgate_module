@@ -1,5 +1,5 @@
 <?php
-/** 
+/**
  * Shopgate GmbH
  *
  * URHEBERRECHTSHINWEIS
@@ -18,16 +18,15 @@
  * transfer to third parties is only permitted where we previously consented thereto in writing. The provisions
  * of paragraph 69 d, sub-paragraphs 2, 3 and paragraph 69, sub-paragraph e of the German Copyright Act shall remain unaffected.
  *
- *  @author Shopgate GmbH <interfaces@shopgate.com>
+ * @author Shopgate GmbH <interfaces@shopgate.com>
  */
 
- /**
+/**
  * payment helper abstract
  *
  * @package     Shopgate_Framework_Helper_Payment_Abstract
  * @author      Peter Liebig <p.liebig@me.com, peter.liebig@magcorp.de>
- */ 
-
+ */
 class Shopgate_Framework_Helper_Payment_Abstract extends Mage_Core_Helper_Abstract
 {
     /**
@@ -46,6 +45,12 @@ class Shopgate_Framework_Helper_Payment_Abstract extends Mage_Core_Helper_Abstra
     const SHOPGATE_CC_HOLDER_STRING = 'holder';
 
     /**
+     * Raw details key in additional info
+     *
+     */
+    const RAW_DETAILS = 'raw_details_info';
+
+    /**
      * Create new invoice with maximum qty for invoice for each item
      * register this invoice and capture
      *
@@ -57,5 +62,17 @@ class Shopgate_Framework_Helper_Payment_Abstract extends Mage_Core_Helper_Abstra
         $invoice = $order->prepareInvoice();
         $invoice->register();
         return $invoice;
+    }
+
+    /**
+     * Gets raw detail key
+     *
+     * @return string
+     */
+    public function getTransactionRawDetails()
+    {
+        return defined(
+            'Mage_Sales_Model_Order_Payment_Transaction::RAW_DETAILS'
+        ) ? Mage_Sales_Model_Order_Payment_Transaction::RAW_DETAILS : self::RAW_DETAILS;
     }
 }

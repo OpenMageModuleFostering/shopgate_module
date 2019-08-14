@@ -38,14 +38,15 @@ include_once Mage::getBaseDir("lib") . '/Shopgate/shopgate.php';
 
 class Shopgate_Framework_FrameworkController extends Mage_Core_Controller_Front_Action
 {
+    const RECEIVE_AUTH_ACTION = 'receive_authorization';
+
     /**
      * load the module and do api-request
      */
     public function preDispatch()
     {
-        if (Mage::app()->getRequest()->getActionName() == 'receive_authorization') {
-            Mage::app()->getRequest()->setParam('action', 'receive_authorization');
-            Mage::app()->getStore()->setConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ACTIVE, 1);
+        if (Mage::app()->getRequest()->getActionName() == self::RECEIVE_AUTH_ACTION) {
+            Mage::app()->getRequest()->setParam('action', self::RECEIVE_AUTH_ACTION);
         }
 
         $this->_run();
@@ -78,7 +79,9 @@ class Shopgate_Framework_FrameworkController extends Mage_Core_Controller_Front_
 
         try {
             $config = Mage::helper("shopgate/config")->getConfig();
-            if (!Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ACTIVE)) {
+            if (!Mage::getStoreConfig(Shopgate_Framework_Model_Config::XML_PATH_SHOPGATE_ACTIVE)
+                && Mage::app()->getRequest()->getParam("action") != self::RECEIVE_AUTH_ACTION
+            ) {
                 throw new ShopgateLibraryException(ShopgateLibraryException::CONFIG_PLUGIN_NOT_ACTIVE, 'plugin not active', true);
             }
             Mage::app()->loadArea("adminhtml");

@@ -126,7 +126,7 @@ class Shopgate_Framework_Model_Payment_Pp_Wspp
             $invoice = $this->_getPaymentHelper()->createOrderInvoice($order);
             switch ($paymentStatus) {
                 // paid
-                case Mage_Paypal_Model_Info::PAYMENTSTATUS_COMPLETED:
+                case $this->_getPaymentHelper()->getPaypalCompletedStatus():
                     $trans->setTxnType(Mage_Sales_Model_Order_Payment_Transaction::TYPE_CAPTURE);
                     if ($order->getPayment()->getIsTransactionPending()) {
                         $invoice->setIsPaid(false);
@@ -135,12 +135,10 @@ class Shopgate_Framework_Model_Payment_Pp_Wspp
                         $invoice->pay();
                     }
                     break;
-                // refund by merchant on PayPal side
-                case Mage_Paypal_Model_Info::PAYMENTSTATUS_REFUNDED:
+                case $this->_getPaymentHelper()->getPaypalRefundedStatus():
                     //$this->_getPaymentHelper()->registerPaymentRefund($additionalData, $order);
                     break;
-                // payment was obtained, but money were not captured yet
-                case Mage_Paypal_Model_Info::PAYMENTSTATUS_PENDING:
+                case $this->_getPaymentHelper()->getPaypalPendingStatus():
                     foreach ($paypalIpnData as $key => $value) {
                         if (strpos($key, 'fraud_management_pending_filters_') !== false) {
                             $order->getPayment()->setIsTransactionPending(true);
@@ -161,7 +159,7 @@ class Shopgate_Framework_Model_Payment_Pp_Wspp
             $order->addRelatedObject($invoice);
             $this->_getPaymentHelper()->importPaymentInformation($order->getPayment(), $paypalIpnData);
             $order->getPayment()->setTransactionAdditionalInfo(
-                Mage_Sales_Model_Order_Payment_Transaction::RAW_DETAILS,
+                $this->_getPaymentHelper()->getTransactionRawDetails(),
                 $paypalIpnData
             );
             $order->getPayment()->setCcOwner($paypalIpnData['holder']);
@@ -234,7 +232,7 @@ class Shopgate_Framework_Model_Payment_Pp_Wspp
         $wpp    = Mage::getStoreConfig('payment/paypal_direct/active');
         $wppp   = Mage::getStoreConfig('payment/paypaluk_direct/active');
         $result = !empty($wpp) || !empty($wppp);
-        
+
         if (!$result) {
             $debug = $this->_getHelper()->__('Neither WSPP or WSPP Payflow are enabled');
             ShopgateLogger::getInstance()->log($debug, ShopgateLogger::LOGTYPE_DEBUG);
@@ -242,11 +240,4 @@ class Shopgate_Framework_Model_Payment_Pp_Wspp
         return $result;
     }
 
-    /**
-     * @return Shopgate_Framework_Helper_Payment_Wspp
-     */
-    protected function _getPaymentHelper()
-    {
-        return Mage::helper('shopgate/payment_wspp');
-    }
 }

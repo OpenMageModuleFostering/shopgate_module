@@ -296,7 +296,6 @@ class Shopgate_Framework_Model_Payment_Payone_Abstract extends Shopgate_Framewor
         /**
          * Faking a response from gateway
          */
-        $this->getOrder()->getPayment()->setMethodInstance($this->getPaymentModel());
         $request  = $this->_createFakeRequest();
         $response = $this->_createFakeResponse();
 
@@ -419,6 +418,12 @@ class Shopgate_Framework_Model_Payment_Payone_Abstract extends Shopgate_Framewor
         return false;
     }
 
+    /**
+     * Different versions have
+     * different config options
+     * 
+     * @return bool
+     */
     public function isEnabled()
     {
         if (version_compare($this->_getVersion(), '3.3.0', '>=')) {

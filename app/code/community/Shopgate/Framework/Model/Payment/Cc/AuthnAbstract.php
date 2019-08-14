@@ -50,5 +50,101 @@ class Shopgate_Framework_Model_Payment_Cc_AuthnAbstract extends Shopgate_Framewo
     const RESPONSE_REASON_CODE_PENDING_REVIEW_AUTHORIZED = 252;
     const RESPONSE_REASON_CODE_PENDING_REVIEW            = 253;
     const RESPONSE_REASON_CODE_PENDING_REVIEW_DECLINED   = 254;
-
+    
+    protected $_transactionType = '';
+    protected $_responseCode    = '';
+    
+    /**
+     * Checks if the order response is pending review
+     *
+     * @return bool
+     */
+    protected function _isOrderPendingReview()
+    {
+        $paymentInfos = $this->getShopgateOrder()->getPaymentInfos();
+        
+        return array_key_exists('response_reason_code', $paymentInfos)
+        && (
+            $paymentInfos['response_reason_code'] == self::RESPONSE_REASON_CODE_PENDING_REVIEW_AUTHORIZED
+            || $paymentInfos['response_reason_code'] == self::RESPONSE_REASON_CODE_PENDING_REVIEW
+        );
+    }
+    
+    /**
+     * Sets order status
+     *
+     * @param Mage_Sales_Model_Order $order
+     *
+     * @return Mage_Sales_Model_Order
+     */
+    public function setOrderStatus($order = null)
+    {
+        $captured = $this->_order->getBaseCurrency()->formatTxt($this->_order->getBaseTotalInvoiced());
+        $state    = $this->_getHelper()->getStateForStatus('payment_review');
+        $status   = $this->_getHelper()->getStatusFromState($state);
+        $message  = '';
+        
+        switch ($this->_responseCode) {
+            case self::RESPONSE_CODE_APPROVED:
+                $duePrice = $this->_order->getBaseCurrency()->formatTxt($this->_order->getTotalDue());
+                $message  = Mage::helper('paypal')->__('Authorized amount of %s.', $duePrice);
+                
+                if ($this->_transactionType == self::SHOPGATE_PAYMENT_STATUS_AUTH_CAPTURE) {
+                    $message = Mage::helper('sales')->__('Captured amount of %s online.', $captured);
+                    $state  = Mage_Sales_Model_Order::STATE_PROCESSING;
+                    $status = $this->_getHelper()->getStatusFromState($state);
+                }
+                break;
+            case self::RESPONSE_CODE_HELD:
+                if ($this->_isOrderPendingReview()) {
+                    $message = Mage::helper('sales')->__(
+                        'Capturing amount of %s is pending approval on gateway.',
+                        $captured
+                    )
+                    ;
+                    $this->_order->setState($state, $status, $message);
+                }
+                break;
+        }
+        $this->_order->setState($state, $status, $message);
+        $order->setShopgateStatusSet(true);
+        
+        return $order;
+    }
+    
+    /**
+     *  Handles invoice creation
+     *
+     * @return $this
+     * @throws Exception
+     */
+    protected function _createInvoice()
+    {
+        $paymentInfos = $this->getShopgateOrder()->getPaymentInfos();
+        
+        switch ($this->_responseCode) {
+            case self::RESPONSE_CODE_APPROVED:
+                if ($this->_transactionType == self::SHOPGATE_PAYMENT_STATUS_AUTH_CAPTURE) {
+                    $invoice = $this->_getPaymentHelper()->createOrderInvoice($this->_order);
+                    $invoice->setTransactionId($paymentInfos['transaction_id']); //needed for refund
+                    $this->_order->getPayment()->setBaseAmountPaidOnline($invoice->getBaseGrandTotal());
+                    $invoice->setIsPaid(true);
+                    $invoice->pay();
+                    $invoice->save();
+                    $this->_order->addRelatedObject($invoice);
+                }
+                break;
+            case self::RESPONSE_CODE_HELD:
+                if ($this->_isOrderPendingReview()) {
+                    $invoice = $this->_getPaymentHelper()->createOrderInvoice($this->_order);
+                    $invoice->setTransactionId($paymentInfos['transaction_id']);
+                    $invoice->setIsPaid(false);
+                    $invoice->save();
+                    $this->_order->addRelatedObject($invoice);
+                }
+                break;
+        }
+        
+        return $this;
+    }
 }

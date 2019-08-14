@@ -1,5 +1,16 @@
 '''English'''
 
+'''Version 2.9.21'''
+* Fixed compatibility problem with Magento 1.4.0
+* fixed plugin not active error during oAuth registration
+* Totals collector Invalid Block Type exception fix
+* Fixed problem with payment mapping for paypal_express
+* implement sort order for bundle products
+* Surcharges for child products will now take care of catalog price rueles
+* Payone_Core new order email bug fix
+* Group product associated children are sorted by position number
+* Fixed missing payment methods in check_cart response
+
 '''Version 2.9.20'''
 * Added a quote to getpaymentmethods
 * Import of order /w coupon bug fixed

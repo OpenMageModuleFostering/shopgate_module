@@ -18,7 +18,7 @@
  * transfer to third parties is only permitted where we previously consented thereto in writing. The provisions
  * of paragraph 69 d, sub-paragraphs 2, 3 and paragraph 69, sub-paragraph e of the German Copyright Act shall remain unaffected.
  *
- *  @author Shopgate GmbH <interfaces@shopgate.com>
+ * @author Shopgate GmbH <interfaces@shopgate.com>
  */
 
 /**
@@ -92,19 +92,32 @@ class Shopgate_Framework_Helper_Payment_Wspp extends Shopgate_Framework_Helper_P
     const PAYMENTSTATUS_VOIDED       = 'voided';
 
     /**
+     * Order states
+     */
+    const STATE_NEW             = 'new';
+    const STATE_PENDING_PAYMENT = 'pending_payment';
+    const STATE_PROCESSING      = 'processing';
+    const STATE_COMPLETE        = 'complete';
+    const STATE_CLOSED          = 'closed';
+    const STATE_CANCELED        = 'canceled';
+    const STATE_HOLDED          = 'holded';
+    const STATE_PAYMENT_REVIEW  = 'payment_review';
+
+    /**
      * @var null
      */
     protected $_request = null;
-    
+
     /**
      * History message action map
+     *
      * @var array
      */
     protected $_messageStatusAction = array(
-        Mage_Paypal_Model_Info::PAYMENTSTATUS_COMPLETED => 'Captur',
-        Mage_Paypal_Model_Info::PAYMENTSTATUS_PENDING   => 'Authoriz'
+        self::PAYMENTSTATUS_COMPLETED => 'Captur',
+        self::PAYMENTSTATUS_PENDING   => 'Authoriz'
     );
-    
+
     /**
      * IPN request data getter
      *
@@ -198,15 +211,15 @@ class Shopgate_Framework_Helper_Payment_Wspp extends Shopgate_Framework_Helper_P
          *
          * @see Mage_Paypal_Model_Pro::importPaymentInfo()
          */
-        if ($info->isPaymentReviewRequired($paymentInfoInstance)) {
+        if ($this->_isPaymentReviewRequired($paymentInfoInstance)) {
             $paymentInfoInstance->setIsTransactionPending(true);
             if ($fraudFilters) {
                 $paymentInfoInstance->setIsFraudDetected(true);
             }
         }
-        if ($info->isPaymentSuccessful($paymentInfoInstance)) {
+        if ($this->_isPaymentSuccessful($paymentInfoInstance)) {
             $paymentInfoInstance->setIsTransactionApproved(true);
-        } elseif ($info->isPaymentFailed($paymentInfoInstance)) {
+        } elseif ($this->_isPaymentFailed($paymentInfoInstance)) {
             $paymentInfoInstance->setIsTransactionDenied(true);
         }
 
@@ -270,35 +283,35 @@ class Shopgate_Framework_Helper_Payment_Wspp extends Shopgate_Framework_Helper_P
             self::SHOPGATE_CC_HOLDER_STRING
         );
     }
-    
+
     /**
      * Depends on Shopgate paymentInfos() to be passed
      * into the TransactionAdditionalInfo of $order.
-     * 
+     *
      * @param $paymentStatus String
      * @param $order         Mage_Sales_Model_Order
      * @return Mage_Sales_Model_Order
      */
     public function orderStatusManager(Mage_Sales_Model_Order $order, $paymentStatus = null)
     {
-        if(!$paymentStatus){
-            $rawData = $order->getPayment()->getTransactionAdditionalInfo(
-                Mage_Sales_Model_Order_Payment_Transaction::RAW_DETAILS
+        if (!$paymentStatus) {
+            $rawData       = $order->getPayment()->getTransactionAdditionalInfo(
+                self::RAW_DETAILS
             );
             $paymentStatus = strtolower($rawData['payment_status']);
         }
-        
+
         $formattedPrice = $order->getBaseCurrency()->formatTxt($order->getGrandTotal());
         $state          = $status = Mage_Sales_Model_Order::STATE_PROCESSING;
         $action         = $this->getActionByStatus($paymentStatus);
-        
+
         if ($order->getPayment()->getIsTransactionPending()) {
             $message = Mage::helper('paypal')->__(
                 '%sing amount of %s is pending approval on gateway.',
                 $action,
                 $formattedPrice
             );
-            $state = $status = Mage_Sales_Model_Order::STATE_PAYMENT_REVIEW;
+            $state   = $status = Mage::helper('shopgate')->getStateForStatus(self::STATE_PAYMENT_REVIEW);
         } else {
             $message = Mage::helper('paypal')->__(
                 '%sed amount of %s online.',
@@ -308,22 +321,150 @@ class Shopgate_Framework_Helper_Payment_Wspp extends Shopgate_Framework_Helper_P
         }
         //test for fraud
         if ($order->getPayment()->getIsFraudDetected()) {
-            $state  = Mage_Sales_Model_Order::STATE_PAYMENT_REVIEW;
-            $status = Mage_Sales_Model_Order::STATUS_FRAUD;
+            $state  = Mage::helper('shopgate')->getStateForStatus(self::STATE_PAYMENT_REVIEW);
+            $status = Mage::helper('shopgate')->getStatusFromState($state);
         }
-        
+
         return $order->setState($state, $status, $message);
     }
-    
+
     /**
      * Maps correct message action based on order status.
      * E.g. authorize if pending, capture on complete
+     *
      * @param $paymentStatus
      * @return string
      */
     public function getActionByStatus($paymentStatus)
     {
-        return isset($this->_messageStatusAction[$paymentStatus]) ? 
+        return isset($this->_messageStatusAction[$paymentStatus]) ?
             $this->_messageStatusAction[$paymentStatus] : 'Authoriz';
+    }
+
+    /**
+     * Get proper action status for order.
+     * This is when the order was paid.
+     *
+     * @return string
+     */
+    public function getPaypalCompletedStatus()
+    {
+        return defined(
+            'Mage_Paypal_Model_Info::PAYMENTSTATUS_COMPLETED'
+        ) ? Mage_Paypal_Model_Info::PAYMENTSTATUS_COMPLETED : self::PAYMENTSTATUS_COMPLETED;
+    }
+
+    /**
+     * Get proper action status for order.
+     * This is when the order was refunded
+     * on PayPal's side.
+     *
+     * @return string
+     */
+    public function getPaypalRefundedStatus()
+    {
+        return defined(
+            'Mage_Paypal_Model_Info::PAYMENTSTATUS_REFUNDED'
+        ) ? Mage_Paypal_Model_Info::PAYMENTSTATUS_REFUNDED : self::PAYMENTSTATUS_REFUNDED;
+    }
+
+    /**
+     * Get proper status action for order.
+     * Payment was obtained, but money were
+     * not captured yet
+     *
+     * @return string
+     */
+    public function getPaypalPendingStatus()
+    {
+        return defined(
+            'Mage_Paypal_Model_Info::PAYMENTSTATUS_PENDING'
+        ) ? Mage_Paypal_Model_Info::PAYMENTSTATUS_PENDING : self::PAYMENTSTATUS_PENDING;
+    }
+
+    /**
+     * Check whether the payment is in review state
+     * Support for version 1.4.0.0 added
+     *
+     * @param Mage_Payment_Model_Info $payment
+     * @return bool
+     */
+    protected function _isPaymentReviewRequired(Mage_Payment_Model_Info $payment)
+    {
+        if (!$this->_getConfigHelper()->getIsMagentoVersionLower1410()) {
+            return Mage::getSingleton('paypal/info')->isPaymentReviewRequired($payment);
+        }
+
+        $paymentStatus = $payment->getAdditionalInformation(self::PAYMENT_STATUS_GLOBAL);
+        if (self::PAYMENTSTATUS_PENDING === $paymentStatus) {
+            $pendingReason = $payment->getAdditionalInformation(self::PENDING_REASON_GLOBAL);
+            return !in_array($pendingReason, array('authorization', 'order'));
+        }
+        return false;
+    }
+
+    /**
+     * Check whether the payment was processed successfully
+     * Support for version 1.4.0.0 added
+     *
+     * @param Mage_Payment_Model_Info $payment
+     * @return bool
+     */
+    protected function _isPaymentSuccessful(Mage_Payment_Model_Info $payment)
+    {
+        if (!$this->_getConfigHelper()->getIsMagentoVersionLower1410()) {
+            return Mage::getSingleton('paypal/info')->isPaymentSuccessful($payment);
+        }
+
+        $paymentStatus = $payment->getAdditionalInformation(self::PAYMENT_STATUS_GLOBAL);
+        if (in_array(
+            $paymentStatus,
+            array(
+                self::PAYMENTSTATUS_COMPLETED,
+                self::PAYMENTSTATUS_INPROGRESS,
+                self::PAYMENTSTATUS_REFUNDED,
+                self::PAYMENTSTATUS_REFUNDEDPART,
+                self::PAYMENTSTATUS_UNREVERSED,
+                self::PAYMENTSTATUS_PROCESSED,
+            )
+        )) {
+            return true;
+        }
+        $pendingReason = $payment->getAdditionalInformation(self::PENDING_REASON_GLOBAL);
+        return self::PAYMENTSTATUS_PENDING === $paymentStatus
+               && in_array($pendingReason, array('authorization', 'order'));
+    }
+
+    /**
+     * Check whether the payment was processed unsuccessfully or failed
+     *
+     * @param Mage_Payment_Model_Info $payment
+     * @return bool
+     */
+    protected function _isPaymentFailed(Mage_Payment_Model_Info $payment)
+    {
+        if (!$this->_getConfigHelper()->getIsMagentoVersionLower1410()) {
+            return Mage::getSingleton('paypal/info')->isPaymentFailed($payment);
+        }
+
+        $paymentStatus = $payment->getAdditionalInformation(self::PAYMENT_STATUS_GLOBAL);
+        return in_array(
+            $paymentStatus,
+            array(
+                self::PAYMENTSTATUS_DENIED,
+                self::PAYMENTSTATUS_EXPIRED,
+                self::PAYMENTSTATUS_FAILED,
+                self::PAYMENTSTATUS_REVERSED,
+                self::PAYMENTSTATUS_VOIDED,
+            )
+        );
+    }
+
+    /**
+     * @return Shopgate_Framework_Helper_Config
+     */
+    protected function _getConfigHelper()
+    {
+        return Mage::helper('shopgate/config');
     }
 }

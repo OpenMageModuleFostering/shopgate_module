@@ -34,11 +34,19 @@ class Shopgate_Framework_Model_Payment_Cc_Authn
 {
     const XML_CONFIG_ENABLED = 'payment/authorizenet/active';
     const MODULE_CONFIG      = 'Mage_Paygate';
-
+    
+    /**
+     * Init variables
+     */
+    private function _initVariables()
+    {
+        $paymentInfos           = $this->getShopgateOrder()->getPaymentInfos();
+        $this->_transactionType = $paymentInfos['transaction_type'];
+        $this->_responseCode    = $paymentInfos['response_code'];
+    }
+    
     /**
      * Use AuthnCIM as guide to refactor this class
-     * todo: refactor status setting
-     * todo: move invoice setting out
      *
      * @param $order            Mage_Sales_Model_Order
      *
@@ -46,36 +54,16 @@ class Shopgate_Framework_Model_Payment_Cc_Authn
      */
     public function manipulateOrderWithPaymentData($order)
     {
-        $shopgateOrder    = $this->getShopgateOrder();
-        $paymentInfos     = $shopgateOrder->getPaymentInfos();
-        $paymentAuthorize = Mage::getModel('paygate/authorizenet');
-        $order->getPayment()->setMethod($paymentAuthorize->getCode());
-        $paymentAuthorize->setInfoInstance($order->getPayment());
-        $order->getPayment()->setMethodInstance($paymentAuthorize);
-        $order->save();
-
-        $lastFour = substr($paymentInfos['credit_card']['masked_number'], -4);
-        $order->getPayment()->setCcTransId($paymentInfos['transaction_id']);
-        $order->getPayment()->setCcApproval($paymentInfos['authorization_number']);
-        $order->getPayment()->setLastTransId($paymentInfos['transaction_id']);
-        $cardStorage = $paymentAuthorize->getCardsStorage($order->getPayment());
-        $card        = $cardStorage->registerCard();
-        $card->setRequestedAmount($shopgateOrder->getAmountComplete())
-             ->setBalanceOnCard("")
-             ->setLastTransId($paymentInfos['transaction_id'])
-             ->setProcessedAmount($shopgateOrder->getAmountComplete())
-             ->setCcType($this->_getCcTypeName($paymentInfos['credit_card']['type']))
-             ->setCcOwner($paymentInfos['credit_card']['holder'])
-             ->setCcLast4($lastFour)
-             ->setCcExpMonth("")
-             ->setCcExpYear("")
-             ->setCcSsIssue("")
-             ->setCcSsStartMonth("")
-             ->setCcSsStartYear("");
-
-        $transactionType = $paymentInfos['transaction_type'];
-        $responseCode    = $paymentInfos['response_code'];
-        switch ($transactionType) {
+        $this->_initVariables();
+        $shopgateOrder = $this->getShopgateOrder();
+        $paymentInfos  = $shopgateOrder->getPaymentInfos();
+        
+        $this->_saveToCardStorage();
+        $this->getOrder()->getPayment()->setCcTransId($paymentInfos['transaction_id']);
+        $this->getOrder()->getPayment()->setCcApproval($paymentInfos['authorization_number']);
+        $this->getOrder()->getPayment()->setLastTransId($paymentInfos['transaction_id']);
+        
+        switch ($this->_transactionType) {
             case self::SHOPGATE_PAYMENT_STATUS_AUTH_CAPTURE:
                 $newTransactionType      = Mage_Sales_Model_Order_Payment_Transaction::TYPE_CAPTURE;
                 $defaultExceptionMessage = Mage::helper('paygate')->__('Payment capturing error.');
@@ -86,61 +74,23 @@ class Shopgate_Framework_Model_Payment_Cc_Authn
                 $defaultExceptionMessage = Mage::helper('paygate')->__('Payment authorization error.');
                 break;
         }
-
+        
         try {
-            switch ($responseCode) {
+            switch ($this->_responseCode) {
                 case self::RESPONSE_CODE_APPROVED:
-                    $formattedPrice = $order->getBaseCurrency()->formatTxt($order->getTotalDue());
-                    $order->getPayment()->setAmountAuthorized($order->getGrandTotal());
-                    $order->getPayment()->setBaseAmountAuthorized($order->getBaseGrandTotal());
-                    $order->getPayment()->setIsTransactionPending(true);
-                    $this->_createTransaction($order->getPayment(), $card, $newTransactionType);
-                    $message = Mage::helper('paypal')->__('Authorized amount of %s.', $formattedPrice);
-                    $state   = Mage_Sales_Model_Order::STATE_PROCESSING;
-                    if ($transactionType == self::SHOPGATE_PAYMENT_STATUS_AUTH_CAPTURE) {
-                        $invoice = $this->_getPaymentHelper()->createOrderInvoice($order);
-                        $invoice->setTransactionId(1);
-                        $order->getPayment()->setIsTransactionPending(false);
-                        $amountToCapture = $order->getBaseCurrency()->formatTxt($invoice->getBaseGrandTotal());
-                        $order->getPayment()->setBaseAmountPaidOnline($invoice->getBaseGrandTotal());
-                        $card->setCapturedAmount($card->getProcessedAmount());
-                        $message = Mage::helper('sales')->__('Captured amount of %s online.', $amountToCapture);
-                        $invoice->setIsPaid(true);
-                        $invoice->pay();
-                        $invoice->save();
-                        $order->addRelatedObject($invoice);
+                    $this->getOrder()->getPayment()->setAmountAuthorized($this->getOrder()->getGrandTotal());
+                    $this->getOrder()->getPayment()->setBaseAmountAuthorized($this->getOrder()->getBaseGrandTotal());
+                    $this->getOrder()->getPayment()->setIsTransactionPending(true);
+                    $this->_createTransaction($newTransactionType);
+                    
+                    if ($this->_transactionType == self::SHOPGATE_PAYMENT_STATUS_AUTH_CAPTURE) {
+                        $this->getOrder()->getPayment()->setIsTransactionPending(false);
                     }
-                    $cardStorage->updateCard($card);
-                    $order->setState($state, $this->_getHelper()->getStatusFromState($state), $message);
                     break;
                 case self::RESPONSE_CODE_HELD:
-                    if (array_key_exists('response_reason_code', $paymentInfos) && (
-                            $paymentInfos['response_reason_code'] == self::RESPONSE_REASON_CODE_PENDING_REVIEW_AUTHORIZED
-                            || $paymentInfos['response_reason_code'] == self::RESPONSE_REASON_CODE_PENDING_REVIEW
-                        )
-                    ) {
-                        $this->_createTransaction(
-                            $order->getPayment(),
-                            $card,
-                            $newTransactionType,
-                            array('is_transaction_fraud' => true)
-                        );
-                        $invoice = $this->_getPaymentHelper()->createOrderInvoice($order);
-                        $invoice->setTransactionId(1);
-                        $invoice->setIsPaid(false);
-                        $invoice->save();
-                        $order->addRelatedObject($invoice);
-                        $amountToCapture = $order->getBaseCurrency()->formatTxt($invoice->getBaseGrandTotal());
-                        $message         = Mage::helper('sales')->__(
-                            'Capturing amount of %s is pending approval on gateway.',
-                            $amountToCapture
-                        );
-                        if ($transactionType == self::SHOPGATE_PAYMENT_STATUS_AUTH_CAPTURE) {
-                            $card->setCapturedAmount($card->getProcessedAmount());
-                            $cardStorage->updateCard($card);
-                        }
-                        $order->getPayment()->setIsTransactionPending(true)->setIsFraudDetected(true);
-                        $order->setState(Mage_Sales_Model_Order::STATE_PAYMENT_REVIEW, true, $message);
+                    if ($this->_isOrderPendingReview()) {
+                        $this->_createTransaction($newTransactionType, array('is_transaction_fraud' => true));
+                        $this->getOrder()->getPayment()->setIsTransactionPending(true)->setIsFraudDetected(true);
                     }
                     break;
                 case self::RESPONSE_CODE_DECLINED:
@@ -150,31 +100,88 @@ class Shopgate_Framework_Model_Payment_Cc_Authn
                     Mage::throwException($defaultExceptionMessage);
             }
         } catch (Exception $x) {
-            $order->addStatusHistoryComment(Mage::helper('sales')->__('Note: %s', $x->getMessage()));
+            $this->getOrder()->addStatusHistoryComment(Mage::helper('sales')->__('Note: %s', $x->getMessage()));
             Mage::logException($x);
         }
-        $order->setShopgateStatusSet(true);
-        return $order;
+        
+        $this->_createInvoice();
+        
+        return $this->getOrder();
     }
-
+    
     /**
-     * @param $orderPayment
-     * @param $card
      * @param $type
      * @param $additionalInformation
      */
-    protected function _createTransaction($orderPayment, $card, $type, $additionalInformation = array())
+    protected function _createTransaction($type, $additionalInformation = array())
     {
-        $transaction = Mage::getModel('sales/order_payment_transaction');
+        $orderPayment = $this->_order->getPayment();
+        $transaction  = Mage::getModel('sales/order_payment_transaction');
         $transaction->setOrderPaymentObject($orderPayment);
-        $transaction->setTxnId($card->getLastTransId());
+        $transaction->setTxnId($orderPayment->getCcTransId());
         $transaction->setIsClosed(false);
         $transaction->setTxnType($type);
         $transaction->setData('is_transaciton_closed', '0');
-        $transaction->setAdditionalInformation('real_transaction_id', $card->getLastTransId());
+        $transaction->setAdditionalInformation('real_transaction_id', $orderPayment->getCcTransId());
         foreach ($additionalInformation as $key => $value) {
             $transaction->setAdditionalInformation($key, $value);
         }
         $transaction->save();
+    }
+    
+    /**
+     * Utilize card storage if it exists
+     * It does not in mage 1.4.0.0
+     * 
+     * @throws Exception
+     */
+    protected function _saveToCardStorage()
+    {
+        $paymentAuthorize = Mage::getModel('paygate/authorizenet');
+
+        $this->getOrder()->getPayment()->setMethod($paymentAuthorize->getCode());
+        $paymentAuthorize->setInfoInstance($this->getOrder()->getPayment());
+        $this->getOrder()->getPayment()->setMethodInstance($paymentAuthorize);
+        $this->getOrder()->save();
+        
+        if (!method_exists($paymentAuthorize, 'getCardsStorage')) {
+            return $this;
+        }
+        
+        $paymentInfos = $this->getShopgateOrder()->getPaymentInfos();
+        $lastFour     = substr($paymentInfos['credit_card']['masked_number'], -4);
+        $cardStorage  = $paymentAuthorize->getCardsStorage($this->getOrder()->getPayment());
+        $card         = $cardStorage->registerCard();
+        $card->setRequestedAmount($this->getShopgateOrder()->getAmountComplete())
+             ->setBalanceOnCard("")
+             ->setLastTransId($paymentInfos['transaction_id'])
+             ->setProcessedAmount($this->getShopgateOrder()->getAmountComplete())
+             ->setCcType($this->_getCcTypeName($paymentInfos['credit_card']['type']))
+             ->setCcOwner($paymentInfos['credit_card']['holder'])
+             ->setCcLast4($lastFour)
+             ->setCcExpMonth("")
+             ->setCcExpYear("")
+             ->setCcSsIssue("")
+             ->setCcSsStartMonth("")
+             ->setCcSsStartYear("")
+        ;
+        
+        switch ($this->_responseCode) {
+            case self::RESPONSE_CODE_APPROVED:
+                if ($this->_transactionType == self::SHOPGATE_PAYMENT_STATUS_AUTH_CAPTURE) {
+                    $card->setCapturedAmount($card->getProcessedAmount());
+                }
+                $cardStorage->updateCard($card);
+                break;
+            case self::RESPONSE_CODE_HELD:
+                if ($this->_isOrderPendingReview()) {
+                    if ($this->_transactionType == self::SHOPGATE_PAYMENT_STATUS_AUTH_CAPTURE) {
+                        $card->setCapturedAmount($card->getProcessedAmount());
+                        $cardStorage->updateCard($card);
+                    }
+                }
+                break;
+        }
+        return $this;
     }
 }

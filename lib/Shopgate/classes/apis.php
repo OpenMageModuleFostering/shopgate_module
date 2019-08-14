@@ -750,8 +750,8 @@ class ShopgatePluginApi extends ShopgateObject implements ShopgatePluginApiInter
 		
 		$this->config->load($shopgateSettingsNew);
 		$this->config->save(array_keys($shopgateSettingsNew), true);
-		
-		$shopgateSettingsDiff = array();
+
+		$diff = array();
 		foreach ($shopgateSettingsNew as $setting => $value) {
 			$diff[] = array('name' => $setting, 'old' => $shopgateSettingsOld[$setting], 'new' => $value);
 		}
@@ -1614,7 +1614,7 @@ class ShopgateMerchantApi extends ShopgateObject implements ShopgateMerchantApiI
 		return $this->sendRequest($request);
 	}
 	
-	public function cancelOrder($orderNumber, $cancelCompleteOrder = false, $cancellationItems = array(), $cancelShipping = false, $cancellationNote = '') {
+	public function cancelOrder($orderNumber, $cancelCompleteOrder = true, $cancellationItems = array(), $cancelShipping = false, $cancellationNote = '') {
 		$request = array(
 			'action' => 'cancel_order',
 			'order_number' => $orderNumber,
@@ -2150,9 +2150,11 @@ abstract class ShopgatePluginApiResponse extends ShopgateObject {
 		$this->version = $version;
 		$this->pluginVersion = (empty($pluginVersion) && defined('SHOPGATE_PLUGIN_VERSION')) ? SHOPGATE_PLUGIN_VERSION : $pluginVersion;
 	}
-	
+
 	/**
 	 * Marks the response as error.
+	 * @param $code
+	 * @param $message
 	 */
 	public function markError($code, $message) {
 		$this->error = $code;

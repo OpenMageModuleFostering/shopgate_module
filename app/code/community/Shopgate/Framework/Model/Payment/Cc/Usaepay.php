@@ -111,7 +111,7 @@ class Shopgate_Framework_Model_Payment_Cc_Usaepay extends Shopgate_Framework_Mod
             }
             $message = Mage::helper('sales')->__('Captured amount of %s online.', $total);
         } else {
-            $state   = Mage_Sales_Model_Order::STATE_PAYMENT_REVIEW;
+            $state   = Mage::helper("shopgate")->getStateForStatus("payment_review");
             $status  = Mage::helper('shopgate')->getStatusFromState($state);
             $due     = $magentoOrder->getBaseCurrency()->formatTxt($magentoOrder->getTotalDue());
             $message = Mage::helper('paypal')->__('Authorized amount of %s.', $due);

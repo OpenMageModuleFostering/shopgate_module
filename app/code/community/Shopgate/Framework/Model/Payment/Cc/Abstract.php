@@ -38,21 +38,6 @@ class Shopgate_Framework_Model_Payment_Cc_Abstract
     protected $_order;
 
     /**
-     * Simple setter
-     *
-     * @param $order Mage_Sales_Model_Order
-     * @return Mage_Sales_Model_Order
-     */
-    public function setOrder($order)
-    {
-        if ($this->_order) {
-            return $this->_order;
-        }
-
-        return $this->_order = $order;
-    }
-
-    /**
      * Retrieve credit card type by mapping
      *
      * @param  $ccType string
@@ -86,11 +71,4 @@ class Shopgate_Framework_Model_Payment_Cc_Abstract
         return $ccType;
     }
 
-    /**
-     * @return Shopgate_Framework_Helper_Data
-     */
-    protected function _getHelper()
-    {
-        return Mage::helper('shopgate');
-    }
 }

@@ -925,6 +925,13 @@ class Shopgate_Framework_Model_Shopgate_Plugin extends ShopgatePlugin
                 );
             } else {
                 $quote->setCustomer($customer);
+
+                // also set customer in session some 3rd party plugins rely on it
+                Mage::getSingleton('customer/session')
+                    ->setCustomer($customer)
+                    ->setCustomerId($customer->getId())
+                    ->setCustomerGroupId($customer->getGroupId());
+
                 $this->log('external customer loaded', ShopgateLogger::LOGTYPE_DEBUG);
             }
         }

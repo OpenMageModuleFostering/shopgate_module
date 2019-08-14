@@ -35,6 +35,7 @@ class Shopgate_Framework_Model_Payment_Simple_Paypal_Express
 {
     const PAYMENT_IDENTIFIER = ShopgateOrder::PAYPAL;
     const XML_CONFIG_ENABLED = 'payment/paypal_express/active';
+    const PAYMENT_MODEL      = 'paypal/express';
 
     /**
      * create new order for paypal express (type wspp)
@@ -135,7 +136,7 @@ class Shopgate_Framework_Model_Payment_Simple_Paypal_Express
         try {
             switch ($paymentStatus) {
                 // paid
-                case Mage_Paypal_Model_Info::PAYMENTSTATUS_COMPLETED:
+                case $this->_getPaymentHelper()->getPaypalCompletedStatus():
                     $invoice = $this->_getPaymentHelper()->createOrderInvoice($order);
                     $trans->setTxnType(Mage_Sales_Model_Order_Payment_Transaction::TYPE_CAPTURE);
 
@@ -149,7 +150,7 @@ class Shopgate_Framework_Model_Payment_Simple_Paypal_Express
                     $invoice->save();
                     $order->addRelatedObject($invoice);
                     break;
-                case Mage_Paypal_Model_Info::PAYMENTSTATUS_PENDING:
+                case $this->_getPaymentHelper()->getPaypalPendingStatus():
                     if (isset($paymentInfos['reason_code'])) {
                         $order->getPayment()->setIsTransactionPending(true);
                         $order->getPayment()->setIsFraudDetected(true);
@@ -163,7 +164,7 @@ class Shopgate_Framework_Model_Payment_Simple_Paypal_Express
             $trans->save();
             $this->_getPaymentHelper()->importPaymentInformation($order->getPayment(), $paymentInfos);
             $order->getPayment()->setTransactionAdditionalInfo(
-                Mage_Sales_Model_Order_Payment_Transaction::RAW_DETAILS,
+                $this->_getPaymentHelper()->getTransactionRawDetails(),
                 $paymentInfos
             );
 
@@ -235,5 +236,5 @@ class Shopgate_Framework_Model_Payment_Simple_Paypal_Express
     {
         return Mage::helper('shopgate/payment_wspp');
     }
-    
+
 }

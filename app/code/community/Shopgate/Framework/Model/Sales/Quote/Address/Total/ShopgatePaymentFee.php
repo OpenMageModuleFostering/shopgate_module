@@ -46,7 +46,11 @@ class Shopgate_Framework_Model_Sales_Quote_Address_Total_ShopgatePaymentFee exte
     {
         parent::collect($address);
 
-        $items         = $this->_getAddressItems($address);
+        if (Mage::helper("shopgate/config")->getIsMagentoVersionLower1410()) {
+            $items         = $address->getAllItems();
+        } else {
+            $items         = $this->_getAddressItems($address);
+        }
         $shopgateOrder = Mage::getSingleton("core/session")->getData("shopgate_order");
         if (!count($items)
             || is_null($shopgateOrder)
