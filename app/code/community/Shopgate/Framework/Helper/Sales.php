@@ -55,7 +55,7 @@ class Shopgate_Framework_Helper_Sales extends Mage_Core_Helper_Abstract
             'firstname'            => $address->getFirstName(),
             'lastname'             => $address->getLastName(),
             'street'               => $address->getStreet1()
-                                      . ($address->getStreet2() ? '\n' . $address->getStreet2() : ''),
+                                      . ($address->getStreet2() ? "\n" . $address->getStreet2() : ''),
             'city'                 => $address->getCity(),
             'postcode'             => $address->getZipcode(),
             'telephone'            => $phoneNumber,

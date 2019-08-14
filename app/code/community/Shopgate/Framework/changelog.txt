@@ -1,3 +1,7 @@
+'''Version 2.9.44'''
+* fixed shipping costs in case of taxes being based on the origin
+* Fixed character \n appearing in customer address
+
 '''Version 2.9.43'''
 * Fix for AuthNet pending review orders being stuck in 'processing' after ship
 * mapped Merchant API PayPal WSPP to PayFlow Pro mage module

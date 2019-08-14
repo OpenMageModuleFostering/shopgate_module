@@ -82,8 +82,10 @@ class Shopgate_Framework_Model_Carrier_Fix
         $amountGross = $shippingInfo->getAmountGross();
 
         if ($shippingIncludesTax) {
-            if (Mage::helper('shopgate/config')->getIsMagentoVersionLower19()
-                || !Mage::helper('tax')->isCrossBorderTradeEnabled($scopeId)
+            if (
+                (Mage::helper('shopgate/config')->getIsMagentoVersionLower19()
+                    || !Mage::helper('tax')->isCrossBorderTradeEnabled($scopeId))
+                && Mage::helper('tax')->getTaxBasedOn() !== 'origin'
             ) {
                 $calc        = Mage::getSingleton('tax/calculation');
                 $store       = Mage::app()->getStore($scopeId);
