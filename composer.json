@@ -1,16 +1,19 @@
 {
-    "name": "OpenMageModuleFostering/shopgate_module",
+    "name": "OpenMageModuleFostering\/shopgate_module",
     "type": "magento-module",
     "license": "Shopgate-Plugin",
     "homepage": "",
     "description": "Shopgate Plugin",
     "authors": [
-    {
-        "name": "Stephan Recknagel",
-        "email": "stephan.recknagel@shopgate.com"
-    }
-],
+        {
+            "name": "Stephan Recknagel",
+            "email": "stephan.recknagel@shopgate.com"
+        }
+    ],
     "suggest": {
-        "magento-hackathon/magento-composer-installer": "*"
-    }
+        "magento-hackathon\/magento-composer-installer": "*"
+    },
+    "keywords": [
+        "openmage-module"
+    ]
 }
