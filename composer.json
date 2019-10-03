@@ -1,5 +1,5 @@
 {
-    "name": "OpenMageModuleFostering\/shopgate_module",
+    "name": "openmage-module-fostering\/shopgate_module",
     "type": "magento-module",
     "license": "Shopgate-Plugin",
     "homepage": "",
